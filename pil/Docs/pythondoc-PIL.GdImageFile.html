@@ -1,13 +1,45 @@
-<html><head><title>Module PIL.GdImageFile</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.GdImageFile</h1><h4>Module Summary:</h4><pre><a href="#70">def open</a>(fp, mode='r')</pre><blockquote>Load texture from a GD image file.</blockquote><pre><a href="#39">class GdImageFile</a>:
-    def __init__(self)</pre><blockquote>Image plugin for the GD uncompressed format.</blockquote><h2>Functions</h2><div class="function" id="70"><h3>open</h3><pre>open(fp, mode='r')</pre><p>Load texture from a GD image file.
-
-</p><h4>Parameters:</h4><p><code>filename</code> -- GD file name, or an opened file handle.
-</p><p><code>mode</code> -- Optional mode.  In this version, if the mode argument
-    is given, it must be "r".
-</p><h4>Returns:</h4><p>An image instance.
-</p><h4>Exceptions:</h4><p><code>IOError</code> -- Indicates that the image could not be read.
-</p></div><h2>Classes</h2><div class="class" id="39"><h3>The GdImageFile Class</h3><pre>GdImageFile()</pre><p>Image plugin for the GD uncompressed format.  Note that this format
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.GdImageFile Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.GdImageFile Module</h1>
+<dl>
+<dt><b>GdImageFile</b> (class)  [<a href='#PIL.GdImageFile.GdImageFile-class'>#</a>]</dt>
+<dd>
+<p>Image plugin for the GD uncompressed format.</p>
+<p>For more information about this class, see <a href='#PIL.GdImageFile.GdImageFile-class'><i>The GdImageFile Class</i></a>.</p>
+</dd>
+<dt><a id='PIL.GdImageFile.open-function' name='PIL.GdImageFile.open-function'><b>open(fp, mode=&quot;r&quot;)</b></a> [<a href='#PIL.GdImageFile.open-function'>#</a>]</dt>
+<dd>
+<p>Load texture from a GD image file.</p>
+<dl>
+<dt><i>filename</i></dt>
+<dd>
+GD file name, or an opened file handle.</dd>
+<dt><i>mode</i></dt>
+<dd>
+Optional mode.  In this version, if the mode argument
+    is given, it must be &quot;r&quot;.</dd>
+<dt>Returns:</dt>
+<dd>
+An image instance.</dd>
+<dt>Raises <b>IOError</b>:</dt><dd>
+If the image could not be read.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.GdImageFile.GdImageFile-class' name='PIL.GdImageFile.GdImageFile-class'>The GdImageFile Class</a></h2>
+<dl>
+<dt><b>GdImageFile</b> (class)  [<a href='#PIL.GdImageFile.GdImageFile-class'>#</a>]</dt>
+<dd>
+<p>Image plugin for the GD uncompressed format.  Note that this format
 is not supported by the standard <b>Image.open</b> function.  To use
 this plugin, you have to import the <b>GdImageFile</b> module and
 use the <b>GdImageFile.open</b> function.
-</p></div></body></html>
+</p></dd>
+</dl>
+</body></html>

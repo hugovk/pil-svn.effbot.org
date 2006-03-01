@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/GifDecode.c#2 $
+ * $Id: GifDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * a fast, suspendable GIF decoder
  *
@@ -22,10 +22,10 @@
  */
 
 
+#include "Imaging.h"
+
 #include <stdio.h>
 #include <memory.h>	/* memcpy() */
-
-#include "Imaging.h"
 
 #include "Gif.h"
 
@@ -92,8 +92,7 @@ ImagingGifDecode(Imaging im, ImagingCodecState state, UINT8* buffer, int bytes)
 	state->state = 1;
     }
 
-    if (state->y < state->ysize)
-        out = im->image8[state->y + state->yoff] + state->xoff + state->x;
+    out = im->image8[state->y + state->yoff] + state->xoff + state->x;
 
     for (;;) {
 

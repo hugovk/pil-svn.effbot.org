@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PcxImagePlugin.py#7 $
+# $Id: PcxImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # PCX file handling
 #
@@ -14,22 +14,23 @@
 # 1996-05-20 fl   Fixed RGB support
 # 1997-01-03 fl   Fixed 2-bit and 4-bit support
 # 1999-02-03 fl   Fixed 8-bit support (broken in 1.0b1)
-# 1999-02-07 fl   Added write support (0.4)
+# 1999-02-07 fl   Added write support
 # 2002-06-09 fl   Made 2-bit and 4-bit support a bit more robust
-# 2002-07-30 fl   Seek from to current position, not beginning of file (0.5)
+# 2002-07-30 fl   Seek from to current position, not beginning of file
+# 2003-06-03 fl   Extract DPI settings (info["dpi"])
 #
-# Copyright (c) 1997-98 by Secret Labs AB.
-# Copyright (c) 1995-97 by Fredrik Lundh.
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1995-2003 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.5"
+__version__ = "0.6"
 
 import Image, ImageFile, ImagePalette
 
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+def i16(c,o):
+    return ord(c[o]) + (ord(c[o+1])<<8)
 
 def _accept(prefix):
     return ord(prefix[0]) == 10 and ord(prefix[1]) in [0, 2, 3, 5]
@@ -50,7 +51,7 @@ class PcxImageFile(ImageFile.ImageFile):
             raise SyntaxError, "not a PCX file"
 
         # image
-        bbox = i16(s[4:]), i16(s[6:]), i16(s[8:])+1, i16(s[10:])+1
+        bbox = i16(s,4), i16(s,6), i16(s,8)+1, i16(s,10)+1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise SyntaxError, "bad PCX image size"
 
@@ -58,7 +59,9 @@ class PcxImageFile(ImageFile.ImageFile):
         version = ord(s[1])
         bits = ord(s[3])
         planes = ord(s[65])
-        stride = i16(s[66:])
+        stride = i16(s,66)
+
+        self.info["dpi"] = i16(s,12), i16(s,14)
 
         if bits == 1 and planes == 1:
             mode = rawmode = "1"
@@ -92,6 +95,8 @@ class PcxImageFile(ImageFile.ImageFile):
 
         self.mode = mode
         self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
+
+        bbox = (0, 0) + self.size
 
         self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
 

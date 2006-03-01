@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/XVThumbImagePlugin.py#4 $
+# $Id: XVThumbImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # XV Thumbnail file handler by Charles E. "Gene" Cash
 # (gcash@magicnet.net)

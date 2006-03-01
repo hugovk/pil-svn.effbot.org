@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/UnpackYCC.c#2 $
+ * $Id: UnpackYCC.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * code to convert and unpack PhotoYCC data
  *

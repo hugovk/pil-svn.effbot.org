@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/pilfont.py#3 $
+# $Id: pilfont.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # PIL raster font compiler
 #
@@ -11,6 +11,7 @@
 
 VERSION = "0.4"
 
+import site
 import glob, os, sys
 
 # drivers

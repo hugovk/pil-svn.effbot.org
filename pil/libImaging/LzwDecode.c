@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/LzwDecode.c#2 $
+ * $Id: LzwDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * a fast, suspendable TIFF LZW decoder
  *
@@ -28,10 +28,10 @@
  */
 
 
+#include "Imaging.h"
+
 #include <stdio.h>
 #include <stdlib.h>	/* memcpy() */
-
-#include "Imaging.h"
 
 #include "Lzw.h"
 

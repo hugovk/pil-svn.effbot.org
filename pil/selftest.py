@@ -1,4 +1,4 @@
-# $Id: //modules/pil/selftest.py#6 $
+# $Id: selftest.py 2134 2004-10-06 08:55:20Z fredrik $
 # minimal sanity check
 
 import sys
@@ -8,6 +8,14 @@ sys.path.insert(1, "PIL")
 import Image
 import ImageDraw
 import ImageFilter
+
+try:
+    Image.core.ping
+except ImportError, v:
+    print "***", v
+    sys.exit()
+except AttributeError:
+    pass
 
 def _info(im):
     im.load()

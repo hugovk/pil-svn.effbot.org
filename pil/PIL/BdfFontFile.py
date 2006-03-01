@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/BdfFontFile.py#7 $
+# $Id: BdfFontFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # bitmap distribution font (bdf) file parser
 #

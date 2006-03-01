@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/GbrImagePlugin.py#5 $
+# $Id: GbrImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # load a GIMP brush file
 #

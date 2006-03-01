@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/player.py#2 $
+# $Id: player.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 
 from Tkinter import *

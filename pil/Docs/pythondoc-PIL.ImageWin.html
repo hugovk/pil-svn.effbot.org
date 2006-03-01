@@ -1,7 +1,40 @@
-<html><head><title>Module PIL.ImageWin</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageWin</h1><h4>Module Summary:</h4><pre><a href="#47">class Dib</a>:
-    def __init__(self, image, size=None)</pre><blockquote>Create a Windows bitmap with the given mode and size.</blockquote><pre><a href="#23">class HDC</a>:
-    def __init__(self)</pre><blockquote>The ImageWin module contains support to create and display
-images under Windows 95/98, NT, 2000 and later.</blockquote><h2>Classes</h2><div class="class" id="47"><h3>The Dib Class</h3><pre>Dib()</pre><p>Create a Windows bitmap with the given mode and size.  The mode can
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageWin Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageWin Module</h1>
+<dl>
+<dt><b>Dib(image, size=None)</b> (class) [<a href='#PIL.ImageWin.Dib-class'>#</a>]</dt>
+<dd>
+<p>Create a Windows bitmap with the given mode and size.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.Dib-class'><i>The Dib Class</i></a>.</p>
+</dd>
+<dt><b>HDC(dc)</b> (class) [<a href='#PIL.ImageWin.HDC-class'>#</a>]</dt>
+<dd>
+<p>The ImageWin module contains support to create and display
+images under Windows 95/98, NT, 2000 and later.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.HDC-class'><i>The HDC Class</i></a>.</p>
+</dd>
+<dt><b>ImageWindow(image, title=&quot;PIL&quot;)</b> (class) [<a href='#PIL.ImageWin.ImageWindow-class'>#</a>]</dt>
+<dd>
+<p>Create an image window which displays the given image.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.ImageWindow-class'><i>The ImageWindow Class</i></a>.</p>
+</dd>
+<dt><b>Window(title=&quot;PIL&quot;, width=None, height=None)</b> (class) [<a href='#PIL.ImageWin.Window-class'>#</a>]</dt>
+<dd>
+<p>Create a Window with the given title size.</p>
+<p>For more information about this class, see <a href='#PIL.ImageWin.Window-class'><i>The Window Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.Dib-class' name='PIL.ImageWin.Dib-class'>The Dib Class</a></h2>
+<dl>
+<dt><b>Dib(image, size=None)</b> (class) [<a href='#PIL.ImageWin.Dib-class'>#</a>]</dt>
+<dd>
+<p>Create a Windows bitmap with the given mode and size.  The mode can
 be one of "1", "L", "P", or "RGB".
 
 If the display requires a palette, this constructor creates a
@@ -11,29 +44,65 @@ cube is used, together with 20 greylevels.
 
 To make sure that palettes work properly under Windows, you must
 call the <b>palette</b> method upon certain events from Windows.
-</p></div><h4>Constructor:</h4><div class="constructor" id="58"><pre>Dib(image, size=None)</pre><p>Create Windows bitmap.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- Either a PIL image, or a mode string.  If a
+</p></dd>
+<dt><a id='PIL.ImageWin.Dib.__init__-method' name='PIL.ImageWin.Dib.__init__-method'><b>__init__(image, size=None)</b></a> [<a href='#PIL.ImageWin.Dib.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create Windows bitmap.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+Either a PIL image, or a mode string.  If a
    mode string is used, a size must also be given.  The
-   mode can be one of "1", "L", "P", or "RGB".
-</p><p><code>size</code> -- If the first argument is a mode string, this
-   defines the size of the image.
-</p></div><h4>Method Summary:</h4><pre><a href="#81">expose(handle)</a></pre><blockquote>Copy the bitmap contents to a device context.</blockquote><pre><a href="#141">paste(im, box=None)</a></pre><blockquote>Paste a PIL image into the bitmap image.</blockquote><pre><a href="#120">query_palette(dc)</a></pre><blockquote>Installs the palette associated with the image in the
-given device context.</blockquote><div class="method" id="81"><h3>expose</h3><pre>expose(handle)</pre><p>Copy the bitmap contents to a device context.
-
-</p><h4>Parameters:</h4><p><code>handle</code> -- Device context (HDC), cast to a Python integer,
+   mode can be one of &quot;1&quot;, &quot;L&quot;, &quot;P&quot;, or &quot;RGB&quot;.</dd>
+<dt><i>size</i></dt>
+<dd>
+If the first argument is a mode string, this
+   defines the size of the image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.expose-method' name='PIL.ImageWin.Dib.expose-method'><b>expose(handle)</b></a> [<a href='#PIL.ImageWin.Dib.expose-method'>#</a>]</dt>
+<dd>
+<p>Copy the bitmap contents to a device context.</p>
+<dl>
+<dt><i>handle</i></dt>
+<dd>
+Device context (HDC), cast to a Python integer,
    or a HDC or HWND instance.  In PythonWin, you can use the
    <b>GetHandleAttrib</b> method of the <b>CDC</b> class to get
    a suitable handle.
-</p></div><div class="method" id="141"><h3>paste</h3><pre>paste(im, box=None)</pre><p>Paste a PIL image into the bitmap image.
-
-</p><h4>Parameters:</h4><p><code>im</code> -- A PIL image.  The size must match the target region.
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.fromstring-method' name='PIL.ImageWin.Dib.fromstring-method'><b>fromstring(buffer)</b></a> [<a href='#PIL.ImageWin.Dib.fromstring-method'>#</a>]</dt>
+<dd>
+<p>Load display memory contents from string buffer.</p>
+<dl>
+<dt><i>buffer</i></dt>
+<dd>
+A string buffer containing display data (usually
+    data returned from <b>tostring</b>)
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.paste-method' name='PIL.ImageWin.Dib.paste-method'><b>paste(im, box=None)</b></a> [<a href='#PIL.ImageWin.Dib.paste-method'>#</a>]</dt>
+<dd>
+<p>Paste a PIL image into the bitmap image.</p>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+A PIL image.  The size must match the target region.
    If the mode does not match, the image is converted to the
-   mode of the bitmap image.
-</p><p><code>box</code> -- A 4-tuple defining the left, upper, right, and
+   mode of the bitmap image.</dd>
+<dt><i>box</i></dt>
+<dd>
+A 4-tuple defining the left, upper, right, and
    lower pixel coordinate.  If None is given instead of a
-   tuple, all of the image is assumed.
-</p></div><div class="method" id="120"><h3>query_palette</h3><pre>query_palette(dc)</pre><p>Installs the palette associated with the image in the
+   tuple, all of the image is assumed.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.query_palette-method' name='PIL.ImageWin.Dib.query_palette-method'><b>query_palette(dc)</b></a> [<a href='#PIL.ImageWin.Dib.query_palette-method'>#</a>]</dt>
+<dd>
+<p>Installs the palette associated with the image in the
 given device context.
 </p><p>
 This method should be called upon <b>QUERYNEWPALETTE</b>
@@ -42,10 +111,47 @@ method returns a non-zero value, one or more display
 palette entries were changed, and the image should be
 redrawn.
 
-</p><h4>Parameters:</h4><p><code>dc</code> -- Device context (HDC), cast to a Python integer,
-    or an HDC or HWND instance.
-</p><h4>Returns:</h4><p>A true value if one or more entries were changed
-   (this indicates that the image should be redrawn).
-</p></div><div class="class" id="23"><h3>The HDC Class</h3><pre>HDC()</pre><p>The <b>ImageWin</b> module contains support to create and display
+</p><dl>
+<dt><i>dc</i></dt>
+<dd>
+Device context (HDC), cast to a Python integer,
+    or an HDC or HWND instance.</dd>
+<dt>Returns:</dt>
+<dd>
+A true value if one or more entries were changed
+   (this indicates that the image should be redrawn).</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageWin.Dib.tostring-method' name='PIL.ImageWin.Dib.tostring-method'><b>tostring()</b></a> [<a href='#PIL.ImageWin.Dib.tostring-method'>#</a>]</dt>
+<dd>
+<p>Copy display memory contents to string buffer.</p>
+<dl>
+<dt>Returns:</dt>
+<dd>
+A string buffer containing display data.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.HDC-class' name='PIL.ImageWin.HDC-class'>The HDC Class</a></h2>
+<dl>
+<dt><b>HDC(dc)</b> (class) [<a href='#PIL.ImageWin.HDC-class'>#</a>]</dt>
+<dd>
+<p>The <b>ImageWin</b> module contains support to create and display
 images under Windows 95/98, NT, 2000 and later.
-</p></div></body></html>
+</p></dd>
+</dl>
+<h2><a id='PIL.ImageWin.ImageWindow-class' name='PIL.ImageWin.ImageWindow-class'>The ImageWindow Class</a></h2>
+<dl>
+<dt><b>ImageWindow(image, title=&quot;PIL&quot;)</b> (class) [<a href='#PIL.ImageWin.ImageWindow-class'>#</a>]</dt>
+<dd>
+<p>Create an image window which displays the given image.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageWin.Window-class' name='PIL.ImageWin.Window-class'>The Window Class</a></h2>
+<dl>
+<dt><b>Window(title=&quot;PIL&quot;, width=None, height=None)</b> (class) [<a href='#PIL.ImageWin.Window-class'>#</a>]</dt>
+<dd>
+<p>Create a Window with the given title size.</p>
+</dd>
+</dl>
+</body></html>

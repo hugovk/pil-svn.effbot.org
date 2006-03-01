@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/GimpGradientFile.py#3 $
+# $Id: GimpGradientFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # stuff to read (and render) GIMP gradient files
 #
@@ -99,22 +99,22 @@ class GimpGradientFile(GradientFile):
         if fp.readline()[:13] != "GIMP Gradient":
             raise SyntaxError, "not a GIMP gradient file"
 
-        count = string.atoi(fp.readline())
+        count = int(fp.readline())
 
         gradient = []
 
         for i in range(count):
 
             s = string.split(fp.readline())
-            w = map(string.atof, s[:11])
+            w = map(float, s[:11])
 
             x0, x1  = w[0], w[2]
             xm      = w[1]
             rgb0    = w[3:7]
             rgb1    = w[7:11]
 
-            segment = SEGMENTS[string.atoi(s[11])]
-            cspace  = string.atoi(s[12])
+            segment = SEGMENTS[int(s[11])]
+            cspace  = int(s[12])
 
             if cspace != 0:
                 raise IOError, "cannot handle HSV colour space"

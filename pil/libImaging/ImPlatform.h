@@ -1,13 +1,13 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/ImPlatform.h#3 $
+ * $Id: ImPlatform.h 2134 2004-10-06 08:55:20Z fredrik $
  *
  * platform declarations for the imaging core library
  *
  * Copyright (c) Fredrik Lundh 1995-2003.
  */
 
-#include "ImConfig.h"
+#include "Python.h"
 
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES
@@ -15,6 +15,26 @@
 #endif
 #ifndef STDC_HEADERS
 #error Sorry, this library requires ANSI header files.
+#endif
+
+#if defined(_MSC_VER)
+#ifndef WIN32
+#define WIN32
+#endif
+/* VC++ 4.0 is a bit annoying when it comes to precision issues (like
+   claiming that "float a = 0.0;" would lead to loss of precision).  I
+   don't like to see warnings from my code, but since I still want to
+   keep it readable, I simply switch off a few warnings instead of adding
+   the tons of casts that VC++ seem to require.  This code is compiled
+   with numerous other compilers as well, so any real errors are likely
+   to be catched anyway. */
+#pragma warning(disable: 4244) /* conversion from 'float' to 'int' */
+#endif
+
+#if defined(_MSC_VER)
+#define inline __inline
+#elif !defined(USE_INLINE)
+#define inline
 #endif
 
 #if SIZEOF_SHORT == 2
@@ -37,19 +57,13 @@
 
 #if SIZEOF_LONG == 8
 #define	INT64 long
+#elif SIZEOF_LONG_LONG == 8
+#define	INT64 long
 #endif
 
-#if SIZEOF_FLOAT == 4
+/* assume IEEE; tweak if necessary (patches are welcome) */
 #define	FLOAT32 float
-#elif SIZEOF_DOUBLE == 4
-#define	FLOAT32 double /* and pigs can fly... */
-#else
-#error Cannot find required 32-bit floating point type
-#endif
-
-#if SIZEOF_DOUBLE == 8
 #define	FLOAT64 double
-#endif
 
 #define	INT8  signed char
 #define	UINT8 unsigned char

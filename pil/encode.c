@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/encode.c#5 $
+ * $Id: encode.c 2184 2004-11-15 20:00:59Z fredrik $
  *
  * standard encoder interfaces for the Imaging library
  *
@@ -133,6 +133,7 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
 {
     UINT8* buf;
     int status;
+    ImagingSectionCookie cookie;
 
     /* Encode to a file handle */
 
@@ -149,6 +150,8 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
 	return NULL;
     }
 
+    ImagingSectionEnter(&cookie);
+
     do {
 
 	/* This replaces the inner loop in the ImageFile _save
@@ -158,11 +161,14 @@ _encode_to_file(ImagingEncoderObject* encoder, PyObject* args)
 
 	if (status > 0)
 	    if (write(fh, buf, status) < 0) {
+                ImagingSectionLeave(&cookie);
 		free(buf);
 		return PyErr_SetFromErrno(PyExc_IOError);
 	    }
 
     } while (encoder->state.errcode == 0);
+
+    ImagingSectionLeave(&cookie);
 
     free(buf);
 

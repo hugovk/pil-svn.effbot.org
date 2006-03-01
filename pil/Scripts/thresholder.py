@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/thresholder.py#2 $
+# $Id: thresholder.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # this demo script illustrates how a 1-bit BitmapImage can be used
 # as a dynamically updated overlay

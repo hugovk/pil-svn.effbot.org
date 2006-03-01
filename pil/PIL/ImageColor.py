@@ -1,15 +1,17 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/ImageColor.py#2 $
+# $Id: ImageColor.py 2281 2005-02-07 20:42:04Z fredrik $
 #
 # map CSS3-style colour description strings to RGB
 #
 # History:
 # 2002-10-24 fl   Added support for CSS-style color strings
 # 2002-12-15 fl   Added RGBA support
+# 2004-03-27 fl   Fixed remaining int() problems for Python 1.5.2
+# 2004-07-19 fl   Fixed gray/grey spelling issues
 #
-# Copyright (c) 2002 by Secret Labs AB
-# Copyright (c) 2002 by Fredrik Lundh
+# Copyright (c) 2002-2004 by Secret Labs AB
+# Copyright (c) 2002-2004 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
@@ -17,12 +19,21 @@
 import Image
 import re, string
 
+try:
+    x = int("a", 16)
+except TypeError:
+    # python 1.5.2 doesn't support int(x,b)
+    str2int = string.atoi
+else:
+    str2int = int
+
 ##
 # Convert color string to RGB tuple.
 #
 # @param color A CSS3-style colour string.
 # @return An RGB-tuple.
-# @exception ValueError String format not supported.
+# @exception ValueError If the color string could not be interpreted
+#    as an RGB value.
 
 def getrgb(color):
     # FIXME: add RGBA support
@@ -44,30 +55,30 @@ def getrgb(color):
     m = re.match("#\w\w\w$", color)
     if m:
         return (
-            int(color[1]*2, 16),
-            int(color[2]*2, 16),
-            int(color[3]*2, 16)
+            str2int(color[1]*2, 16),
+            str2int(color[2]*2, 16),
+            str2int(color[3]*2, 16)
             )
     m = re.match("#\w\w\w\w\w\w$", color)
     if m:
         return (
-            int(color[1:3], 16),
-            int(color[3:5], 16),
-            int(color[5:7], 16)
+            str2int(color[1:3], 16),
+            str2int(color[3:5], 16),
+            str2int(color[5:7], 16)
             )
     m = re.match("rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return (
-            int(m.group(1)),
-            int(m.group(2)),
-            int(m.group(3))
+            str2int(m.group(1)),
+            str2int(m.group(2)),
+            str2int(m.group(3))
             )
     m = re.match("rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
         return (
-            int((int(m.group(1)) * 255) / 100.0 + 0.5),
-            int((int(m.group(2)) * 255) / 100.0 + 0.5),
-            int((int(m.group(3)) * 255) / 100.0 + 0.5)
+            int((str2int(m.group(1)) * 255) / 100.0 + 0.5),
+            int((str2int(m.group(2)) * 255) / 100.0 + 0.5),
+            int((str2int(m.group(3)) * 255) / 100.0 + 0.5)
             )
     m = re.match("hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
@@ -98,8 +109,9 @@ def getcolor(color, mode):
     return color
 
 colormap = {
-    # X11 colour table (from "CSS3 module: Color working draft").  this
-    # is a superset of HTML 4.0 color names used in CSS 1.
+    # X11 colour table (from "CSS3 module: Color working draft"), with
+    # gray/grey spelling issues fixed.  This is a superset of HTML 4.0
+    # colour names used in CSS 1.
     "aliceblue": "#f0f8ff",
     "antiquewhite": "#faebd7",
     "aqua": "#00ffff",
@@ -125,6 +137,7 @@ colormap = {
     "darkcyan": "#008b8b",
     "darkgoldenrod": "#b8860b",
     "darkgray": "#a9a9a9",
+    "darkgrey": "#a9a9a9",
     "darkgreen": "#006400",
     "darkkhaki": "#bdb76b",
     "darkmagenta": "#8b008b",
@@ -136,11 +149,13 @@ colormap = {
     "darkseagreen": "#8fbc8f",
     "darkslateblue": "#483d8b",
     "darkslategray": "#2f4f4f",
+    "darkslategrey": "#2f4f4f",
     "darkturquoise": "#00ced1",
     "darkviolet": "#9400d3",
     "deeppink": "#ff1493",
     "deepskyblue": "#00bfff",
     "dimgray": "#696969",
+    "dimgrey": "#696969",
     "dodgerblue": "#1e90ff",
     "firebrick": "#b22222",
     "floralwhite": "#fffaf0",
@@ -151,6 +166,7 @@ colormap = {
     "gold": "#ffd700",
     "goldenrod": "#daa520",
     "gray": "#808080",
+    "grey": "#808080",
     "green": "#008000",
     "greenyellow": "#adff2f",
     "honeydew": "#f0fff0",
@@ -168,12 +184,14 @@ colormap = {
     "lightcyan": "#e0ffff",
     "lightgoldenrodyellow": "#fafad2",
     "lightgreen": "#90ee90",
+    "lightgray": "#d3d3d3",
     "lightgrey": "#d3d3d3",
     "lightpink": "#ffb6c1",
     "lightsalmon": "#ffa07a",
     "lightseagreen": "#20b2aa",
     "lightskyblue": "#87cefa",
     "lightslategray": "#778899",
+    "lightslategrey": "#778899",
     "lightsteelblue": "#b0c4de",
     "lightyellow": "#ffffe0",
     "lime": "#00ff00",
@@ -226,6 +244,7 @@ colormap = {
     "skyblue": "#87ceeb",
     "slateblue": "#6a5acd",
     "slategray": "#708090",
+    "slategrey": "#708090",
     "snow": "#fffafa",
     "springgreen": "#00ff7f",
     "steelblue": "#4682b4",

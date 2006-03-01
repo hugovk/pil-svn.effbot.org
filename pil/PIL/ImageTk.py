@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageTk.py#3 $
+# $Id: ImageTk.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # a Tk display interface
 #
@@ -33,6 +33,7 @@ import Tkinter, Image
 # <p>
 # For examples, see the demo programs in the <i>Scripts</i>
 # directory.
+##
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -46,7 +47,7 @@ def _pilbitmap_check():
             im = Image.new("1", (1,1))
             Tkinter.BitmapImage(data="PIL:%d" % im.im.id)
             _pilbitmap_ok = 1
-        except:
+        except Tkinter.TclError:
             _pilbitmap_ok = 0
     return _pilbitmap_ok
 
@@ -110,6 +111,7 @@ class PhotoImage:
         self.__mode = mode
         self.__size = size
         self.__photo = apply(Tkinter.PhotoImage, (), kw)
+        self.tk = self.__photo.tk
         if image:
             self.paste(image)
 
@@ -266,6 +268,11 @@ class BitmapImage:
     def __str__(self):
         return str(self.__photo)
 
+##
+# Copies the contents of a PhotoImage to a PIL image memory.
+
+def getimage(photo):
+    photo.tk.call("PyImagingPhotoGet", photo)
 
 # --------------------------------------------------------------------
 # Helper for the Image.show method.

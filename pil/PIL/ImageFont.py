@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageFont.py#11 $
+# $Id: ImageFont.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # PIL raster font management
 #
@@ -14,6 +14,7 @@
 # 2002-03-04 fl   make sure we have a "L" or "1" font
 # 2002-12-04 fl   skip non-directory entries in the system path
 # 2003-04-29 fl   add embedded default font
+# 2003-09-27 fl   added support for truetype charmap encodings
 #
 # Todo:
 # Adapt to PILFONT2 format (16-bit fonts, compressed, single file)
@@ -27,21 +28,7 @@
 import Image
 import os, string, sys
 
-##
-# The <b>ImageFont</b> module defines a class with the same name.
-# Instances of this class store bitmap fonts, and are used with the
-# <b>text</b></a> method of the <b>ImageDraw</b> class.
-# <p>
-# PIL uses it's own font file format to store bitmap fonts. You can
-# use the <b>pilfont</b> utility to convert BDF and PCF font
-# descriptors (X window font formats) to this format.
-# <p>
-# Starting with version 1.1.4, PIL can be configured to support
-# TrueType and OpenType fonts.  For earlier version, TrueType
-# support is only available as part of the imToolkit package
-#
-# @see ImageDraw#ImageDraw.text
-# @see pilfont
+# FIXME: add support for pilfont2 format (see FontFile.py)
 
 # --------------------------------------------------------------------
 # Font metrics format:
@@ -56,7 +43,21 @@ import os, string, sys
 # position according to dx, dy.
 # --------------------------------------------------------------------
 
-# FIXME: add support for pilfont2 format (see FontFile.py)
+##
+# The <b>ImageFont</b> module defines a class with the same name.
+# Instances of this class store bitmap fonts, and are used with the
+# <b>text</b> method of the <b>ImageDraw</b> class.
+# <p>
+# PIL uses it's own font file format to store bitmap fonts. You can
+# use the <b>pilfont</b> utility to convert BDF and PCF font
+# descriptors (X window font formats) to this format.
+# <p>
+# Starting with version 1.1.4, PIL can be configured to support
+# TrueType and OpenType fonts.  For earlier version, TrueType
+# support is only available as part of the imToolkit package
+#
+# @see ImageDraw#ImageDraw.text
+# @see pilfont
 
 class ImageFont:
     "PIL font wrapper"
@@ -107,14 +108,17 @@ class ImageFont:
         self.getsize = self.font.getsize
         self.getmask = self.font.getmask
 
+##
+# Wrapper for FreeType fonts.  Application code should use the
+# <b>truetype</b> factory function to create font objects.
 
 class FreeTypeFont:
     "FreeType font wrapper (requires _imagingft service)"
 
-    def __init__(self, file, size, index=0):
+    def __init__(self, file, size, index=0, encoding=""):
         # FIXME: use service provider instead
         import _imagingft
-        self.font = _imagingft.getfont(file, size, index)
+        self.font = _imagingft.getfont(file, size, index, encoding)
 
     def getname(self):
         return self.font.family, self.font.style
@@ -125,12 +129,20 @@ class FreeTypeFont:
     def getsize(self, text):
         return self.font.getsize(text)
 
-    def getmask(self, text, fill=Image.core.fill):
+    def getmask(self, text, mode="", fill=Image.core.fill):
         size = self.font.getsize(text)
         im = fill("L", size, 0)
-        self.font.render(text, im.id)
+        self.font.render(text, im.id, mode=="1")
         return im
 
+##
+# Wrapper that creates a transposed font from any existing font
+# object.
+#
+# @param font A font object.
+# @param orientation An optional orientation.  If given, this should
+#     be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
+#     Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
 
 class TransposedFont:
     "Wrapper for writing rotated or mirrored text"
@@ -145,14 +157,11 @@ class TransposedFont:
             return h, w
         return w, h
 
-    def getmask(self, text):
-        im = self.font.getmask(text)
+    def getmask(self, text, mode=""):
+        im = self.font.getmask(text, mode)
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
-
-#
-# --------------------------------------------------------------------
 
 ##
 # Load font file.  This function loads a font object from the given
@@ -160,7 +169,7 @@ class TransposedFont:
 #
 # @param filename Name of font file.
 # @return A font object.
-# @throws IOError Raised if the file could not be read.
+# @exception IOError If the file could not be read.
 
 def load(filename):
     "Load a font file."
@@ -180,13 +189,17 @@ def load(filename):
 #    <b>fonts</b> directory
 # @param size The requested size, in points.
 # @param index Which font face to load (default is first available face).
+# @param encoding Which font encoding to use (default is Unicode).  Common
+#    encodings are "unic" (Unicode), "symb" (Microsoft Symbol), "ADOB"
+#    (Adobe Standard), "ADBE" (Adobe Expert), and "armn" (Apple Roman).
+#    See the FreeType documentation for more information.
 # @return A font object.
-# @throws IOError Raised if the file could not be read.
+# @exception IOError If the file could not be read.
 
-def truetype(filename, size, index=0):
+def truetype(filename, size, index=0, encoding=""):
     "Load a truetype font file."
     try:
-        return FreeTypeFont(filename, size, index)
+        return FreeTypeFont(filename, size, index, encoding)
     except IOError:
         if sys.platform == "win32":
             # check the windows font repository
@@ -195,7 +208,7 @@ def truetype(filename, size, index=0):
             windir = os.environ.get("WINDIR")
             if windir:
                 filename = os.path.join(windir, "fonts", filename)
-                return FreeTypeFont(filename, size, index)
+                return FreeTypeFont(filename, size, index, encoding)
         raise
 
 ##
@@ -204,7 +217,7 @@ def truetype(filename, size, index=0):
 #
 # @param filename Name of font file.
 # @return A font object.
-# @throws IOError Raised if the file could not be read.
+# @exception IOError If the file could not be read.
 # @see #load
 
 def load_path(filename):

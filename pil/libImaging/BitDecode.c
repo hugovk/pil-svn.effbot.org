@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/BitDecode.c#2 $
+ * $Id: BitDecode.c 2278 2005-02-07 20:27:33Z fredrik $
  *
  * decoder for packed bitfields (converts to floating point)
  *
@@ -68,10 +68,10 @@ ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
         /* get a byte from the input stream and insert in the bit buffer */
         if (bitstate->fill&1)
-            /* fill LSB first */
+            /* fill MSB first */
             bitstate->bitbuffer |= (unsigned long) byte << bitstate->bitcount;
         else
-            /* fill MSB first */
+            /* fill LSB first */
             bitstate->bitbuffer = (bitstate->bitbuffer << 8) | byte;
 
         bitstate->bitcount += 8;

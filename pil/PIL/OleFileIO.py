@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/OleFileIO.py#4 $
+# $Id: OleFileIO.py 2339 2005-03-25 08:02:17Z fredrik $
 #
 # stuff to deal with OLE2 Structured Storage files.  this module is
 # used by PIL to read Image Composer and FlashPix files, but can also
@@ -11,8 +11,11 @@
 # History:
 # 1997-01-20 fl   Created
 # 1997-01-22 fl   Fixed 64-bit portability quirk
+# 2003-09-09 fl   Fixed typo in OleFileIO.loadfat (noted by Daniel Haertle)
+# 2004-02-29 fl   Changed long hex constants to signed integers
 #
 # Notes:
+# FIXME: sort out sign problem (eliminate long hex constants)
 # FIXME: change filename to use "a/b/c" instead of ["a", "b", "c"]
 # FIXME: provide a glob mechanism function (using fnmatchcase)
 #
@@ -32,7 +35,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
 
 import string, StringIO
 
@@ -98,7 +100,7 @@ class _OleStream(StringIO.StringIO):
 
         data = []
 
-        while sect != 0xFFFFFFFEL:
+        while sect != -2: # 0xFFFFFFFEL:
             fp.seek(offset + sectorsize * sect)
             data.append(fp.read(sectorsize))
             sect = fat[sect]
@@ -157,7 +159,7 @@ class _OleDirectoryEntry:
 
             left, right, child = sidlist[sid][4]
 
-            while left != 0xFFFFFFFFL:
+            while left != -1: # 0xFFFFFFFFL:
                 stack.append(sid)
                 sid = left
                 left, right, child = sidlist[sid][4]
@@ -168,12 +170,12 @@ class _OleDirectoryEntry:
 
                 # try to move right
                 left, right, child = sidlist[sid][4]
-                if right != 0xFFFFFFFFL:
+                if right != -1: # 0xFFFFFFFFL:
                     # and then back to the left
                     sid = right
                     while 1:
                         left, right, child = sidlist[sid][4]
-                        if left == 0xFFFFFFFFL:
+                        if left == -1: # 0xFFFFFFFFL:
                             break
                         stack.append(sid)
                         sid = left
@@ -219,6 +221,11 @@ class _OleDirectoryEntry:
 #
 # --------------------------------------------------------------------
 
+##
+# This class encapsulates the interface to an OLE 2 structured
+# storage file.  Use the {@link listdir} and {@link openstream}
+# methods to access the contents of this file.
+
 class OleFileIO:
     """OLE container object
 
@@ -252,8 +259,11 @@ class OleFileIO:
         if filename:
             self.open(filename)
 
+    ##
+    # Open an OLE2 file.
+
     def open(self, filename):
-        """Connect to a OLE2 file"""
+        """Open an OLE2 file"""
 
         if type(filename) == type(""):
             self.fp = open(filename, "rb")
@@ -285,7 +295,6 @@ class OleFileIO:
         self.ministream = None
         self.minifatsect = i32(header, 60)
 
-
     def loadfat(self, header):
         # Load the FAT table.  The header contains a sector numbers
         # for the first 109 FAT sectors.  Additional sectors are
@@ -295,7 +304,7 @@ class OleFileIO:
         fat = []
         for i in range(0, len(sect), 4):
             ix = i32(sect, i)
-            if ix == 0xFFFFFFFEL or x == 0xFFFFFFFFL:
+            if ix == -2 or ix == -1: # ix == 0xFFFFFFFEL or ix == 0xFFFFFFFFL:
                 break
             s = self.getsect(ix)
             fat = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
@@ -395,8 +404,8 @@ class OleFileIO:
         return _OleStream(self.fp, start, size, 512,
                           self.sectorsize, self.fat)
 
-    #
-    # public interface
+    ##
+    # Returns a list of streams stored in this file.
 
     def listdir(self):
         """Return a list of streams stored in this file"""
@@ -404,6 +413,9 @@ class OleFileIO:
         files = []
         self._list(files, [], self.root)
         return files
+
+    ##
+    # Opens a stream as a read-only file object.
 
     def openstream(self, filename):
         """Open a stream as a read-only file object"""
@@ -413,6 +425,9 @@ class OleFileIO:
         if type != 2:
             raise IOError, "this file is not a stream"
         return self._open(sect, size)
+
+    ##
+    # Gets a list of properties described in substream.
 
     def getproperties(self, filename):
         """Return properties described in substream"""
@@ -504,6 +519,10 @@ if __name__ == "__main__":
             for file in ole.listdir():
                 if file[-1][0] == "\005":
                     print file
-                    ole.getproperties(file)
-        except IOError:
-            pass
+                    props = ole.getproperties(file)
+                    props = props.items()
+                    props.sort()
+                    for k, v in props:
+                        print "   ", k, v
+        except IOError, v:
+            print "***", "cannot read", file, "-", v

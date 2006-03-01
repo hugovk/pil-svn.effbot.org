@@ -1,18 +1,22 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/PSDraw.py#3 $
+# $Id: PSDraw.py 2339 2005-03-25 08:02:17Z fredrik $
 #
 # simple postscript graphics interface
 #
 # History:
-# 96-04-20 fl   Created
-# 99-01-10 fl   Added gsave/grestore to image method
+# 1996-04-20 fl   Created
+# 1999-01-10 fl   Added gsave/grestore to image method
 #
-# Copyright (c) Secret Labs AB 1997-99.
-# Copyright (c) Fredrik Lundh 1996.
+# Copyright (c) 1997-2003 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1996 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
+
+##
+# Simple Postscript graphics interface.
+##
 
 import EpsImagePlugin
 import string
@@ -91,7 +95,7 @@ class PSDraw:
             x = x * ymax / y; y = ymax
         dx = (xmax - x) / 2 + box[0]
         dy = (ymax - y) / 2 + box[1]
-        self.fp.write("gsize\n%f %f translate\n" % (dx, dy))
+        self.fp.write("gsave\n%f %f translate\n" % (dx, dy))
         if (x, y) != im.size:
             # EpsImagePlugin._save prints the image at (0,0,xsize,ysize)
             sx = x / im.size[0]
@@ -114,10 +118,10 @@ class PSDraw:
 
 EDROFF_PS = """\
 /S { show } bind def
-/P { moveto show } bind def 
-/M { moveto } bind def 
-/X { 0 rmoveto } bind def 
-/Y { 0 exch rmoveto } bind def 
+/P { moveto show } bind def
+/M { moveto } bind def
+/X { 0 rmoveto } bind def
+/Y { 0 exch rmoveto } bind def
 /E {    findfont
         dup maxlength dict begin
         {
@@ -180,10 +184,10 @@ errordict begin /handleerror {
         /command load dup type /stringtype ne { errorBUF cvs } if show
         errorNL errorNL
     (VMstatus: ) show
-        vmstatus errorBUF cvs show ( bytes available, ) show 
+        vmstatus errorBUF cvs show ( bytes available, ) show
         errorBUF cvs show ( bytes used at level ) show
         errorBUF cvs show errorNL errorNL
-    (Operand stargck: ) show errorNL /ostargck load { 
+    (Operand stargck: ) show errorNL /ostargck load {
         dup type /stringtype ne { errorBUF cvs } if 72 0 rmoveto show errorNL
     } forall errorNL
     (Execution stargck: ) show errorNL /estargck load {

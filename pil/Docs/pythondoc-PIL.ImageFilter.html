@@ -1,72 +1,291 @@
-<html><head><title>Module PIL.ImageFilter</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageFilter</h1><h4>Module Summary:</h4><pre><a href="#150">class BLUR</a>:
-    def __init__(self)</pre><blockquote>Blur filter.</blockquote><pre><a href="#163">class CONTOUR</a>:
-    def __init__(self)</pre><blockquote>Contour filter.</blockquote><pre><a href="#174">class DETAIL</a>:
-    def __init__(self)</pre><blockquote>Detail filter.</blockquote><pre><a href="#185">class EDGE_ENHANCE</a>:
-    def __init__(self)</pre><blockquote>Edge enhancement filter.</blockquote><pre><a href="#196">class EDGE_ENHANCE_MORE</a>:
-    def __init__(self)</pre><blockquote>Stronger edge enhancement filter.</blockquote><pre><a href="#207">class EMBOSS</a>:
-    def __init__(self)</pre><blockquote>Embossing filter.</blockquote><pre><a href="#218">class FIND_EDGES</a>:
-    def __init__(self)</pre><blockquote>Edge-finding filter.</blockquote><pre><a href="#22">class Kernel</a>:
-    def __init__(self, size, kernel, **options)</pre><blockquote>Convolution filter kernel.</blockquote><pre><a href="#116">class MaxFilter</a>:
-    def __init__(self, size=3)</pre><blockquote>Max filter.</blockquote><pre><a href="#84">class MedianFilter</a>:
-    def __init__(self, size=3)</pre><blockquote>Median filter.</blockquote><pre><a href="#100">class MinFilter</a>:
-    def __init__(self, size=3)</pre><blockquote>Min filter.</blockquote><pre><a href="#134">class ModeFilter</a>:
-    def __init__(self, size=3)</pre><blockquote>Mode filter.</blockquote><pre><a href="#62">class RankFilter</a>:
-    def __init__(self, size, rank)</pre><blockquote>Rank filter.</blockquote><pre><a href="#253">class SHARPEN</a>:
-    def __init__(self)</pre><blockquote>Sharpening filter.</blockquote><pre><a href="#229">class SMOOTH</a>:
-    def __init__(self)</pre><blockquote>Smoothing filter.</blockquote><pre><a href="#240">class SMOOTH_MORE</a>:
-    def __init__(self)</pre><blockquote>Stronger smoothing filter.</blockquote><h2>Classes</h2><div class="class" id="150"><h3>The BLUR Class</h3><pre>BLUR()</pre><p>Blur filter.
-</p></div><div class="class" id="163"><h3>The CONTOUR Class</h3><pre>CONTOUR()</pre><p>Contour filter.
-</p></div><div class="class" id="174"><h3>The DETAIL Class</h3><pre>DETAIL()</pre><p>Detail filter.
-</p></div><div class="class" id="185"><h3>The EDGE_ENHANCE Class</h3><pre>EDGE_ENHANCE()</pre><p>Edge enhancement filter.
-</p></div><div class="class" id="196"><h3>The EDGE_ENHANCE_MORE Class</h3><pre>EDGE_ENHANCE_MORE()</pre><p>Stronger edge enhancement filter.
-</p></div><div class="class" id="207"><h3>The EMBOSS Class</h3><pre>EMBOSS()</pre><p>Embossing filter.
-</p></div><div class="class" id="218"><h3>The FIND_EDGES Class</h3><pre>FIND_EDGES()</pre><p>Edge-finding filter.
-</p></div><div class="class" id="22"><h3>The Kernel Class</h3><pre>Kernel()</pre><p>Convolution filter kernel.
-</p></div><h4>Constructor:</h4><div class="constructor" id="42"><pre>Kernel(size, kernel, **options)</pre><p>Create a convolution kernel.  The current version only
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageFilter Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageFilter Module</h1>
+<dl>
+<dt><b>BLUR</b> (class)  [<a href='#PIL.ImageFilter.BLUR-class'>#</a>]</dt>
+<dd>
+<p>Blur filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.BLUR-class'><i>The BLUR Class</i></a>.</p>
+</dd>
+<dt><b>CONTOUR</b> (class)  [<a href='#PIL.ImageFilter.CONTOUR-class'>#</a>]</dt>
+<dd>
+<p>Contour filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.CONTOUR-class'><i>The CONTOUR Class</i></a>.</p>
+</dd>
+<dt><b>DETAIL</b> (class)  [<a href='#PIL.ImageFilter.DETAIL-class'>#</a>]</dt>
+<dd>
+<p>Detail filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.DETAIL-class'><i>The DETAIL Class</i></a>.</p>
+</dd>
+<dt><b>EDGE_ENHANCE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE-class'>#</a>]</dt>
+<dd>
+<p>Edge enhancement filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.EDGE_ENHANCE-class'><i>The EDGE_ENHANCE Class</i></a>.</p>
+</dd>
+<dt><b>EDGE_ENHANCE_MORE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE_MORE-class'>#</a>]</dt>
+<dd>
+<p>Stronger edge enhancement filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.EDGE_ENHANCE_MORE-class'><i>The EDGE_ENHANCE_MORE Class</i></a>.</p>
+</dd>
+<dt><b>EMBOSS</b> (class)  [<a href='#PIL.ImageFilter.EMBOSS-class'>#</a>]</dt>
+<dd>
+<p>Embossing filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.EMBOSS-class'><i>The EMBOSS Class</i></a>.</p>
+</dd>
+<dt><b>FIND_EDGES</b> (class)  [<a href='#PIL.ImageFilter.FIND_EDGES-class'>#</a>]</dt>
+<dd>
+<p>Edge-finding filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.FIND_EDGES-class'><i>The FIND_EDGES Class</i></a>.</p>
+</dd>
+<dt><b>Kernel(size, kernel, **options)</b> (class) [<a href='#PIL.ImageFilter.Kernel-class'>#</a>]</dt>
+<dd>
+<p>Convolution filter kernel.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.Kernel-class'><i>The Kernel Class</i></a>.</p>
+</dd>
+<dt><b>MaxFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MaxFilter-class'>#</a>]</dt>
+<dd>
+<p>Max filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.MaxFilter-class'><i>The MaxFilter Class</i></a>.</p>
+</dd>
+<dt><b>MedianFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MedianFilter-class'>#</a>]</dt>
+<dd>
+<p>Median filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.MedianFilter-class'><i>The MedianFilter Class</i></a>.</p>
+</dd>
+<dt><b>MinFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MinFilter-class'>#</a>]</dt>
+<dd>
+<p>Min filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.MinFilter-class'><i>The MinFilter Class</i></a>.</p>
+</dd>
+<dt><b>ModeFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.ModeFilter-class'>#</a>]</dt>
+<dd>
+<p>Mode filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.ModeFilter-class'><i>The ModeFilter Class</i></a>.</p>
+</dd>
+<dt><b>RankFilter(size, rank)</b> (class) [<a href='#PIL.ImageFilter.RankFilter-class'>#</a>]</dt>
+<dd>
+<p>Rank filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.RankFilter-class'><i>The RankFilter Class</i></a>.</p>
+</dd>
+<dt><b>SHARPEN</b> (class)  [<a href='#PIL.ImageFilter.SHARPEN-class'>#</a>]</dt>
+<dd>
+<p>Sharpening filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.SHARPEN-class'><i>The SHARPEN Class</i></a>.</p>
+</dd>
+<dt><b>SMOOTH</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH-class'>#</a>]</dt>
+<dd>
+<p>Smoothing filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.SMOOTH-class'><i>The SMOOTH Class</i></a>.</p>
+</dd>
+<dt><b>SMOOTH_MORE</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH_MORE-class'>#</a>]</dt>
+<dd>
+<p>Stronger smoothing filter.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFilter.SMOOTH_MORE-class'><i>The SMOOTH_MORE Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.BLUR-class' name='PIL.ImageFilter.BLUR-class'>The BLUR Class</a></h2>
+<dl>
+<dt><b>BLUR</b> (class)  [<a href='#PIL.ImageFilter.BLUR-class'>#</a>]</dt>
+<dd>
+<p>Blur filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.CONTOUR-class' name='PIL.ImageFilter.CONTOUR-class'>The CONTOUR Class</a></h2>
+<dl>
+<dt><b>CONTOUR</b> (class)  [<a href='#PIL.ImageFilter.CONTOUR-class'>#</a>]</dt>
+<dd>
+<p>Contour filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.DETAIL-class' name='PIL.ImageFilter.DETAIL-class'>The DETAIL Class</a></h2>
+<dl>
+<dt><b>DETAIL</b> (class)  [<a href='#PIL.ImageFilter.DETAIL-class'>#</a>]</dt>
+<dd>
+<p>Detail filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.EDGE_ENHANCE-class' name='PIL.ImageFilter.EDGE_ENHANCE-class'>The EDGE_ENHANCE Class</a></h2>
+<dl>
+<dt><b>EDGE_ENHANCE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE-class'>#</a>]</dt>
+<dd>
+<p>Edge enhancement filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.EDGE_ENHANCE_MORE-class' name='PIL.ImageFilter.EDGE_ENHANCE_MORE-class'>The EDGE_ENHANCE_MORE Class</a></h2>
+<dl>
+<dt><b>EDGE_ENHANCE_MORE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE_MORE-class'>#</a>]</dt>
+<dd>
+<p>Stronger edge enhancement filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.EMBOSS-class' name='PIL.ImageFilter.EMBOSS-class'>The EMBOSS Class</a></h2>
+<dl>
+<dt><b>EMBOSS</b> (class)  [<a href='#PIL.ImageFilter.EMBOSS-class'>#</a>]</dt>
+<dd>
+<p>Embossing filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.FIND_EDGES-class' name='PIL.ImageFilter.FIND_EDGES-class'>The FIND_EDGES Class</a></h2>
+<dl>
+<dt><b>FIND_EDGES</b> (class)  [<a href='#PIL.ImageFilter.FIND_EDGES-class'>#</a>]</dt>
+<dd>
+<p>Edge-finding filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.Kernel-class' name='PIL.ImageFilter.Kernel-class'>The Kernel Class</a></h2>
+<dl>
+<dt><b>Kernel(size, kernel, **options)</b> (class) [<a href='#PIL.ImageFilter.Kernel-class'>#</a>]</dt>
+<dd>
+<p>Convolution filter kernel.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.Kernel.__init__-method' name='PIL.ImageFilter.Kernel.__init__-method'><b>__init__(size, kernel, **options)</b></a> [<a href='#PIL.ImageFilter.Kernel.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a convolution kernel.  The current version only
 supports 3x3 and 5x5 integer and floating point kernels.
 </p><p>
 In the current version, kernels can only be applied to
 "L" and "RGB" images.
 
-</p><h4>Parameters:</h4><p><code>size</code> -- Kernel size, given as (width, height).  In
-   the current version, this must be (3,3) or (5,5).
-</p><p><code>kernel</code> -- A sequence containing kernel weights.
-</p><p><code>**options</code> -- Optional keyword arguments.
-</p><h4>Keyword Parameters:</h4><p><code>scale</code> -- Scale factor.  If given, the result for each
+</p><dl>
+<dt><i>size</i></dt>
+<dd>
+Kernel size, given as (width, height).  In
+   the current version, this must be (3,3) or (5,5).</dd>
+<dt><i>kernel</i></dt>
+<dd>
+A sequence containing kernel weights.</dd>
+<dt><i>**options</i></dt>
+<dd>
+Optional keyword arguments.</dd>
+<dt><i>scale=</i></dt>
+<dd>
+Scale factor.  If given, the result for each
    pixel is divided by this value.  The default is the sum
-   of the kernel weights.
-</p><p><code>offset</code> -- Offset.  If given, this value is added to the
-   result, after it has been divided by the scale factor.
-</p></div><h4>Method Summary:</h4><div class="class" id="116"><h3>The MaxFilter Class</h3><pre>MaxFilter()</pre><p>Max filter.  Picks the largest pixel value in a window with the
-given size.
-</p></div><h4>Constructor:</h4><div class="constructor" id="124"><pre>MaxFilter(size=3)</pre><p>Create a max filter.
-
-</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
-</p></div><h4>Method Summary:</h4><div class="class" id="84"><h3>The MedianFilter Class</h3><pre>MedianFilter()</pre><p>Median filter.  Picks the median pixel value in a window with the
-given size.
-</p></div><h4>Constructor:</h4><div class="constructor" id="92"><pre>MedianFilter(size=3)</pre><p>Create a median filter.
-
-</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
-</p></div><h4>Method Summary:</h4><div class="class" id="100"><h3>The MinFilter Class</h3><pre>MinFilter()</pre><p>Min filter.  Picks the lowest pixel value in a window with the given
-size.
-</p></div><h4>Constructor:</h4><div class="constructor" id="108"><pre>MinFilter(size=3)</pre><p>Create a min filter.
-
-</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
-</p></div><h4>Method Summary:</h4><div class="class" id="134"><h3>The ModeFilter Class</h3><pre>ModeFilter()</pre><p>Mode filter.  Picks the most frequent pixel value in a box with the
+   of the kernel weights.</dd>
+<dt><i>offset=</i></dt>
+<dd>
+Offset.  If given, this value is added to the
+   result, after it has been divided by the scale factor.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.MaxFilter-class' name='PIL.ImageFilter.MaxFilter-class'>The MaxFilter Class</a></h2>
+<dl>
+<dt><b>MaxFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MaxFilter-class'>#</a>]</dt>
+<dd>
+<p>Max filter.  Picks the largest pixel value in a window with the
+given size.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.MaxFilter.__init__-method' name='PIL.ImageFilter.MaxFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MaxFilter.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a max filter.</p>
+<dl>
+<dt><i>size</i></dt>
+<dd>
+The kernel size, in pixels.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.MedianFilter-class' name='PIL.ImageFilter.MedianFilter-class'>The MedianFilter Class</a></h2>
+<dl>
+<dt><b>MedianFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MedianFilter-class'>#</a>]</dt>
+<dd>
+<p>Median filter.  Picks the median pixel value in a window with the
+given size.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.MedianFilter.__init__-method' name='PIL.ImageFilter.MedianFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MedianFilter.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a median filter.</p>
+<dl>
+<dt><i>size</i></dt>
+<dd>
+The kernel size, in pixels.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.MinFilter-class' name='PIL.ImageFilter.MinFilter-class'>The MinFilter Class</a></h2>
+<dl>
+<dt><b>MinFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MinFilter-class'>#</a>]</dt>
+<dd>
+<p>Min filter.  Picks the lowest pixel value in a window with the given
+size.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.MinFilter.__init__-method' name='PIL.ImageFilter.MinFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MinFilter.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a min filter.</p>
+<dl>
+<dt><i>size</i></dt>
+<dd>
+The kernel size, in pixels.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.ModeFilter-class' name='PIL.ImageFilter.ModeFilter-class'>The ModeFilter Class</a></h2>
+<dl>
+<dt><b>ModeFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.ModeFilter-class'>#</a>]</dt>
+<dd>
+<p>Mode filter.  Picks the most frequent pixel value in a box with the
 given size.  Pixel values that occur only once or twice are ignored;
 if no pixel value occurs more than twice, the original pixel value
-is preserved.
-</p></div><h4>Constructor:</h4><div class="constructor" id="142"><pre>ModeFilter(size=3)</pre><p>Create a mode filter.
-
-</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
-</p></div><h4>Method Summary:</h4><div class="class" id="62"><h3>The RankFilter Class</h3><pre>RankFilter()</pre><p>Rank filter.
-</p></div><h4>Constructor:</h4><div class="constructor" id="73"><pre>RankFilter(size, rank)</pre><p>Create a rank filter.  The rank filter sorts all pixels in
-a window of the given size, and returns the rank'th value.
-
-</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
-</p><p><code>rank</code> -- What pixel value to pick.  Use 0 for a min filter,
-   size/2 for a median filter, size-1 for a max filter, etc.
-</p></div><h4>Method Summary:</h4><div class="class" id="253"><h3>The SHARPEN Class</h3><pre>SHARPEN()</pre><p>Sharpening filter.
-</p></div><div class="class" id="229"><h3>The SMOOTH Class</h3><pre>SMOOTH()</pre><p>Smoothing filter.
-</p></div><div class="class" id="240"><h3>The SMOOTH_MORE Class</h3><pre>SMOOTH_MORE()</pre><p>Stronger smoothing filter.
-</p></div></body></html>
+is preserved.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.ModeFilter.__init__-method' name='PIL.ImageFilter.ModeFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.ModeFilter.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a mode filter.</p>
+<dl>
+<dt><i>size</i></dt>
+<dd>
+The kernel size, in pixels.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.RankFilter-class' name='PIL.ImageFilter.RankFilter-class'>The RankFilter Class</a></h2>
+<dl>
+<dt><b>RankFilter(size, rank)</b> (class) [<a href='#PIL.ImageFilter.RankFilter-class'>#</a>]</dt>
+<dd>
+<p>Rank filter.</p>
+</dd>
+<dt><a id='PIL.ImageFilter.RankFilter.__init__-method' name='PIL.ImageFilter.RankFilter.__init__-method'><b>__init__(size, rank)</b></a> [<a href='#PIL.ImageFilter.RankFilter.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a rank filter.  The rank filter sorts all pixels in
+a window of the given size, and returns the rank'th value.</p>
+<dl>
+<dt><i>size</i></dt>
+<dd>
+The kernel size, in pixels.</dd>
+<dt><i>rank</i></dt>
+<dd>
+What pixel value to pick.  Use 0 for a min filter,
+   size*size/2 for a median filter, size*size-1 for a max filter,
+   etc.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.SHARPEN-class' name='PIL.ImageFilter.SHARPEN-class'>The SHARPEN Class</a></h2>
+<dl>
+<dt><b>SHARPEN</b> (class)  [<a href='#PIL.ImageFilter.SHARPEN-class'>#</a>]</dt>
+<dd>
+<p>Sharpening filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.SMOOTH-class' name='PIL.ImageFilter.SMOOTH-class'>The SMOOTH Class</a></h2>
+<dl>
+<dt><b>SMOOTH</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH-class'>#</a>]</dt>
+<dd>
+<p>Smoothing filter.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFilter.SMOOTH_MORE-class' name='PIL.ImageFilter.SMOOTH_MORE-class'>The SMOOTH_MORE Class</a></h2>
+<dl>
+<dt><b>SMOOTH_MORE</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH_MORE-class'>#</a>]</dt>
+<dd>
+<p>Stronger smoothing filter.</p>
+</dd>
+</dl>
+</body></html>

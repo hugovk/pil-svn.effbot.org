@@ -1,30 +1,31 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Convert.c#4 $
+ * $Id: Convert.c 2134 2004-10-06 08:55:20Z fredrik $
  * 
  * convert images
  *
  * history:
- * 95-06-15 fl	created
- * 95-11-28 fl	added some "RGBA" and "CMYK" conversions
- * 96-04-22 fl	added "1" conversions (same as "L")
- * 96-05-05 fl	added palette conversions (hack)
- * 96-07-23 fl	fixed "1" conversions to zero/non-zero convention
- * 96-11-01 fl	fixed "P" to "L" and "RGB" to "1" conversions
- * 96-12-29 fl	set alpha byte in RGB converters
- * 97-05-12 fl	added ImagingConvert2
- * 97-05-30 fl	added floating point support
- * 97-08-27 fl	added "P" to "1" and "P" to "F" conversions
- * 98-01-11 fl	added integer support
- * 98-07-01 fl	added "YCbCr" support
- * 98-07-02 fl	added "RGBX" conversions (sort of)
- * 98-07-04 fl	added floyd-steinberg dithering
- * 98-07-12 fl	changed "YCrCb" to "YCbCr" (!)
- * 98-12-29 fl	added basic "I;16" and "I;16B" conversions
- * 99-02-03 fl	added "RGBa", and "BGR" conversions (experimental)
+ * 1995-06-15 fl   created
+ * 1995-11-28 fl   added some "RGBA" and "CMYK" conversions
+ * 1996-04-22 fl   added "1" conversions (same as "L")
+ * 1996-05-05 fl   added palette conversions (hack)
+ * 1996-07-23 fl   fixed "1" conversions to zero/non-zero convention
+ * 1996-11-01 fl   fixed "P" to "L" and "RGB" to "1" conversions
+ * 1996-12-29 fl   set alpha byte in RGB converters
+ * 1997-05-12 fl   added ImagingConvert2
+ * 1997-05-30 fl   added floating point support
+ * 1997-08-27 fl   added "P" to "1" and "P" to "F" conversions
+ * 1998-01-11 fl   added integer support
+ * 1998-07-01 fl   added "YCbCr" support
+ * 1998-07-02 fl   added "RGBX" conversions (sort of)
+ * 1998-07-04 fl   added floyd-steinberg dithering
+ * 1998-07-12 fl   changed "YCrCb" to "YCbCr" (!)
+ * 1998-12-29 fl   added basic "I;16" and "I;16B" conversions
+ * 1999-02-03 fl   added "RGBa", and "BGR" conversions (experimental)
+ * 2003-09-26 fl   added "LA" and "PA" conversions (experimental)
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1995-1997 by Fredrik Lundh.
  *
  * See the README file for details on usage and redistribution.
  */
@@ -105,6 +106,19 @@ l2bit(UINT8* out, const UINT8* in, int xsize)
 }
 
 static void
+l2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++) {
+        UINT8 v = *in++;
+	*out++ = v;
+	*out++ = v;
+	*out++ = v;
+	*out++ = 255;
+    }
+}
+
+static void
 l2rgb(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
@@ -114,6 +128,27 @@ l2rgb(UINT8* out, const UINT8* in, int xsize)
 	*out++ = v;
 	*out++ = v;
 	*out++ = 255;
+    }
+}
+
+static void
+la2l(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4)
+	*out++ = in[0];
+}
+
+static void
+la2rgb(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        UINT8 v = in[0];
+	*out++ = v;
+	*out++ = v;
+	*out++ = v;
+	*out++ = in[3];
     }
 }
 
@@ -133,6 +168,17 @@ rgb2l(UINT8* out, const UINT8* in, int xsize)
     for (x = 0; x < xsize; x++, in += 4)
 	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 	*out++ = L(in) / 1000;
+}
+
+static void
+rgb2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+	out[0] = out[1] = out[2] = L(in) / 1000;
+        out[3] = 255;
+    }
 }
 
 static void
@@ -201,6 +247,17 @@ rgb2rgba(UINT8* out, const UINT8* in, int xsize)
         *out++ = *in++;
         *out++ = *in++;
         *out++ = 255; in++;
+    }
+}
+
+static void
+rgba2la(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4, out += 4) {
+	/* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
+	out[0] = out[1] = out[2] = L(in) / 1000;
+        out[3] = in[3];
     }
 }
 
@@ -328,7 +385,7 @@ bit2f(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = (*in++ != 0) ? 255.0 : 0.0;
+	*out++ = (*in++ != 0) ? 255.0F : 0.0F;
 }
 
 static void
@@ -475,6 +532,7 @@ static struct {
     { "1", "YCbCr", bit2ycbcr },
 
     { "L", "1", l2bit },
+    { "L", "LA", l2la },
     { "L", "I", l2i },
     { "L", "F", l2f },
     { "L", "RGB", l2rgb },
@@ -482,6 +540,11 @@ static struct {
     { "L", "RGBX", l2rgb },
     { "L", "CMYK", l2cmyk },
     { "L", "YCbCr", l2ycbcr },
+
+    { "LA", "L", la2l },
+    { "LA", "RGB", la2rgb },
+    { "LA", "RGBX", la2rgb },
+    { "LA", "RGBA", la2rgb },
 
     { "I",    "L",    i2l },
     { "I",    "F",    i2f },
@@ -491,6 +554,7 @@ static struct {
 
     { "RGB", "1", rgb2bit },
     { "RGB", "L", rgb2l },
+    { "RGB", "LA", rgb2la },
     { "RGB", "I", rgb2i },
     { "RGB", "F", rgb2f },
     { "RGB", "BGR;15", rgb2bgr15 },
@@ -503,6 +567,7 @@ static struct {
 
     { "RGBA", "1", rgb2bit },
     { "RGBA", "L", rgb2l },
+    { "RGBA", "LA", rgba2la },
     { "RGBA", "I", rgb2i },
     { "RGBA", "F", rgb2f },
     { "RGBA", "RGB", rgba2rgb },
@@ -562,6 +627,17 @@ p2l(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2la(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    /* FIXME: precalculate greyscale palette? */
+    for (x = 0; x < xsize; x++, in += 2) {
+	*out++ = L(&palette[in[0]*4]) / 1000;
+        *out++ = in[1];
+    }
+}
+
+static void
 p2i(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
 {
     int x;
@@ -606,6 +682,19 @@ p2rgba(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 }
 
 static void
+pa2rgba(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+	const UINT8* rgb = &palette[in[0] * 4];
+	*out++ = rgb[0];
+	*out++ = rgb[1];
+	*out++ = rgb[2];
+	*out++ = in[3];
+    }
+}
+
+static void
 p2cmyk(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 {
     p2rgb(out, in, xsize, palette);
@@ -622,6 +711,8 @@ p2ycbcr(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const char *mode)
 {
+    ImagingSectionCookie cookie;
+    int alpha;
     int y;
     void (*convert)(UINT8*, const UINT8*, int, const UINT8*);
 
@@ -630,10 +721,14 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     if (!imIn->palette)
 	return (Imaging) ImagingError_ValueError("no palette");
 
+    alpha = !strcmp(imIn->mode, "PA");
+
     if (strcmp(mode, "1") == 0)
 	convert = p2bit;
     else if (strcmp(mode, "L") == 0)
 	convert = p2l;
+    else if (strcmp(mode, "LA") == 0)
+	convert = (alpha) ? pa2la : p2l;
     else if (strcmp(mode, "I") == 0)
 	convert = p2i;
     else if (strcmp(mode, "F") == 0)
@@ -641,7 +736,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     else if (strcmp(mode, "RGB") == 0)
 	convert = p2rgb;
     else if (strcmp(mode, "RGBA") == 0)
-	convert = p2rgba;
+	convert = (alpha) ? pa2rgba : p2rgba;
     else if (strcmp(mode, "RGBX") == 0)
 	convert = p2rgba;
     else if (strcmp(mode, "CMYK") == 0)
@@ -655,9 +750,11 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
     if (!imOut)
         return NULL;
 
+    ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
 	(*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
 		   imIn->xsize, imIn->palette->palette);
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -665,6 +762,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
 static Imaging
 topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 {
+    ImagingSectionCookie cookie;
     int x, y;
     ImagingPalette palette = inpalette;;
 
@@ -696,8 +794,11 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 	/* greyscale image */
 
 	/* Greyscale palette: copy data as is */
+
+        ImagingSectionEnter(&cookie);
 	for (y = 0; y < imIn->ysize; y++)
 	    memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+        ImagingSectionLeave(&cookie);
 
     } else {
 	/* colour image */
@@ -722,6 +823,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
             }
 
             /* Map each pixel to the nearest palette entry */
+            ImagingSectionEnter(&cookie);
             for (y = 0; y < imIn->ysize; y++) {
                 int r, r0, r1, r2;
                 int g, g0, g1, g2;
@@ -732,7 +834,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 
                 r = r0 = r1 = 0;
                 g = g0 = g1 = 0;
-                b = b0 = b1 = 0;
+                b = b0 = b1 = b2 = 0;
 
                 for (x = 0; x < imIn->xsize; x++, in += 4) {
                     int d2;
@@ -746,13 +848,13 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                     cache = &ImagingPaletteCache(palette, r, g, b);
                     if (cache[0] == 0x100)
                         ImagingPaletteCacheUpdate(palette, r, g, b);
-                    out[x] = cache[0];
+                    out[x] = (UINT8) cache[0];
 
                     r -= (int) palette->palette[cache[0]*4];
                     g -= (int) palette->palette[cache[0]*4+1];
                     b -= (int) palette->palette[cache[0]*4+2];
 
-                    /* propagate errors (don't ask ;-)*/
+                    /* propagate errors (don't ask ;-) */
                     r2 = r; d2 = r + r; r += d2; e[0] = r + r0;
                     r += d2; r0 = r + r1; r1 = r2; r += d2;
                     g2 = g; d2 = g + g; g += d2; e[1] = g + g0;
@@ -769,11 +871,13 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                 e[2] = b2;
 
             }
+            ImagingSectionLeave(&cookie);
             free(errors);
 
         } else {
 
             /* closest colour */
+            ImagingSectionEnter(&cookie);
             for (y = 0; y < imIn->ysize; y++) {
                 int r, g, b;
                 UINT8* in  = (UINT8*) imIn->image[y];
@@ -788,10 +892,12 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
                     cache = &ImagingPaletteCache(palette, r, g, b);
                     if (cache[0] == 0x100)
                         ImagingPaletteCacheUpdate(palette, r, g, b);
-                    out[x] = cache[0];
+                    out[x] = (UINT8) cache[0];
 
                 }
             }
+            ImagingSectionLeave(&cookie);
+
         }
 	if (inpalette != palette)
 	  ImagingPaletteCacheDelete(palette);
@@ -806,6 +912,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 static Imaging
 tobilevel(Imaging imOut, Imaging imIn, int dither)
 {
+    ImagingSectionCookie cookie;
     int x, y;
     int* errors;
 
@@ -827,6 +934,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
     if (imIn->bands == 1) {
 
         /* map each pixel to black or white, using error diffusion */
+        ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             int l, l0, l1, l2, d2;
             UINT8* in  = (UINT8*) imIn->image[y];
@@ -849,10 +957,12 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
             errors[x] = l0;
 
         }
+        ImagingSectionLeave(&cookie);
 
     } else {
 
         /* map each pixel to black or white, using error diffusion */
+        ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             int l, l0, l1, l2, d2;
             UINT8* in  = (UINT8*) imIn->image[y];
@@ -876,6 +986,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
             errors[x] = l0;
 
         }
+        ImagingSectionLeave(&cookie);
     }
 
     free(errors);
@@ -888,8 +999,9 @@ static Imaging
 convert(Imaging imOut, Imaging imIn, const char *mode,
         ImagingPalette palette, int dither)
 {
-    int y;
+    ImagingSectionCookie cookie;
     ImagingShuffler convert;
+    int y;
 
     if (!imIn)
 	return (Imaging) ImagingError_ModeError();
@@ -907,9 +1019,9 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 
     /* test for special conversions */
 
-    if (strcmp(imIn->mode, "P") == 0)
+    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0)
 	return frompalette(imOut, imIn, mode);
-
+    
     if (strcmp(mode, "P") == 0)
 	return topalette(imOut, imIn, palette, dither);
 
@@ -943,9 +1055,11 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
     if (!imOut)
         return NULL;
 
+    ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++)
 	(*convert)((UINT8*) imOut->image[y], (UINT8*) imIn->image[y],
 		   imIn->xsize);
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }

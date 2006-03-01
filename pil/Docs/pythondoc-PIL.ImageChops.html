@@ -1,131 +1,294 @@
-<html><head><title>Module PIL.ImageChops</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageChops</h1><h4>Module Summary:</h4><pre><a href="#170">def add</a>(image1, image2, scale=1.0, offset=0)</pre><blockquote>Add images
-((image1 + image2) / scale + offset).</blockquote><pre><a href="#205">def add_modulo</a>(image1, image2)</pre><blockquote>Add images without clipping
-((image1 + image2) % MAX).</blockquote><pre><a href="#267">def blend</a>(image1, image2, alpha)</pre><blockquote>Blend images using constant transparency weight.</blockquote><pre><a href="#277">def composite</a>(image1, image2, mask)</pre><blockquote>Create composite using transparency mask.</blockquote><pre><a href="#41">def constant</a>(image, value)</pre><blockquote>Return an image with the same size as the given image, but filled
-with the given pixel value.</blockquote><pre><a href="#99">def darker</a>(image1, image2)</pre><blockquote>Compare images, and return darker pixel value
-(min(image1, image2)).</blockquote><pre><a href="#116">def difference</a>(image1, image2)</pre><blockquote>Calculate absolute difference
-(abs(image1 - image2)).</blockquote><pre><a href="#52">def duplicate</a>(image)</pre><blockquote>Copy image.</blockquote><pre><a href="#64">def invert</a>(image)</pre><blockquote>Inverts an image
-(MAX - image).</blockquote><pre><a href="#81">def lighter</a>(image1, image2)</pre><blockquote>Compare images, and return lighter pixel value
-(max(image1, image2)).</blockquote><pre><a href="#233">def logical_and</a>(image1, image2)</pre><blockquote>Logical AND
-(image1 and image2).</blockquote><pre><a href="#244">def logical_or</a>(image1, image2)</pre><blockquote>Logical OR
-(image1 or image2).</blockquote><pre><a href="#255">def logical_xor</a>(image1, image2)</pre><blockquote>Logical XOR
-(image1 xor image2).</blockquote><pre><a href="#135">def multiply</a>(image1, image2)</pre><blockquote>Superimpose positive images
-(image1 * image2 / MAX).</blockquote><pre><a href="#295">def offset</a>(image, xoffset, yoffset=None)</pre><blockquote>Offset image data.</blockquote><pre><a href="#152">def screen</a>(image1, image2)</pre><blockquote>Superimpose negative images
-(MAX - ((MAX - image1) * (MAX - image2) / MAX)).</blockquote><pre><a href="#188">def subtract</a>(image1, image2, scale=1.0, offset=0)</pre><blockquote>Subtract images
-((image1 - image2) / scale + offset).</blockquote><pre><a href="#222">def subtract_modulo</a>(image1, image2)</pre><blockquote>Subtract images without clipping
-((image1 - image2) % MAX).</blockquote><h2>Functions</h2><div class="function" id="170"><h3>add</h3><pre>add(image1, image2, scale=1.0, offset=0)</pre><p>Add images
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageChops Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageChops Module</h1>
+<p>The <b>ImageChops</b> module contains a number of arithmetical image
+operations, called <i>channel operations</i> ("chops"). These can be
+used for various purposes, including special effects, image
+compositions, algorithmic painting, and more.
+</p><p>
+At this time, channel operations are only implemented for 8-bit
+images (e.g. "L" and "RGB").
+</p><p>
+Most channel operations take one or two image arguments and returns
+a new image.  Unless otherwise noted, the result of a channel
+operation is always clipped to the range 0 to MAX (which is 255 for
+all modes supported by the operations in this module).
+</p><h2>Module Contents</h2>
+<dl>
+<dt><a id='PIL.ImageChops.add-function' name='PIL.ImageChops.add-function'><b>add(image1, image2, scale=1.0, offset=0)</b></a> [<a href='#PIL.ImageChops.add-function'>#</a>]</dt>
+<dd>
+<p>Add images
 ((image1 + image2) / scale + offset).
 </p><p>
 Adds two images, dividing the result by scale and adding the
 offset. If omitted, scale defaults to 1.0, and offset to 0.0.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="205"><h3>add_modulo</h3><pre>add_modulo(image1, image2)</pre><p>Add images without clipping
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.add_modulo-function' name='PIL.ImageChops.add_modulo-function'><b>add_modulo(image1, image2)</b></a> [<a href='#PIL.ImageChops.add_modulo-function'>#</a>]</dt>
+<dd>
+<p>Add images without clipping
 ((image1 + image2) % MAX).
 </p><p>
 Adds two images, without clipping the result.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="267"><h3>blend</h3><pre>blend(image1, image2, alpha)</pre><p>Blend images using constant transparency weight.
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.blend-function' name='PIL.ImageChops.blend-function'><b>blend(image1, image2, alpha)</b></a> [<a href='#PIL.ImageChops.blend-function'>#</a>]</dt>
+<dd>
+<p>Blend images using constant transparency weight.
 </p><p>
 Same as the <b>blend</b> function in the <b>Image</b> module.
-</p></div><div class="function" id="277"><h3>composite</h3><pre>composite(image1, image2, mask)</pre><p>Create composite using transparency mask.
+</p></dd>
+<dt><a id='PIL.ImageChops.composite-function' name='PIL.ImageChops.composite-function'><b>composite(image1, image2, mask)</b></a> [<a href='#PIL.ImageChops.composite-function'>#</a>]</dt>
+<dd>
+<p>Create composite using transparency mask.
 </p><p>
 Same as the <b>composite</b> function in the <b>Image</b> module.
-</p></div><div class="function" id="41"><h3>constant</h3><pre>constant(image, value)</pre><p>Return an image with the same size as the given image, but filled
-with the given pixel value.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- Reference image.
-</p><p><code>value</code> -- Pixel value.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="99"><h3>darker</h3><pre>darker(image1, image2)</pre><p>Compare images, and return darker pixel value
+</p></dd>
+<dt><a id='PIL.ImageChops.constant-function' name='PIL.ImageChops.constant-function'><b>constant(image, value)</b></a> [<a href='#PIL.ImageChops.constant-function'>#</a>]</dt>
+<dd>
+<p>Return an image with the same size as the given image, but filled
+with the given pixel value.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+Reference image.</dd>
+<dt><i>value</i></dt>
+<dd>
+Pixel value.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.darker-function' name='PIL.ImageChops.darker-function'><b>darker(image1, image2)</b></a> [<a href='#PIL.ImageChops.darker-function'>#</a>]</dt>
+<dd>
+<p>Compare images, and return darker pixel value
 (min(image1, image2)).
 </p><p>
 Compares the two images, pixel by pixel, and returns a new image
 containing the darker values.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="116"><h3>difference</h3><pre>difference(image1, image2)</pre><p>Calculate absolute difference
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.difference-function' name='PIL.ImageChops.difference-function'><b>difference(image1, image2)</b></a> [<a href='#PIL.ImageChops.difference-function'>#</a>]</dt>
+<dd>
+<p>Calculate absolute difference
 (abs(image1 - image2)).
 </p><p>
 Returns the absolute value of the difference between the two images.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="52"><h3>duplicate</h3><pre>duplicate(image)</pre><p>Copy image.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- Source image.
-</p><h4>Returns:</h4><p>A copy of the source image.
-</p></div><div class="function" id="64"><h3>invert</h3><pre>invert(image)</pre><p>Inverts an image
-(MAX - image).
-
-</p><h4>Parameters:</h4><p><code>image</code> -- Source image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="81"><h3>lighter</h3><pre>lighter(image1, image2)</pre><p>Compare images, and return lighter pixel value
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.duplicate-function' name='PIL.ImageChops.duplicate-function'><b>duplicate(image)</b></a> [<a href='#PIL.ImageChops.duplicate-function'>#</a>]</dt>
+<dd>
+<p>Copy image.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+Source image.</dd>
+<dt>Returns:</dt>
+<dd>
+A copy of the source image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.invert-function' name='PIL.ImageChops.invert-function'><b>invert(image)</b></a> [<a href='#PIL.ImageChops.invert-function'>#</a>]</dt>
+<dd>
+<p>Inverts an image
+(MAX - image).</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+Source image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.lighter-function' name='PIL.ImageChops.lighter-function'><b>lighter(image1, image2)</b></a> [<a href='#PIL.ImageChops.lighter-function'>#</a>]</dt>
+<dd>
+<p>Compare images, and return lighter pixel value
 (max(image1, image2)).
 </p><p>
 Compares the two images, pixel by pixel, and returns a new image
 containing the lighter values.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="233"><h3>logical_and</h3><pre>logical_and(image1, image2)</pre><p>Logical AND
-(image1 and image2).
-</p></div><div class="function" id="244"><h3>logical_or</h3><pre>logical_or(image1, image2)</pre><p>Logical OR
-(image1 or image2).
-</p></div><div class="function" id="255"><h3>logical_xor</h3><pre>logical_xor(image1, image2)</pre><p>Logical XOR
-(image1 xor image2).
-</p></div><div class="function" id="135"><h3>multiply</h3><pre>multiply(image1, image2)</pre><p>Superimpose positive images
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.logical_and-function' name='PIL.ImageChops.logical_and-function'><b>logical_and(image1, image2)</b></a> [<a href='#PIL.ImageChops.logical_and-function'>#</a>]</dt>
+<dd>
+<p>Logical AND
+(image1 and image2).</p>
+</dd>
+<dt><a id='PIL.ImageChops.logical_or-function' name='PIL.ImageChops.logical_or-function'><b>logical_or(image1, image2)</b></a> [<a href='#PIL.ImageChops.logical_or-function'>#</a>]</dt>
+<dd>
+<p>Logical OR
+(image1 or image2).</p>
+</dd>
+<dt><a id='PIL.ImageChops.logical_xor-function' name='PIL.ImageChops.logical_xor-function'><b>logical_xor(image1, image2)</b></a> [<a href='#PIL.ImageChops.logical_xor-function'>#</a>]</dt>
+<dd>
+<p>Logical XOR
+(image1 xor image2).</p>
+</dd>
+<dt><a id='PIL.ImageChops.multiply-function' name='PIL.ImageChops.multiply-function'><b>multiply(image1, image2)</b></a> [<a href='#PIL.ImageChops.multiply-function'>#</a>]</dt>
+<dd>
+<p>Superimpose positive images
 (image1 * image2 / MAX).
 </p><p>
 Superimposes two images on top of each other. If you multiply an
 image with a solid black image, the result is black. If you multiply
 with a solid white image, the image is unaffected.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="295"><h3>offset</h3><pre>offset(image, xoffset, yoffset=None)</pre><p>Offset image data.
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.offset-function' name='PIL.ImageChops.offset-function'><b>offset(image, xoffset, yoffset=None)</b></a> [<a href='#PIL.ImageChops.offset-function'>#</a>]</dt>
+<dd>
+<p>Offset image data.
 </p><p>
 Returns a copy of the image where data has been offset by the given
 distances.  Data wraps around the edges.  If yoffset is omitted, it
 is assumed to be equal to xoffset.
 
-</p><h4>Parameters:</h4><p><code>image</code> -- Source image.
-</p><p><code>xoffset</code> -- The horizontal distance.
-</p><p><code>yoffset</code> -- The vertical distance.  If omitted, both
-   distances are set to the same value.
-</p><h4>Returns:</h4><p>An Image object.
-</p></div><div class="function" id="152"><h3>screen</h3><pre>screen(image1, image2)</pre><p>Superimpose negative images
+</p><dl>
+<dt><i>image</i></dt>
+<dd>
+Source image.</dd>
+<dt><i>xoffset</i></dt>
+<dd>
+The horizontal distance.</dd>
+<dt><i>yoffset</i></dt>
+<dd>
+The vertical distance.  If omitted, both
+   distances are set to the same value.</dd>
+<dt>Returns:</dt>
+<dd>
+An Image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.screen-function' name='PIL.ImageChops.screen-function'><b>screen(image1, image2)</b></a> [<a href='#PIL.ImageChops.screen-function'>#</a>]</dt>
+<dd>
+<p>Superimpose negative images
 (MAX - ((MAX - image1) * (MAX - image2) / MAX)).
 </p><p>
 Superimposes two inverted images on top of each other.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="188"><h3>subtract</h3><pre>subtract(image1, image2, scale=1.0, offset=0)</pre><p>Subtract images
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.subtract-function' name='PIL.ImageChops.subtract-function'><b>subtract(image1, image2, scale=1.0, offset=0)</b></a> [<a href='#PIL.ImageChops.subtract-function'>#</a>]</dt>
+<dd>
+<p>Subtract images
 ((image1 - image2) / scale + offset).
 </p><p>
 Subtracts two images, dividing the result by scale and adding the
 offset. If omitted, scale defaults to 1.0, and offset to 0.0.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div><div class="function" id="222"><h3>subtract_modulo</h3><pre>subtract_modulo(image1, image2)</pre><p>Subtract images without clipping
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageChops.subtract_modulo-function' name='PIL.ImageChops.subtract_modulo-function'><b>subtract_modulo(image1, image2)</b></a> [<a href='#PIL.ImageChops.subtract_modulo-function'>#</a>]</dt>
+<dd>
+<p>Subtract images without clipping
 ((image1 - image2) % MAX).
 </p><p>
 Subtracts two images, without clipping the result.
 
-</p><h4>Parameters:</h4><p><code>image1</code> -- First image.
-</p><p><code>image1</code> -- Second image.
-</p><h4>Returns:</h4><p>An image object.
-</p></div></body></html>
+</p><dl>
+<dt><i>image1</i></dt>
+<dd>
+First image.</dd>
+<dt><i>image1</i></dt>
+<dd>
+Second image.</dd>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>

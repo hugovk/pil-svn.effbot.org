@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/GifEncode.c#2 $
+ * $Id: GifEncode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * encoder for uncompressed GIF data
  *

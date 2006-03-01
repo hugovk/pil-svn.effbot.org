@@ -1,15 +1,16 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageFilter.py#11 $
+# $Id: ImageFilter.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # standard filters
 #
 # History:
-# 1995-11-27 fl     Created
-# 2002-06-08 fl     Added rank and mode filters
+# 1995-11-27 fl   Created
+# 2002-06-08 fl   Added rank and mode filters
+# 2003-09-15 fl   Fixed rank calculation in rank filter; added expand call
 #
-# Copyright (c) Secret Labs AB 1997-2002.
-# Copyright (c) Fredrik Lundh 1995-2002.
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1995-2002 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -69,13 +70,15 @@ class RankFilter(Filter):
     #
     # @param size The kernel size, in pixels.
     # @param rank What pixel value to pick.  Use 0 for a min filter,
-    #    size/2 for a median filter, size-1 for a max filter, etc.
+    #    size*size/2 for a median filter, size*size-1 for a max filter,
+    #    etc.
 
     def __init__(self, size, rank):
         self.size = size
         self.rank = rank
 
     def filter(self, image):
+        image = image.expand(self.size/2, self.size/2)
         return image.rankfilter(self.size, self.rank)
 
 ##
@@ -92,7 +95,7 @@ class MedianFilter(RankFilter):
 
     def __init__(self, size=3):
         self.size = size
-        self.rank = size/2
+        self.rank = size*size/2
 
 ##
 # Min filter.  Picks the lowest pixel value in a window with the given
@@ -124,7 +127,7 @@ class MaxFilter(RankFilter):
 
     def __init__(self, size=3):
         self.size = size
-        self.rank = size-1
+        self.rank = size*size-1
 
 ##
 # Mode filter.  Picks the most frequent pixel value in a box with the

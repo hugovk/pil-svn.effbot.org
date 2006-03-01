@@ -1,31 +1,21 @@
-<html><head><title>Module PIL.ContainerIO</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ContainerIO</h1><h4>Module Summary:</h4><pre><a href="#20">class ContainerIO</a>:
-    def __init__(self, file, offset, length)</pre><blockquote>A file object that provides read access to a part of an existing
-file (for example a TAR file).</blockquote><h2>Classes</h2><div class="class" id="20"><h3>The ContainerIO Class</h3><pre>ContainerIO()</pre><p>A file object that provides read access to a part of an existing
-file (for example a TAR file).
-</p></div><h4>Constructor:</h4><div class="constructor" id="29"><pre>ContainerIO(file, offset, length)</pre><p>Create file object.
-
-</p><h4>Parameters:</h4><p><code>file</code> -- Existing file.
-</p><p><code>offset</code> -- Start of region, in bytes.
-</p><p><code>length</code> -- Size of region, in bytes.
-</p></div><h4>Method Summary:</h4><pre><a href="#39">isatty()</a></pre><blockquote>Always false.</blockquote><pre><a href="#77">read(bytes=0)</a></pre><blockquote>Read data.</blockquote><pre><a href="#92">readline()</a></pre><blockquote>Read a line of text.</blockquote><pre><a href="#108">readlines()</a></pre><blockquote>Read multiple lines of text.</blockquote><pre><a href="#50">seek(offset, mode=0)</a></pre><blockquote>Move file pointer.</blockquote><pre><a href="#66">tell()</a></pre><blockquote>Get current file pointer.</blockquote><div class="method" id="39"><h3>isatty</h3><pre>isatty()</pre><p>Always false.
-</p></div><div class="method" id="77"><h3>read</h3><pre>read(bytes=0)</pre><p>Read data.
-
-</p><h4>Parameters:</h4><p><code>bytes</code> -- Number of bytes to read.  If omitted or zero,
-    read until end of region.
-</p><h4>Returns:</h4><p>An 8-bit string.
-</p></div><div class="method" id="92"><h3>readline</h3><pre>readline()</pre><p>Read a line of text.
-
-</p><h4>Returns:</h4><p>An 8-bit string.
-</p></div><div class="method" id="108"><h3>readlines</h3><pre>readlines()</pre><p>Read multiple lines of text.
-
-</p><h4>Returns:</h4><p>A list of 8-bit strings.
-</p></div><div class="method" id="50"><h3>seek</h3><pre>seek(offset, mode=0)</pre><p>Move file pointer.
-
-</p><h4>Parameters:</h4><p><code>offset</code> -- Offset in bytes.
-</p><p><code>mode</code> -- Starting position. Use 0 for beginning of region, 1
-   for current offset, and 2 for end of region.  You cannot move
-   the pointer outside the defined region.
-</p></div><div class="method" id="66"><h3>tell</h3><pre>tell()</pre><p>Get current file pointer.
-
-</p><h4>Returns:</h4><p>Offset from start of region, in bytes.
-</p></div></body></html>
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.BufrStubImagePlugin Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.BufrStubImagePlugin Module</h1>
+<dl>
+<dt><a id='PIL.BufrStubImagePlugin.register_handler-function' name='PIL.BufrStubImagePlugin.register_handler-function'><b>register_handler(handler)</b></a> [<a href='#PIL.BufrStubImagePlugin.register_handler-function'>#</a>]</dt>
+<dd>
+<p>Install application-specific BUFR image handler.</p>
+<dl>
+<dt><i>handler</i></dt>
+<dd>
+Handler object.</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>

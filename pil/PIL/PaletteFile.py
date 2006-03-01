@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/PaletteFile.py#4 $
+# $Id: PaletteFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # stuff to read simple, teragon-style palette files
 #
@@ -35,7 +35,7 @@ class PaletteFile:
             if len(s) > 100:
                 raise SyntaxError, "bad palette file"
 
-            v = map(string.atoi, string.split(s))
+            v = map(int, string.split(s))
             try:
                 [i, r, g, b] = v
             except ValueError:

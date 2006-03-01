@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Access.c#2 $
+ * $Id: Access.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * imaging access objects
  *
@@ -19,13 +19,13 @@
 
 
 static void
-destroy(ImagingAccess access)
+access_destroy(ImagingAccess access)
 {
     /* nop */
 }
 
 static int
-getline(ImagingAccess access, char* buffer, int y)
+access_getline(ImagingAccess access, char* buffer, int y)
 {
     memcpy(buffer, access->im->image[y], access->im->linesize);
     return 1;
@@ -44,8 +44,8 @@ ImagingAccessNew(Imaging im)
 
     access->im = im;
 
-    access->getline = getline;
-    access->destroy = destroy;
+    access->getline = access_getline;
+    access->destroy = access_destroy;
 
     return access;
 }

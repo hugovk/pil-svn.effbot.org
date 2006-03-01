@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TarIO.py#4 $
+# $Id: TarIO.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # read files from within a tar file
 #

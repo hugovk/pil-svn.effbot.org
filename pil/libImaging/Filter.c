@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Filter.c#4 $
+ * $Id: Filter.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * apply convolution kernel to image
  *
@@ -10,6 +10,7 @@
  * 1999-07-26 fl   Eliminated a few compiler warnings
  * 2002-06-09 fl   Moved kernel definitions to Python
  * 2002-06-11 fl   Support floating point kernels
+ * 2003-09-15 fl   Added ImagingExpand helper
  *
  * Copyright (c) Secret Labs AB 1997-2002.  All rights reserved.
  * Copyright (c) Fredrik Lundh 1995.
@@ -24,6 +25,51 @@
  */
 
 #include "Imaging.h"
+
+Imaging
+ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode)
+{
+    Imaging imOut;
+    int x, y;
+    
+    if (xmargin < 0 && ymargin < 0)
+	return (Imaging) ImagingError_ValueError("bad kernel size");
+
+    imOut = ImagingNew(
+        imIn->mode, imIn->xsize+2*xmargin, imIn->ysize+2*ymargin
+        );
+    if (!imOut)
+	return NULL;
+
+#define EXPAND_LINE(type, image, yin, yout) {\
+    for (x = 0; x < xmargin; x++)\
+        imOut->image[yout][x] = imIn->image[yin][0];\
+    for (x = 0; x < imIn->xsize; x++)\
+        imOut->image[yout][x+xmargin] = imIn->image[yin][x];\
+    for (x = 0; x < xmargin; x++)\
+        imOut->image[yout][xmargin+imIn->xsize+x] =\
+            imIn->image[yin][imIn->xsize-1];\
+    }
+
+#define EXPAND(type, image) {\
+    for (y = 0; y < ymargin; y++)\
+        EXPAND_LINE(type, image, 0, y);\
+    for (y = 0; y < imIn->ysize; y++)\
+        EXPAND_LINE(type, image, y, y+ymargin);\
+    for (y = 0; y < ymargin; y++)\
+        EXPAND_LINE(type, image, imIn->ysize-1, ymargin+imIn->ysize+y);\
+    }
+
+    if (imIn->image8) {
+	EXPAND(UINT8, image8);
+    } else {
+	EXPAND(INT32, image32);
+    }
+
+    ImagingCopyInfo(imOut, imIn);
+
+    return imOut;
+}
 
 Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32* kernel,

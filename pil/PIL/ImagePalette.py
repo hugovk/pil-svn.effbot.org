@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImagePalette.py#3 $
+# $Id: ImagePalette.py 2339 2005-03-25 08:02:17Z fredrik $
 #
 # image palette object
 #
@@ -18,6 +18,9 @@
 
 import array
 import Image
+
+##
+# Colour palette wrapper for palette mapped images.
 
 class ImagePalette:
     "Colour palette for palette mapped images"
@@ -42,6 +45,8 @@ class ImagePalette:
         # experimental: convert palette to string
         if self.rawmode:
             raise ValueError("palette contains raw palette data")
+        if Image.isStringType(self.palette):
+            return self.palette
         return array.array("B", self.palette).tostring()
 
     def getcolor(self, color):
@@ -52,9 +57,9 @@ class ImagePalette:
             try:
                 return self.colors[color]
             except KeyError:
-                # allocate new color slut
+                # allocate new color slot
                 if Image.isStringType(self.palette):
-                    self.palette = list(self.palette)
+                    self.palette = map(int, self.palette)
                 index = len(self.colors)
                 if index >= 256:
                     raise ValueError("cannot allocate more than 256 colors")
@@ -96,7 +101,7 @@ def raw(rawmode, data):
 # Factories
 
 def new(mode, data):
-    Image.core.new_palette(mode, data)
+    return Image.core.new_palette(mode, data)
 
 def negative(mode = "RGB"):
     palette = range(256)

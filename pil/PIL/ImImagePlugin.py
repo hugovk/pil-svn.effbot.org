@@ -1,25 +1,26 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImImagePlugin.py#3 $
+# $Id: ImImagePlugin.py 2285 2005-02-07 23:52:14Z fredrik $
 #
 # IFUNC IM file handling for PIL
 #
 # history:
-# 1995-09-01 fl Created.
-# 1997-01-03 fl Save palette images
-# 1997-01-08 fl Added sequence support
-# 1997-01-23 fl Added P and RGB save support
-# 1997-05-31 fl Read floating point images
-# 1997-06-22 fl Save floating point images
-# 1997-08-27 fl Read and save 1-bit images
-# 1998-06-25 fl Added support for RGB+LUT images
-# 1998-07-02 fl Added support for YCC images
-# 1998-07-15 fl Renamed offset attribute to avoid name clash
-# 1998-12-29 fl Added I;16 support
-# 2001-02-17 fl Use 're' instead of 'regex' (Python 2.1) (0.7)
+# 1995-09-01 fl   Created.
+# 1997-01-03 fl   Save palette images
+# 1997-01-08 fl   Added sequence support
+# 1997-01-23 fl   Added P and RGB save support
+# 1997-05-31 fl   Read floating point images
+# 1997-06-22 fl   Save floating point images
+# 1997-08-27 fl   Read and save 1-bit images
+# 1998-06-25 fl   Added support for RGB+LUT images
+# 1998-07-02 fl   Added support for YCC images
+# 1998-07-15 fl   Renamed offset attribute to avoid name clash
+# 1998-12-29 fl   Added I;16 support
+# 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.7)
+# 2003-09-26 fl   Added LA/PA support
 #
-# Copyright (c) Secret Labs AB 1997-2001.
-# Copyright (c) Fredrik Lundh 1995-2001.
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1995-2001 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -66,6 +67,7 @@ OPEN = {
     "RGB3 image": ("RGB", "RGB;T"),
     "RYB3 image": ("RGB", "RYB;T"),
     # extensions
+    "LA image": ("LA", "LA;L"),
     "RGBA image": ("RGBA", "RGBA;L"),
     "RGBX image": ("RGBX", "RGBX;L"),
     "CMYK image": ("CMYK", "CMYK;L"),
@@ -90,6 +92,12 @@ for i in range(2, 33):
 # Read IM directory
 
 split = re.compile(r"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+
+def number(s):
+    try:
+        return int(s)
+    except ValueError:
+        return float(s)
 
 ##
 # Image plugin for the IFUNC IM file format.
@@ -150,10 +158,10 @@ class ImImageFile(ImageFile.ImageFile):
 
                 # Convert value as appropriate
                 if k in [FRAMES, SCALE, SIZE]:
-                    i = string.find(v, "*")
-                    if i >= 0:
-                        v = v[:i] + "," + v[i+1:]
-                    v = eval(v)
+                    v = string.replace(v, "*", ",")
+                    v = tuple(map(number, string.split(v, ",")))
+                    if len(v) == 1:
+                        v = v[0]
                 elif k == MODE and OPEN.has_key(v):
                     v, self.rawmode = OPEN[v]
 
@@ -198,12 +206,15 @@ class ImImageFile(ImageFile.ImageFile):
                         linear = 0
                 else:
                     greyscale = 0
-            if self.mode == "L":
+            if self.mode == "L" or self.mode == "LA":
                 if greyscale:
                     if not linear:
                         self.lut = map(ord, palette[:256])
                 else:
-                    self.mode = self.rawmode = "P"
+                    if self.mode == "L":
+                        self.mode = self.rawmode = "P"
+                    elif self.mode == "LA":
+                        self.mode = self.rawmode = "PA"
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
@@ -273,7 +284,9 @@ SAVE = {
     # mode: (im type, raw mode)
     "1": ("0 1", "1"),
     "L": ("Greyscale", "L"),
+    "LA": ("LA", "LA;L"),
     "P": ("Greyscale", "P"),
+    "PA": ("LA", "PA;L"),
     "I": ("L 32S", "I;32S"),
     "I;16": ("L 16", "I;16"),
     "I;16B": ("L 16B", "I;16B"),

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/GifImagePlugin.py#5 $
+# $Id: GifImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # GIF file handling
 #
@@ -16,15 +16,16 @@
 # 2001-04-16 fl   Added rewind support (seek to frame 0) (0.6)
 # 2001-04-17 fl   Added palette optimization (0.7)
 # 2002-06-06 fl   Added transparency support for save (0.8)
+# 2004-02-24 fl   Disable interlacing for small images
 #
-# Copyright (c) 1997-2003 by Secret Labs AB
-# Copyright (c) 1995-2003 by Fredrik Lundh
+# Copyright (c) 1997-2004 by Secret Labs AB
+# Copyright (c) 1995-2004 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 
-__version__ = "0.8"
+__version__ = "0.9"
 
 
 import Image, ImageFile, ImagePalette
@@ -254,8 +255,13 @@ def _save(im, fp, filename):
     try:
         interlace = im.encoderinfo["interlace"]
     except KeyError:
-        # default is on (since we're writing uncompressed images)
         interlace = 1
+
+    # workaround for @PIL153
+    if min(im.size) < 16:
+        interlace = 0
+
+    if interlace:
         flags = flags | 64
 
     try:

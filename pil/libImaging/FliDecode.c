@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/FliDecode.c#2 $
+ * $Id: FliDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * decoder for Autodesk Animator FLI/FLC animations
  *
@@ -32,7 +32,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     int framesize;
     int c, chunks;
     int l, lines;
-    int i, j, x, y, ymax;
+    int i, j, x = 0, y, ymax;
 
     /* If not even the chunk size is present, we'd better leave */
 

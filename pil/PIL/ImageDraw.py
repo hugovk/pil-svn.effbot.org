@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/ImageDraw.py#9 $
+# $Id: ImageDraw.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # drawing interface operations
 #
@@ -19,23 +19,30 @@
 # 2002-10-24 fl   Added support for CSS-style color strings
 # 2002-12-10 fl   Added experimental support for RGBA-on-RGB drawing
 # 2002-12-11 fl   Refactored low-level drawing API (work in progress)
+# 2004-08-26 fl   Made Draw() a factory function, added getdraw() support
+# 2004-09-04 fl   Added width support to line primitive
+# 2004-09-10 fl   Added font mode handling
 #
-# Copyright (c) 1997-2002 by Secret Labs AB
-# Copyright (c) 1996-2002 by Fredrik Lundh
+# Copyright (c) 1997-2004 by Secret Labs AB
+# Copyright (c) 1996-2004 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 import Image, ImageColor
 
+try:
+    import warnings
+except ImportError:
+    warnings = None
 
 ##
 # A simple 2D drawing interface for PIL images.
 # <p>
-# Note that <b>Draw</b> and <b>ImageDraw</b> are two names for the
-# same class.  New code should use <b>Draw</b>.
+# Application code should use the <b>Draw</b> factory, instead of
+# directly.
 
-class Draw:
+class ImageDraw:
 
     ##
     # Create a drawing instance.
@@ -70,6 +77,11 @@ class Draw:
             self.ink = self.draw.draw_ink(1, mode)
         else:
             self.ink = self.draw.draw_ink(-1, mode)
+        if mode in ("1", "P", "I", "F"):
+            # FIXME: fix Fill2 to properly support matte for I+F images
+            self.fontmode = "1"
+        else:
+            self.fontmode = "L" # aliasing is okay for other modes
         self.fill = 0
         self.font = None
 
@@ -78,6 +90,11 @@ class Draw:
 
     def setink(self, ink):
         # compatibility
+        if warnings:
+            warnings.warn(
+                "'setink' is deprecated; use keyword arguments instead",
+                DeprecationWarning
+                )
         if Image.isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
         if self.palette and not Image.isNumberType(ink):
@@ -89,6 +106,11 @@ class Draw:
 
     def setfill(self, onoff):
         # compatibility
+        if warnings:
+            warnings.warn(
+                "'setfill' is deprecated; use keyword arguments instead",
+                DeprecationWarning
+                )
         self.fill = onoff
 
     ##
@@ -107,14 +129,6 @@ class Draw:
             import ImageFont
             self.font = ImageFont.load_default()
         return self.font
-
-    ##
-    # Get the size of a given string, in pixels.
-
-    def textsize(self, text, font=None):
-        if font is None:
-            font = self.getfont()
-        return font.getsize(text)
 
     def _getink(self, ink, fill=None):
         if ink is None and fill is None:
@@ -179,10 +193,10 @@ class Draw:
     ##
     # Draw a line, or a connected sequence of line segments.
 
-    def line(self, xy, fill=None):
+    def line(self, xy, fill=None, width=0):
         ink, fill = self._getink(fill)
         if ink is not None:
-            self.draw.draw_lines(xy, ink)
+            self.draw.draw_lines(xy, ink, width)
 
     ##
     # (Experimental) Draw a shape.
@@ -244,10 +258,35 @@ class Draw:
         if ink is None:
             ink = fill
         if ink is not None:
-            self.draw.draw_bitmap(xy, font.getmask(text), ink)
+            try:
+                mask = font.getmask(text, self.fontmode)
+            except TypeError:
+                mask = font.getmask(text)
+            self.draw.draw_bitmap(xy, mask, ink)
 
-# backwards compatibility
-ImageDraw = Draw
+    ##
+    # Get the size of a given string, in pixels.
+
+    def textsize(self, text, font=None):
+        if font is None:
+            font = self.getfont()
+        return font.getsize(text)
+
+##
+# A simple 2D drawing interface for PIL images.
+#
+# @param im The image to draw in.
+# @param mode Optional mode to use for color values.  For RGB
+#    images, this argument can be RGB or RGBA (to blend the
+#    drawing into the image).  For all other modes, this argument
+#    must be the same as the image mode.  If omitted, the mode
+#    defaults to the mode of the image.
+
+def Draw(im, mode=None):
+    try:
+        return im.getdraw(mode)
+    except AttributeError:
+        return ImageDraw(im, mode)
 
 # experimental access to the outline API
 try:

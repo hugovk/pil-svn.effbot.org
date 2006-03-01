@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/path.c#4 $
+ * $Id: path.c 2079 2004-09-19 12:22:31Z fredrik $
  *
  * 2D path utilities
  *
@@ -14,6 +14,7 @@
  * 1999-01-10 fl   Fixed IndexError test for 1.5 (from Fred Drake)
  * 2000-10-12 fl   Added special cases for tuples and lists
  * 2002-10-27 fl   Added clipping boilerplate
+ * 2004-09-19 fl   Added tolist(flat) variant
  *
  * notes:
  * FIXME: fill in remaining slots in the sequence api
@@ -25,9 +26,9 @@
  */
 
 
-#include <math.h>
-
 #include "Python.h"
+
+#include <math.h>
 
 #if PY_VERSION_HEX < 0x01060000
 #define PyObject_DEL(op) PyMem_DEL((op))
@@ -222,7 +223,7 @@ PyPath_Create(PyObject* self, PyObject* args)
     int count;
     double *xy;
 
-    if (PyArg_ParseTuple(args, "i", &count)) {
+    if (PyArg_ParseTuple(args, "i:Path", &count)) {
 
         /* number of vertices */
         xy = malloc(2 * count * sizeof(double));
@@ -262,7 +263,7 @@ path_compact(PyPathObject* self, PyObject* args)
 
     double cityblock = 2.0;
 
-    if (!PyArg_ParseTuple(args, "|d", &cityblock))
+    if (!PyArg_ParseTuple(args, "|d:compact", &cityblock))
 	return NULL;
 
     xy = self->xy;
@@ -308,6 +309,9 @@ path_getbbox(PyPathObject* self, PyObject* args)
     int i;
     double *xy;
     double x0, y0, x1, y1;
+
+    if (!PyArg_ParseTuple(args, ":getbbox"))
+	return NULL;
 
     xy = self->xy;
 
@@ -371,7 +375,7 @@ path_map(PyPathObject* self, PyObject* args)
     double *xy;
     PyObject* function;
 
-    if (!PyArg_ParseTuple(args, "O", &function))
+    if (!PyArg_ParseTuple(args, "O:map", &function))
 	return NULL;
 
     xy = self->xy;
@@ -425,20 +429,35 @@ path_tolist(PyPathObject* self, PyObject* args)
     PyObject *list;
     int i;
 
-    list = PyList_New(self->count);
+    int flat = 0;
+    if (!PyArg_ParseTuple(args, "|i:tolist", &flat))
+	return NULL;
 
-    for (i = 0; i < self->count; i++) {
-	PyObject* item;
-	item = Py_BuildValue("dd", self->xy[i+i], self->xy[i+i+1]);
-	if (!item) {
-	    Py_DECREF(list);
-	    list = NULL;
-	    break;
-	}
-	PyList_SetItem(list, i, item);
+    if (flat) {
+        list = PyList_New(self->count*2);
+        for (i = 0; i < self->count*2; i++) {
+            PyObject* item;
+            item = PyFloat_FromDouble(self->xy[i]);
+            if (!item)
+                goto error;
+            PyList_SetItem(list, i, item);
+        }
+    } else {
+        list = PyList_New(self->count);
+        for (i = 0; i < self->count; i++) {
+            PyObject* item;
+            item = Py_BuildValue("dd", self->xy[i+i], self->xy[i+i+1]);
+            if (!item)
+                goto error;
+            PyList_SetItem(list, i, item);
+        }
     }
 
     return list;
+
+error:
+    Py_DECREF(list);
+    return NULL;
 }
 
 static PyObject*
@@ -451,7 +470,7 @@ path_transform(PyPathObject* self, PyObject* args)
 
     double wrap = 0.0;
 
-    if (!PyArg_ParseTuple(args, "(dddddd)|d",
+    if (!PyArg_ParseTuple(args, "(dddddd)|d:transform",
 			  &a, &b, &c, &d, &e, &f,
 			  &wrap))
 	return NULL;

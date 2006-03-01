@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/BmpImagePlugin.py#9 $
+# $Id: BmpImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # BMP file handler
 #
@@ -72,7 +72,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # CORE/INFO
         s = read(4)
-        s = s + read(i32(s)-4)
+        s = s + ImageFile._safe_read(self.fp, i32(s)-4)
 
         if len(s) == 12:
 

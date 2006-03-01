@@ -1,19 +1,20 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/GimpPaletteFile.py#4 $
+# $Id: GimpPaletteFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # stuff to read GIMP palette files
 #
 # History:
-#       97-08-23 fl     Created
+# 1997-08-23 fl     Created
+# 2004-09-07 fl     Support GIMP 2.0 palette files.
 #
-# Copyright (c) Secret Labs AB 1997.
-# Copyright (c) Fredrik Lundh 1997.
+# Copyright (c) Secret Labs AB 1997-2004.  All rights reserved.
+# Copyright (c) Fredrik Lundh 1997-2004.
 #
 # See the README file for information on usage and redistribution.
 #
 
-import string
+import re, string
 
 ##
 # File handler for GIMP's palette format.
@@ -37,13 +38,13 @@ class GimpPaletteFile:
 
             if not s:
                 break
+            # skip fields and comment lines
+            if re.match("\w+:|#", s):
+                continue
             if len(s) > 100:
                 raise SyntaxError, "bad palette file"
 
-            if s[0] == "#":
-                continue
-
-            v = tuple(map(string.atoi, string.split(s)[:3]))
+            v = tuple(map(int, string.split(s)[:3]))
             if len(v) != 3:
                 raise ValueError, "bad palette entry"
 

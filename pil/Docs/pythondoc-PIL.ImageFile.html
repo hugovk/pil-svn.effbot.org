@@ -1,3 +1,130 @@
-<html><head><title>Module PIL.ImageFile</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageFile</h1><h4>Module Summary:</h4><pre><a href="#55">class ImageFile</a>:
-    def __init__(self)</pre><blockquote>Base class for image file handlers.</blockquote><h2>Classes</h2><div class="class" id="55"><h3>The ImageFile Class</h3><pre>ImageFile()</pre><p>Base class for image file handlers.
-</p></div></body></html>
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageFile Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageFile Module</h1>
+<dl>
+<dt><b>_ParserFile(data)</b> (class) [<a href='#PIL.ImageFile._ParserFile-class'>#</a>]</dt>
+<dd>
+<p>(Internal) Support class for the Parser file.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFile._ParserFile-class'><i>The _ParserFile Class</i></a>.</p>
+</dd>
+<dt><a id='PIL.ImageFile._safe_read-function' name='PIL.ImageFile._safe_read-function'><b>_safe_read(fp, size)</b></a> [<a href='#PIL.ImageFile._safe_read-function'>#</a>]</dt>
+<dd>
+<p>Reads large blocks in a safe way.  Unlike fp.read(n), this function
+doesn't trust the user.  If the requested size is larger than
+SAFEBLOCK, the file is read block by block.</p>
+<dl>
+<dt><i>fp</i></dt>
+<dd>
+File handle.  Must implement a <b>read</b> method.
+</dd>
+<dt><i>size</i></dt>
+<dd>
+Number of bytes to read.</dd>
+<dt>Returns:</dt>
+<dd>
+A string containing up to <i>size</i> bytes of data.
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageFile._save-function' name='PIL.ImageFile._save-function'><b>_save(im, fp, tile)</b></a> [<a href='#PIL.ImageFile._save-function'>#</a>]</dt>
+<dd>
+<p>(Helper) Save image body to file.</p>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+Image object.</dd>
+<dt><i>fp</i></dt>
+<dd>
+File object.</dd>
+<dt><i>tile</i></dt>
+<dd>
+Tile list.</dd>
+</dl><br />
+</dd>
+<dt><b>ImageFile(fp=None, filename=None)</b> (class) [<a href='#PIL.ImageFile.ImageFile-class'>#</a>]</dt>
+<dd>
+<p>Base class for image file handlers.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFile.ImageFile-class'><i>The ImageFile Class</i></a>.</p>
+</dd>
+<dt><b>Parser</b> (class)  [<a href='#PIL.ImageFile.Parser-class'>#</a>]</dt>
+<dd>
+<p>Incremental image parser.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFile.Parser-class'><i>The Parser Class</i></a>.</p>
+</dd>
+<dt><b>StubImageFile</b> (class)  [<a href='#PIL.ImageFile.StubImageFile-class'>#</a>]</dt>
+<dd>
+<p>Base class for stub image loaders.</p>
+<p>For more information about this class, see <a href='#PIL.ImageFile.StubImageFile-class'><i>The StubImageFile Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFile._ParserFile-class' name='PIL.ImageFile._ParserFile-class'>The _ParserFile Class</a></h2>
+<dl>
+<dt><b>_ParserFile(data)</b> (class) [<a href='#PIL.ImageFile._ParserFile-class'>#</a>]</dt>
+<dd>
+<p>(Internal) Support class for the <b>Parser</b> file.
+</p></dd>
+</dl>
+<h2><a id='PIL.ImageFile.ImageFile-class' name='PIL.ImageFile.ImageFile-class'>The ImageFile Class</a></h2>
+<dl>
+<dt><b>ImageFile(fp=None, filename=None)</b> (class) [<a href='#PIL.ImageFile.ImageFile-class'>#</a>]</dt>
+<dd>
+<p>Base class for image file handlers.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFile.Parser-class' name='PIL.ImageFile.Parser-class'>The Parser Class</a></h2>
+<dl>
+<dt><b>Parser</b> (class)  [<a href='#PIL.ImageFile.Parser-class'>#</a>]</dt>
+<dd>
+<p>Incremental image parser.  This class implements the standard
+feed/close consumer interface.</p>
+</dd>
+<dt><a id='PIL.ImageFile.Parser.close-method' name='PIL.ImageFile.Parser.close-method'><b>close()</b></a> [<a href='#PIL.ImageFile.Parser.close-method'>#</a>]</dt>
+<dd>
+<p>(Consumer) Close the stream.</p>
+<dl>
+<dt>Returns:</dt>
+<dd>
+An image object.</dd>
+<dt>Raises <b>IOError</b>:</dt><dd>
+If the parser failed to parse the image file.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageFile.Parser.feed-method' name='PIL.ImageFile.Parser.feed-method'><b>feed(data)</b></a> [<a href='#PIL.ImageFile.Parser.feed-method'>#</a>]</dt>
+<dd>
+<p>(Consumer) Feed data to the parser.</p>
+<dl>
+<dt><i>data</i></dt>
+<dd>
+A string buffer.</dd>
+<dt>Raises <b>IOError</b>:</dt><dd>
+If the parser failed to parse the image file.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageFile.Parser.reset-method' name='PIL.ImageFile.Parser.reset-method'><b>reset()</b></a> [<a href='#PIL.ImageFile.Parser.reset-method'>#</a>]</dt>
+<dd>
+<p>(Consumer) Reset the parser.  Note that you can only call this
+method immediately after you've created a parser; parser
+instances cannot be reused.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageFile.StubImageFile-class' name='PIL.ImageFile.StubImageFile-class'>The StubImageFile Class</a></h2>
+<dl>
+<dt><b>StubImageFile</b> (class)  [<a href='#PIL.ImageFile.StubImageFile-class'>#</a>]</dt>
+<dd>
+<p>Base class for stub image loaders.
+</p><p>
+A stub loader is an image loader that can identify files of a
+certain format, but relies on external code to load the file.
+</p></dd>
+<dt><a id='PIL.ImageFile.StubImageFile._load-method' name='PIL.ImageFile.StubImageFile._load-method'><b>_load()</b></a> [<a href='#PIL.ImageFile.StubImageFile._load-method'>#</a>]</dt>
+<dd>
+<p>(Hook) Find actual image loader.</p>
+</dd>
+</dl>
+</body></html>

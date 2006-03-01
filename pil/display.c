@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/display.c#7 $
+ * $Id: display.c 1756 2004-03-28 17:15:33Z fredrik $
  *
  * display support
  *
@@ -13,8 +13,10 @@
  * 2002-05-12 fl  Added ImagingListWindows
  * 2002-11-19 fl  Added clipboard support
  * 2002-11-25 fl  Added GetDC/ReleaseDC helpers
+ * 2003-05-21 fl  Added create window support (including window callback)
+ * 2003-09-05 fl  Added fromstring/tostring methods
  *
- * Copyright (c) 1997-2002 by Secret Labs AB.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
@@ -172,6 +174,36 @@ _releasedc(ImagingDisplayObject* display, PyObject* args)
     return Py_None;
 }
 
+static PyObject*
+_fromstring(ImagingDisplayObject* display, PyObject* args)
+{
+    char* ptr;
+    int bytes;
+    if (!PyArg_ParseTuple(args, "s#:fromstring", &ptr, &bytes))
+	return NULL;
+
+    if (display->dib->ysize * display->dib->linesize != bytes) {
+        PyErr_SetString(PyExc_ValueError, "wrong size");
+        return NULL;
+    }
+
+    memcpy(display->dib->bits, ptr, bytes);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
+_tostring(ImagingDisplayObject* display, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":tostring"))
+	return NULL;
+
+    return PyString_FromStringAndSize(
+        display->dib->bits, display->dib->ysize * display->dib->linesize
+        );
+}
+
 static struct PyMethodDef methods[] = {
     {"draw", (PyCFunction)_draw, 1},
     {"expose", (PyCFunction)_expose, 1},
@@ -179,6 +211,8 @@ static struct PyMethodDef methods[] = {
     {"query_palette", (PyCFunction)_query_palette, 1},
     {"getdc", (PyCFunction)_getdc, 1},
     {"releasedc", (PyCFunction)_releasedc, 1},
+    {"fromstring", (PyCFunction)_fromstring, 1},
+    {"tostring", (PyCFunction)_tostring, 1},
     {NULL, NULL} /* sentinel */
 };
 
@@ -367,6 +401,9 @@ PyImaging_ListWindowsWin32(PyObject* self, PyObject* args)
     return window_list;
 }
 
+/* -------------------------------------------------------------------- */
+/* Windows clipboard grabber */
+
 PyObject*
 PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
 {
@@ -480,6 +517,214 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     CloseClipboard();
 
     return result;
+}
+
+/* -------------------------------------------------------------------- */
+/* Windows class */
+
+#ifndef WM_MOUSEWHEEL
+#define WM_MOUSEWHEEL 522
+#endif
+
+static int mainloop = 0;
+
+static void
+callback_error(const char* handler)
+{
+    PyObject* sys_stderr;
+    
+    sys_stderr = PySys_GetObject("stderr");
+
+    if (sys_stderr) {
+        PyFile_WriteString("*** ImageWin: error in ", sys_stderr);
+        PyFile_WriteString((char*) handler, sys_stderr);
+        PyFile_WriteString(":\n", sys_stderr);
+    }
+
+    PyErr_Print();
+    PyErr_Clear();
+}
+
+static LRESULT CALLBACK
+windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    PAINTSTRUCT ps;
+    PyObject* callback = NULL;
+    PyObject* result;
+    PyThreadState* threadstate;
+    PyThreadState* current_threadstate;
+    HDC dc;
+    RECT rect;
+    LRESULT status = 0;
+
+    /* set up threadstate for messages that calls back into python */
+    switch (message) {
+    case WM_CREATE:
+        mainloop++;
+        break;
+    case WM_DESTROY:
+        mainloop--;
+        /* fall through... */
+    case WM_PAINT:
+    case WM_SIZE:
+        callback = (PyObject*) GetWindowLong(wnd, 0);
+        if (callback) {
+            threadstate = (PyThreadState*)
+                GetWindowLong(wnd, sizeof(PyObject*));
+            current_threadstate = PyThreadState_Swap(NULL);
+            PyEval_RestoreThread(threadstate);
+        } else
+            return DefWindowProc(wnd, message, wParam, lParam);
+    }
+
+    /* process message */
+    switch (message) {
+
+    case WM_PAINT:
+        /* redraw (part of) window.  this generates a WCK-style
+           damage/clear/repair cascade */
+        BeginPaint(wnd, &ps);
+        dc = GetDC(wnd);
+        GetWindowRect(wnd, &rect); /* in screen coordinates */
+
+        result = PyObject_CallFunction(
+            callback, "siiii", "damage",
+            ps.rcPaint.left, ps.rcPaint.top,
+            ps.rcPaint.right, ps.rcPaint.bottom
+            );
+        if (result)
+            Py_DECREF(result);
+        else
+            callback_error("window damage callback");
+
+        result = PyObject_CallFunction(
+            callback, "siiiii", "clear", (int) dc,
+            0, 0, rect.right-rect.left, rect.bottom-rect.top
+            );
+        if (result)
+            Py_DECREF(result);
+        else
+            callback_error("window clear callback");
+
+        result = PyObject_CallFunction(
+            callback, "siiiii", "repair", (int) dc,
+            0, 0, rect.right-rect.left, rect.bottom-rect.top
+            );
+        if (result)
+            Py_DECREF(result);
+        else
+            callback_error("window repair callback");
+
+        ReleaseDC(wnd, dc);
+        EndPaint(wnd, &ps);
+        break;
+
+    case WM_SIZE:
+        /* resize window */
+        result = PyObject_CallFunction(
+            callback, "sii", "resize", LOWORD(lParam), HIWORD(lParam)
+            );
+        if (result) {
+            InvalidateRect(wnd, NULL, 1);
+            Py_DECREF(result);
+        } else
+            callback_error("window resize callback");
+        break;
+
+    case WM_DESTROY:
+        /* redraw (part of) window */
+        result = PyObject_CallFunction(callback, "s", "destroy");
+        if (result)
+            Py_DECREF(result);
+        else
+            callback_error("window destroy callback");
+        Py_DECREF(callback);
+        break;
+
+    default:
+        status = DefWindowProc(wnd, message, wParam, lParam);
+    }
+
+    if (callback) {
+        /* restore thread state */
+        PyEval_SaveThread();
+        PyThreadState_Swap(threadstate);
+    }
+
+    return status;
+}
+
+PyObject*
+PyImaging_CreateWindowWin32(PyObject* self, PyObject* args)
+{
+    HWND wnd;
+    WNDCLASS windowClass;
+
+    char* title;
+    PyObject* callback;
+    int width = 0, height = 0;
+    if (!PyArg_ParseTuple(args, "sO|ii", &title, &callback, &width, &height))
+	return NULL;
+
+    if (width <= 0)
+        width = CW_USEDEFAULT;
+    if (height <= 0)
+        height = CW_USEDEFAULT;
+
+    /* register toplevel window class */
+    windowClass.style = CS_CLASSDC;
+    windowClass.cbClsExtra = 0;
+    windowClass.cbWndExtra = sizeof(PyObject*) + sizeof(PyThreadState*);
+    windowClass.hInstance = GetModuleHandle(NULL);
+    /* windowClass.hbrBackground = (HBRUSH) (COLOR_BTNFACE + 1); */
+    windowClass.hbrBackground = NULL;
+    windowClass.lpszMenuName = NULL;
+    windowClass.lpszClassName = "pilWindow";
+    windowClass.lpfnWndProc = windowCallback;
+    windowClass.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(1));
+    windowClass.hCursor = LoadCursor(NULL, IDC_ARROW); /* CROSS? */
+
+    RegisterClass(&windowClass); /* FIXME: check return status */
+
+    wnd = CreateWindowEx(
+        0, windowClass.lpszClassName, title,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, width, height, 
+        HWND_DESKTOP, NULL, NULL, NULL
+        );
+
+    if (!wnd) {
+        PyErr_SetString(PyExc_IOError, "failed to create window");
+        return NULL;
+    }
+
+    /* register window callback */
+    Py_INCREF(callback);
+    SetWindowLong(wnd, 0, (LONG) callback);
+    SetWindowLong(wnd, sizeof(callback), (LONG) PyThreadState_Get());
+
+    Py_BEGIN_ALLOW_THREADS
+    ShowWindow(wnd, SW_SHOWNORMAL);
+    SetForegroundWindow(wnd); /* to make sure it's visible */
+    Py_END_ALLOW_THREADS
+
+    return Py_BuildValue("l", (long) wnd);
+}
+
+PyObject*
+PyImaging_EventLoopWin32(PyObject* self, PyObject* args)
+{
+    MSG msg;
+
+    Py_BEGIN_ALLOW_THREADS
+    while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    Py_END_ALLOW_THREADS
+
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 #endif /* WIN32 */

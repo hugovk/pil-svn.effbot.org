@@ -1,13 +1,13 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Copy.c#2 $
+ * $Id: Copy.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * copy image
  *
  * history:
- *	95-11-26 fl:	Moved from Imaging.c
- *	97-05-12 fl:	Added ImagingCopy2
- *	97-08-28 fl:	Allow imOut == NULL in ImagingCopy2
+ * 95-11-26 fl   Moved from Imaging.c
+ * 97-05-12 fl   Added ImagingCopy2
+ * 97-08-28 fl   Allow imOut == NULL in ImagingCopy2
  *
  * Copyright (c) Fredrik Lundh 1995-97.
  * Copyright (c) Secret Labs AB 1997.
@@ -22,6 +22,7 @@
 static Imaging
 _copy(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int y;
 
     if (!imIn)
@@ -33,11 +34,13 @@ _copy(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
+    ImagingSectionEnter(&cookie);
     if (imIn->block != NULL && imOut->block != NULL)
 	memcpy(imOut->block, imIn->block, imIn->ysize * imIn->linesize);
     else
         for (y = 0; y < imIn->ysize; y++)
             memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }

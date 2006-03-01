@@ -1,59 +1,156 @@
-<html><head><title>Module PIL.ImageOps</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageOps</h1><h4>Module Summary:</h4><pre><a href="#70">def autocontrast</a>(image, cutoff=0, ignore=None)</pre><blockquote>Maximize (normalize) image contrast.</blockquote><pre><a href="#145">def colorize</a>(image, black, white)</pre><blockquote>Colorize grayscale image.</blockquote><pre><a href="#167">def crop</a>(image, border=0)</pre><blockquote>Remove border from image.</blockquote><pre><a href="#182">def deform</a>(image, deformer, resample=2)</pre><blockquote>Deform the image.</blockquote><pre><a href="#196">def equalize</a>(image)</pre><blockquote>Equalize the image histogram.</blockquote><pre><a href="#219">def expand</a>(image, border=0, fill=0)</pre><pre><a href="#251">def fit</a>(image, size, method=0, bleed=0.0, centering=(0.5, 0.5))</pre><blockquote>Returns a sized and cropped version of the image, cropped to the
-requested aspect ratio and size.</blockquote><pre><a href="#326">def flip</a>(image)</pre><blockquote>Flip the image vertically (top to bottom).</blockquote><pre><a href="#336">def grayscale</a>(image)</pre><blockquote>Convert the image to grayscale.</blockquote><pre><a href="#346">def invert</a>(image)</pre><blockquote>Invert (negate) the image.</blockquote><pre><a href="#359">def mirror</a>(image)</pre><blockquote>Flip image horizontally (left to right).</blockquote><pre><a href="#370">def posterize</a>(image, bits)</pre><blockquote>Reduce the number of bits for each colour channel.</blockquote><pre><a href="#385">def solarize</a>(image, threshold=128)</pre><blockquote>Invert all pixel values above a threshold.</blockquote><h2>Functions</h2><div class="function" id="70"><h3>autocontrast</h3><pre>autocontrast(image, cutoff=0, ignore=None)</pre><p>Maximize (normalize) image contrast.  This function calculates a
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageOps Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageOps Module</h1>
+<p>(New in 1.1.3) The <b>ImageOps</b> module contains a number of
+'ready-made' image processing operations.  This module is somewhat
+experimental, and most operators only work on L and RGB images.
+
+</p><h2>Module Contents</h2>
+<dl>
+<dt><a id='PIL.ImageOps.autocontrast-function' name='PIL.ImageOps.autocontrast-function'><b>autocontrast(image, cutoff=0, ignore=None)</b></a> [<a href='#PIL.ImageOps.autocontrast-function'>#</a>]</dt>
+<dd>
+<p>Maximize (normalize) image contrast.  This function calculates a
 histogram of the input image, removes <i>cutoff</i> percent of the
 lightest and darkest pixels from the histogram, and remaps the image
 so that the darkest pixel becomes black (0), and the lightest
 becomes white (255).
 
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to process.
-</p><p><code>cutoff</code> -- How many percent to cut off from the histogram.
-</p><p><code>ignore</code> -- The background pixel value (use None for no background).
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="145"><h3>colorize</h3><pre>colorize(image, black, white)</pre><p>Colorize grayscale image.  The <i>black</i> and <i>white</i>
+</p><dl>
+<dt><i>image</i></dt>
+<dd>
+The image to process.</dd>
+<dt><i>cutoff</i></dt>
+<dd>
+How many percent to cut off from the histogram.</dd>
+<dt><i>ignore</i></dt>
+<dd>
+The background pixel value (use None for no background).</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.colorize-function' name='PIL.ImageOps.colorize-function'><b>colorize(image, black, white)</b></a> [<a href='#PIL.ImageOps.colorize-function'>#</a>]</dt>
+<dd>
+<p>Colorize grayscale image.  The <i>black</i> and <i>white</i>
 arguments should be RGB tuples; this function calculates a colour
 wedge mapping all black pixels in the source image to the first
 colour, and all white pixels to the second colour.
 
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to colourize.
-</p><p><code>black</code> -- The colour to use for black input pixels.
-</p><p><code>white</code> -- The colour to use for white input pixels.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="167"><h3>crop</h3><pre>crop(image, border=0)</pre><p>Remove border from image.  The same amount of pixels are removed
-from all four sides.  This function works on all image modes.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to crop.
-</p><p><code>border</code> -- The number of pixels to remove.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="182"><h3>deform</h3><pre>deform(image, deformer, resample=2)</pre><p>Deform the image.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to deform.
-</p><p><code>deformer</code> -- A deformer object.
-</p><p><code>resample</code> -- What resampling filter to use.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="196"><h3>equalize</h3><pre>equalize(image)</pre><p>Equalize the image histogram.  This function applies a non-linear
+</p><dl>
+<dt><i>image</i></dt>
+<dd>
+The image to colourize.</dd>
+<dt><i>black</i></dt>
+<dd>
+The colour to use for black input pixels.</dd>
+<dt><i>white</i></dt>
+<dd>
+The colour to use for white input pixels.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.crop-function' name='PIL.ImageOps.crop-function'><b>crop(image, border=0)</b></a> [<a href='#PIL.ImageOps.crop-function'>#</a>]</dt>
+<dd>
+<p>Remove border from image.  The same amount of pixels are removed
+from all four sides.  This function works on all image modes.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to crop.</dd>
+<dt><i>border</i></dt>
+<dd>
+The number of pixels to remove.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.deform-function' name='PIL.ImageOps.deform-function'><b>deform(image, deformer, resample=Image.BILINEAR)</b></a> [<a href='#PIL.ImageOps.deform-function'>#</a>]</dt>
+<dd>
+<p>Deform the image.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to deform.</dd>
+<dt><i>deformer</i></dt>
+<dd>
+A deformer object.</dd>
+<dt><i>resample</i></dt>
+<dd>
+What resampling filter to use.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.equalize-function' name='PIL.ImageOps.equalize-function'><b>equalize(image, mask=None)</b></a> [<a href='#PIL.ImageOps.equalize-function'>#</a>]</dt>
+<dd>
+<p>Equalize the image histogram.  This function applies a non-linear
 mapping to the input image, in order to create a uniform
-distribution of grayscale values in the output image.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to equalize.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="219"><h3>expand</h3><pre>expand(image, border=0, fill=0)</pre><p>Add border to the image
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to expand.
-</p><p><code>border</code> -- Border width, in pixels.
-</p><p><code>fill</code> -- Pixel fill value (a colour value).  Default is 0 (black).
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="251"><h3>fit</h3><pre>fit(image, size, method=0, bleed=0.0, centering=(0.5, 0.5))</pre><p>Returns a sized and cropped version of the image, cropped to the
+distribution of grayscale values in the output image.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to equalize.</dd>
+<dt><i>mask</i></dt>
+<dd>
+An optional mask.  If given, only the pixels selected by
+    the mask are included in the analysis.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.expand-function' name='PIL.ImageOps.expand-function'><b>expand(image, border=0, fill=0)</b></a> [<a href='#PIL.ImageOps.expand-function'>#</a>]</dt>
+<dd>
+<p>Add border to the image</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to expand.</dd>
+<dt><i>border</i></dt>
+<dd>
+Border width, in pixels.</dd>
+<dt><i>fill</i></dt>
+<dd>
+Pixel fill value (a colour value).  Default is 0 (black).</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.fit-function' name='PIL.ImageOps.fit-function'><b>fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5))</b></a> [<a href='#PIL.ImageOps.fit-function'>#</a>]</dt>
+<dd>
+<p>Returns a sized and cropped version of the image, cropped to the
 requested aspect ratio and size.
 </p><p>
 The <b>fit</b> function was contributed by Kevin Cazabon.
 
-</p><h4>Parameters:</h4><p><code>size</code> -- The requested output size in pixels, given as a
-    (width, height) tuple.
-</p><p><code>method</code> -- What resampling method to use.  Default is Image.NEAREST.
-</p><p><code>bleed</code> -- Remove a border around the outside of the image (from all
+</p><dl>
+<dt><i>size</i></dt>
+<dd>
+The requested output size in pixels, given as a
+    (width, height) tuple.</dd>
+<dt><i>method</i></dt>
+<dd>
+What resampling method to use.  Default is Image.NEAREST.</dd>
+<dt><i>bleed</i></dt>
+<dd>
+Remove a border around the outside of the image (from all
     four edges.  The value is a decimal percentage (use 0.01 for one
-    percent).  The default value is 0 (no border).
-</p><p><code>centering</code> -- Control the cropping position.  Use (0.5, 0.5) for
+    percent).  The default value is 0 (no border).</dd>
+<dt><i>centering</i></dt>
+<dd>
+Control the cropping position.  Use (0.5, 0.5) for
     center cropping (e.g. if cropping the width, take 50% off of the
     left side, and therefore 50% off the right side).  (0.0, 0.0)
     will crop from the top left corner (i.e. if cropping the width,
@@ -61,32 +158,89 @@ The <b>fit</b> function was contributed by Kevin Cazabon.
     height, take all of it off the bottom).  (1.0, 0.0) will crop
     from the bottom left corner, etc. (i.e. if cropping the width,
     take all of the crop off the left side, and if cropping the height
-    take none from the top, and therefore all off the bottom).
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="326"><h3>flip</h3><pre>flip(image)</pre><p>Flip the image vertically (top to bottom).
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to flip.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="336"><h3>grayscale</h3><pre>grayscale(image)</pre><p>Convert the image to grayscale.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to convert.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="346"><h3>invert</h3><pre>invert(image)</pre><p>Invert (negate) the image.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to invert.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="359"><h3>mirror</h3><pre>mirror(image)</pre><p>Flip image horizontally (left to right).
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to mirror.
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="370"><h3>posterize</h3><pre>posterize(image, bits)</pre><p>Reduce the number of bits for each colour channel.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to posterize.
-</p><p><code>bits</code> -- The number of bits to keep for each channel (1-8).
-</p><h4>Returns:</h4><p>An image.
-</p></div><div class="function" id="385"><h3>solarize</h3><pre>solarize(image, threshold=128)</pre><p>Invert all pixel values above a threshold.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- The image to posterize.
-</p><p><code>threshold</code> -- All pixels above this greyscale level are inverted.
-</p><h4>Returns:</h4><p>An image.
-</p></div></body></html>
+    take none from the top, and therefore all off the bottom).</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.flip-function' name='PIL.ImageOps.flip-function'><b>flip(image)</b></a> [<a href='#PIL.ImageOps.flip-function'>#</a>]</dt>
+<dd>
+<p>Flip the image vertically (top to bottom).</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to flip.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.grayscale-function' name='PIL.ImageOps.grayscale-function'><b>grayscale(image)</b></a> [<a href='#PIL.ImageOps.grayscale-function'>#</a>]</dt>
+<dd>
+<p>Convert the image to grayscale.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to convert.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.invert-function' name='PIL.ImageOps.invert-function'><b>invert(image)</b></a> [<a href='#PIL.ImageOps.invert-function'>#</a>]</dt>
+<dd>
+<p>Invert (negate) the image.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to invert.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.mirror-function' name='PIL.ImageOps.mirror-function'><b>mirror(image)</b></a> [<a href='#PIL.ImageOps.mirror-function'>#</a>]</dt>
+<dd>
+<p>Flip image horizontally (left to right).</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to mirror.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.posterize-function' name='PIL.ImageOps.posterize-function'><b>posterize(image, bits)</b></a> [<a href='#PIL.ImageOps.posterize-function'>#</a>]</dt>
+<dd>
+<p>Reduce the number of bits for each colour channel.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to posterize.</dd>
+<dt><i>bits</i></dt>
+<dd>
+The number of bits to keep for each channel (1-8).</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageOps.solarize-function' name='PIL.ImageOps.solarize-function'><b>solarize(image, threshold=128)</b></a> [<a href='#PIL.ImageOps.solarize-function'>#</a>]</dt>
+<dd>
+<p>Invert all pixel values above a threshold.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+The image to posterize.</dd>
+<dt><i>threshold</i></dt>
+<dd>
+All pixels above this greyscale level are inverted.</dd>
+<dt>Returns:</dt>
+<dd>
+An image.</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>

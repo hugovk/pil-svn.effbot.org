@@ -1,33 +1,34 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/Unpack.c#3 $
+ * $Id: Unpack.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * code to unpack raw data from various file formats
  *
  * history:
- * 96-03-07 fl	Created (from various decoders)
- * 96-04-19 fl	Added band unpackers
- * 96-05-12 fl	Published RGB unpackers
- * 96-05-27 fl	Added nibble unpacker
- * 96-12-10 fl	Added complete set of PNG unpackers
- * 96-12-29 fl	Set alpha byte in RGB unpackers
- * 97-01-05 fl	Added remaining TGA unpackers
- * 97-01-18 fl	Added inverting band unpackers
- * 97-01-25 fl	Added FlashPix unpackers
- * 97-05-31 fl	Added floating point unpackers
- * 98-02-08 fl	Added I unpacker
- * 98-07-01 fl	Added YCbCr unpacker
- * 98-07-02 fl	Added full set of integer unpackers
- * 98-12-29 fl	Added mode field, I;16 unpackers
- * 98-12-30 fl	Added RGBX modes
- * 99-02-04 fl	Fixed I;16 unpackers
+ * 1996-03-07 fl   Created (from various decoders)
+ * 1996-04-19 fl   Added band unpackers
+ * 1996-05-12 fl   Published RGB unpackers
+ * 1996-05-27 fl   Added nibble unpacker
+ * 1996-12-10 fl   Added complete set of PNG unpackers
+ * 1996-12-29 fl   Set alpha byte in RGB unpackers
+ * 1997-01-05 fl   Added remaining TGA unpackers
+ * 1997-01-18 fl   Added inverting band unpackers
+ * 1997-01-25 fl   Added FlashPix unpackers
+ * 1997-05-31 fl   Added floating point unpackers
+ * 1998-02-08 fl   Added I unpacker
+ * 1998-07-01 fl   Added YCbCr unpacker
+ * 1998-07-02 fl   Added full set of integer unpackers
+ * 1998-12-29 fl   Added mode field, I;16 unpackers
+ * 1998-12-30 fl   Added RGBX modes
+ * 1999-02-04 fl   Fixed I;16 unpackers
+ * 2003-05-13 fl   Added L/RGB reversed unpackers
+ * 2003-09-26 fl   Added LA/PA and RGBa->RGB unpackers
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1996-97.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1996-1997 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
-
 
 #include "Imaging.h"
 
@@ -44,6 +45,7 @@
 #define	Y 2
 #define	K 3
 
+#define CLIP(x) ((x) <= 0 ? 0 : (x) < 256 ? (x) : 255)
 
 /* byte-swapping macros */
 
@@ -77,6 +79,29 @@
 #define C64B C64S
 #define C64L C64N
 #endif
+
+/* bit-swapping */
+
+static UINT8 BITFLIP[] = {
+    0, 128, 64, 192, 32, 160, 96, 224, 16, 144, 80, 208, 48, 176, 112,
+    240, 8, 136, 72, 200, 40, 168, 104, 232, 24, 152, 88, 216, 56, 184,
+    120, 248, 4, 132, 68, 196, 36, 164, 100, 228, 20, 148, 84, 212, 52,
+    180, 116, 244, 12, 140, 76, 204, 44, 172, 108, 236, 28, 156, 92, 220,
+    60, 188, 124, 252, 2, 130, 66, 194, 34, 162, 98, 226, 18, 146, 82,
+    210, 50, 178, 114, 242, 10, 138, 74, 202, 42, 170, 106, 234, 26, 154,
+    90, 218, 58, 186, 122, 250, 6, 134, 70, 198, 38, 166, 102, 230, 22,
+    150, 86, 214, 54, 182, 118, 246, 14, 142, 78, 206, 46, 174, 110, 238,
+    30, 158, 94, 222, 62, 190, 126, 254, 1, 129, 65, 193, 33, 161, 97,
+    225, 17, 145, 81, 209, 49, 177, 113, 241, 9, 137, 73, 201, 41, 169,
+    105, 233, 25, 153, 89, 217, 57, 185, 121, 249, 5, 133, 69, 197, 37,
+    165, 101, 229, 21, 149, 85, 213, 53, 181, 117, 245, 13, 141, 77, 205,
+    45, 173, 109, 237, 29, 157, 93, 221, 61, 189, 125, 253, 3, 131, 67,
+    195, 35, 163, 99, 227, 19, 147, 83, 211, 51, 179, 115, 243, 11, 139,
+    75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251, 7,
+    135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
+    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127,
+    255
+};
 
 /* Unpack to "1" image */
 
@@ -194,12 +219,46 @@ unpackL4(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
+unpackLA(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LA, pixel interleaved */
+    for (i = 0; i < pixels; i++) {
+	out[R] = out[G] = out[B] = in[0];
+	out[A] = in[1];
+	in += 2; out += 4;
+    }
+}
+
+static void
+unpackLAL(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LA, line interleaved */
+    for (i = 0; i < pixels; i++) {
+	out[R] = out[G] = out[B] = in[i];
+	out[A] = in[i+pixels];
+	out += 4;
+    }
+}
+
+static void
 unpackLI(UINT8* out, const UINT8* in, int pixels)
 {
     /* negative */
     int i;
     for (i = 0; i < pixels; i++)
 	out[i] = ~in[i];
+}
+
+static void
+unpackLR(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* RGB, bit reversed */
+    for (i = 0; i < pixels; i++) {
+	out[i] = BITFLIP[in[i]];
+    }
 }
 
 static void
@@ -354,6 +413,19 @@ unpackRGBL(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+static void
+unpackRGBR(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* RGB, bit reversed */
+    for (i = 0; i < pixels; i++) {
+	out[R] = BITFLIP[in[0]];
+	out[G] = BITFLIP[in[1]];
+	out[B] = BITFLIP[in[2]];
+	out[A] = 255;
+	out += 4; in += 3;
+    }
+}
 
 void
 ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels)
@@ -444,7 +516,7 @@ ImagingUnpackXBGR(UINT8* out, const UINT8* in, int pixels)
 /* Unpack to "RGBA" image */
 
 static void
-unpackLA(UINT8* out, const UINT8* in, int pixels)
+unpackRGBALA(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
     /* greyscale with alpha */
@@ -456,13 +528,32 @@ unpackLA(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
-unpackLA16B(UINT8* out, const UINT8* in, int pixels)
+unpackRGBALA16B(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
     /* 16-bit greyscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
 	out[R] = out[G] = out[B] = in[0];
 	out[A] = in[2];
+	out += 4; in += 4;
+    }
+}
+
+static void
+unpackRGBa(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* premultiplied RGBA */
+    for (i = 0; i < pixels; i++) {
+	int a = in[3];
+        if (!a)
+            out[R] = out[G] = out[B] = out[A] = 0;
+        else {
+            out[R] = CLIP(in[0] * 255 / a);
+            out[G] = CLIP(in[1] * 255 / a);
+            out[B] = CLIP(in[2] * 255 / a);
+            out[A] = a;
+        }
 	out += 4; in += 4;
     }
 }
@@ -751,6 +842,15 @@ static struct {
     ImagingShuffler unpack;
 } unpackers[] = {
 
+    /* raw mode syntax is "<mode>;<bits><flags>" where "bits" defaults
+       depending on mode (1 for "1", 8 for "P" and "L", etc), and
+       "flags" should be given in alphabetical order.  if both bits
+       and flags have their default values, the ; should be left out */
+
+    /* flags: "I" inverted data; "R" reversed bit order; "B" big
+       endian byte order (default is little endian); "L" line
+       interleave, "S" signed, "F" floating point */
+
     /* bilevel */
     {"1",	"1",		1,	unpack1},
     {"1",	"1;I",		1,	unpack1I},
@@ -762,8 +862,13 @@ static struct {
     {"L",	"L;4",  	4,	unpackL4},
     {"L",	"L",   		8,	copy1},
     {"L",	"L;I",   	8,	unpackLI},
+    {"L",	"L;R",   	8,	unpackLR},
     {"L",	"L;16",  	16,	unpackL16},
     {"L",	"L;16B",  	16,	unpackL16B},
+
+    /* greyscale w. alpha */
+    {"LA",	"LA",   	16,	unpackLA},
+    {"LA",	"LA;L",   	16,	unpackLAL},
 
     /* palette */
     {"P",	"P;1",   	1,	unpackP1},
@@ -772,10 +877,16 @@ static struct {
     {"P",	"P;4",   	4,	unpackP4},
     {"P",	"P;4L",   	4,	unpackP4L},
     {"P",	"P",		8,	copy1},
+    {"P",	"P;R",   	8,	unpackLR},
+
+    /* palette w. alpha */
+    {"PA",	"PA",   	16,	unpackLA},
+    {"PA",	"PA;L",   	16,	unpackLAL},
 
     /* true colour */
     {"RGB",	"RGB",		24,	ImagingUnpackRGB},
     {"RGB",	"RGB;L",	24,	unpackRGBL},
+    {"RGB",	"RGB;R",	24,	unpackRGBR},
     {"RGB",	"RGB;16B",	48,	unpackRGB16B},
     {"RGB",	"BGR",		24,	ImagingUnpackBGR},
     {"RGB",	"BGR;15",	16,	ImagingUnpackBGR15},
@@ -791,10 +902,11 @@ static struct {
     {"RGB",	"G",   		8,	band1},
     {"RGB",	"B",   		8,	band2},
 
-    /* true colour w. transparency */
-    {"RGBA",	"LA",		16,	unpackLA},
-    {"RGBA",	"LA;16B",	32,	unpackLA16B},
+    /* true colour w. alpha */
+    {"RGBA",	"LA",		16,	unpackRGBALA},
+    {"RGBA",	"LA;16B",	32,	unpackRGBALA16B},
     {"RGBA",	"RGBA",		32,	copy4},
+    {"RGBA",	"RGBa",		32,	unpackRGBa},
     {"RGBA",	"RGBA;I",	32,	unpackRGBAI},
     {"RGBA",	"RGBA;L",	32,	unpackRGBAL},
     {"RGBA",	"RGBA;16B",	64,	unpackRGBA16B},
@@ -908,5 +1020,8 @@ ImagingFindUnpacker(const char* mode, const char* rawmode, int* bits_out)
 		*bits_out = unpackers[i].bits;
 	    return unpackers[i].unpack;
 	}
+
+    /* FIXME: configure a general unpacker based on the type codes... */
+
     return NULL;
 }

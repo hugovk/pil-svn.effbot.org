@@ -1,130 +1,66 @@
 #
-# THIS IS WORK IN PROGRESS.
+# The Python Imaging Library
+# $Id: WmfImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
-# The Python Imaging Library.
-# $Id: //modules/pil/PIL/WmfImagePlugin.py#4 $
-#
-# WMF support for PIL
+# WMF stub codec
 #
 # history:
-#       96-12-14 fl     Created
+# 1996-12-14 fl   Created
+# 2004-02-22 fl   Turned into a stub driver
+# 2004-02-23 fl   Added EMF support
 #
-# notes:
-#       This code currently supports placable metafiles only, and
-#       just a few graphics operations are implemented.
-#
-# Copyright (c) Secret Labs AB 1997.
+# Copyright (c) Secret Labs AB 1997-2004.  All rights reserved.
 # Copyright (c) Fredrik Lundh 1996.
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
+__version__ = "0.2"
 
-import Image, ImageDraw, ImageFile
-import string
+import Image, ImageFile
 
+_handler = None
+
+##
+# Install application-specific WMF image handler.
 #
-# --------------------------------------------------------------------
+# @param handler Handler object.
 
-def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
-
-def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+def register_handler(handler):
+    global _handler
+    _handler = handler
 
 # --------------------------------------------------------------------
-# The following codes are taken from the wingdi.h header file.
-# Copyright (c) 1985-1996, Microsoft Corp.  All rights reserved.
 
-META_ANIMATEPALETTE = 0x0436
-META_ARC = 0x0817
-META_BITBLT = 0x0922
-META_CHORD = 0x0830
-META_CREATEBRUSHINDIRECT = 0x02FC
-META_CREATEFONTINDIRECT = 0x02FB
-META_CREATEPALETTE = 0x00f7
-META_CREATEPATTERNBRUSH = 0x01F9
-META_CREATEPENINDIRECT = 0x02FA
-META_CREATEREGION = 0x06FF
-META_DELETEOBJECT = 0x01f0
-META_DIBBITBLT = 0x0940
-META_DIBCREATEPATTERNBRUSH = 0x0142
-META_DIBSTRETCHBLT = 0x0b41
-META_ELLIPSE = 0x0418
-META_ESCAPE = 0x0626
-META_EXCLUDECLIPRECT = 0x0415
-META_EXTFLOODFILL = 0x0548
-META_EXTTEXTOUT = 0x0a32
-META_FILLREGION = 0x0228
-META_FLOODFILL = 0x0419
-META_FRAMEREGION = 0x0429
-META_INTERSECTCLIPRECT = 0x0416
-META_INVERTREGION = 0x012A
-META_LINETO = 0x0213
-META_MOVETO = 0x0214
-META_OFFSETCLIPRGN = 0x0220
-META_OFFSETVIEWPORTORG = 0x0211
-META_OFFSETWINDOWORG = 0x020F
-META_PAINTREGION = 0x012B
-META_PATBLT = 0x061D
-META_PIE = 0x081A
-META_POLYGON = 0x0324
-META_POLYLINE = 0x0325
-META_POLYPOLYGON = 0x0538
-META_REALIZEPALETTE = 0x0035
-META_RECTANGLE = 0x041B
-META_RESIZEPALETTE = 0x0139
-META_RESTOREDC = 0x0127
-META_ROUNDRECT = 0x061C
-META_SAVEDC = 0x001E
-META_SCALEVIEWPORTEXT = 0x0412
-META_SCALEWINDOWEXT = 0x0410
-META_SELECTCLIPREGION = 0x012C
-META_SELECTOBJECT = 0x012D
-META_SELECTPALETTE = 0x0234
-META_SETBKCOLOR = 0x0201
-META_SETBKMODE = 0x0102
-META_SETDIBTODEV = 0x0d33
-META_SETMAPMODE = 0x0103
-META_SETMAPPERFLAGS = 0x0231
-META_SETPALENTRIES = 0x0037
-META_SETPIXEL = 0x041F
-META_SETPOLYFILLMODE = 0x0106
-META_SETRELABS = 0x0105
-META_SETROP2 = 0x0104
-META_SETSTRETCHBLTMODE = 0x0107
-META_SETTEXTALIGN = 0x012E
-META_SETTEXTCHAREXTRA = 0x0108
-META_SETTEXTCOLOR = 0x0209
-META_SETTEXTJUSTIFICATION = 0x020A
-META_SETVIEWPORTEXT = 0x020E
-META_SETVIEWPORTORG = 0x020D
-META_SETWINDOWEXT = 0x020C
-META_SETWINDOWORG = 0x020B
-META_STRETCHBLT = 0x0B23
-META_STRETCHDIB = 0x0f43
-META_TEXTOUT = 0x0521
+def word(c, o=0):
+    return ord(c[o]) + (ord(c[o+1])<<8)
 
-# create a code to name dictionary (for debugging)
-NAME = {}
-for k, v in vars().items():
-    if k[:5] == "META_":
-        NAME[v] = k[5:]
+def short(c, o=0):
+    v = ord(c[o]) + (ord(c[o+1])<<8)
+    if v >= 32768:
+        v = v - 65536
+    return v
+
+def dword(c, o=0):
+    return ord(c[o]) + (ord(c[o+1])<<8) + (ord(c[o+2])<<16) + (ord(c[o+3])<<24)
+
+def long(c, o=0):
+    return dword(c, o)
 
 #
 # --------------------------------------------------------------------
 # Read WMF file
 
 def _accept(prefix):
-    return prefix[:6] == "\327\315\306\232\000\000"
+    return (
+        prefix[:6] == "\xd7\xcd\xc6\x9a\x00\x00" or
+        prefix[:4] == "\x01\x00\x00\x00"
+        )
 
 ##
-# Image plugin for Windows metafiles.  This plugin can identify a
-# metafile, but the loader only supports a small number of primitives,
-# and isn't very usable.
+# Image plugin for Windows metafiles.
 
-class WmfImageFile(ImageFile.ImageFile):
+class WmfStubImageFile(ImageFile.StubImageFile):
 
     format = "WMF"
     format_description = "Windows Metafile"
@@ -132,153 +68,81 @@ class WmfImageFile(ImageFile.ImageFile):
     def _open(self):
 
         # check placable header
-        s = self.fp.read(22)
-        if s[:6] != "\327\315\306\232\000\000":
-            raise SyntaxError, "Not a placable WMF file"
+        s = self.fp.read(80)
 
-        # position on output device
-        bbox = i16(s[6:8]), i16(s[8:10]), i16(s[10:12]), i16(s[12:14])
+        if s[:6] == "\xd7\xcd\xc6\x9a\x00\x00":
 
-        # FIXME: should take the scale into account
+            # placeable windows metafile
 
-        self.mode = "P"
-        self.size = (bbox[2]-bbox[0]) / 20, (bbox[3]-bbox[1]) / 20
+            # get units per inch
+            inch = word(s, 14)
 
-        # FIXME: while hacking
-        self.size = (bbox[2] + bbox[0])/10, (bbox[3] + bbox[1])/10
+            # get bounding box
+            x0 = short(s, 6); y0 = short(s, 8)
+            x1 = short(s, 10); y1 = short(s, 12)
 
-        self.bbox = bbox
+            # normalize size to 72 dots per inch
+            size = (x1 - x0) * 72 / inch, (y1 - y0) * 72 / inch
 
-        # check standard header
-        s = self.fp.read(18)
-        if s[:6] != "\001\000\011\000\000\003":
-            raise SyntaxError, "Not a WMF file"
+            self.info["wmf_bbox"] = x0, y0, x1, y1
 
-    def _ink(self, rgb):
+            self.info["dpi"] = 72
 
-        # lookup colour in current palette
-        try:
-            return self.palette[rgb]
-        except KeyError:
-            # hmm. what if the palette becomes full?
-            ink = len(self.palette)
-            self.palette[rgb] = ink
-            return ink
+            # print self.mode, self.size, self.info
 
-    def load(self):
+            # sanity check (standard metafile header)
+            if s[22:26] != "\x01\x00\t\x00":
+                raise SyntaxError("Unsupported WMF file format")
 
-        if self.im:
-            return
+        elif long(s) == 1 and s[40:44] == " EMF":
+            # enhanced metafile
 
-        #
-        # windows standard palette
+            # get bounding box
+            x0 = long(s, 8); y0 = long(s, 12)
+            x1 = long(s, 16); y1 = long(s, 20)
 
-        self.palette = {
-            '\000\000\000': 0,
-            '\200\000\000': 1,
-            '\000\200\000': 2,
-            '\200\200\000': 3,
-            '\000\000\200': 4,
-            '\200\000\200': 5,
-            '\000\200\200': 6,
-            '\300\300\300': 7,
-            '\300\334\300': 8,
-            '\246\312\360': 9,
-            '\377\373\360': 246,
-            '\240\240\244': 247,
-            '\200\200\200': 248,
-            '\377\000\000': 249,
-            '\000\377\000': 250,
-            '\377\377\000': 251,
-            '\000\000\377': 252,
-            '\377\000\377': 253,
-            '\000\377\377': 254,
-            '\377\377\377': 255,
-        }
+            # get frame (in 0.01 millimeter units)
+            frame = long(s, 24), long(s, 28), long(s, 32), long(s, 36)
 
-        fill = 0
+            # normalize size to 72 dots per inch
+            size = x1 - x0, y1 - y0
 
-        pen = brush = self._ink("\000\000\000")
-        paper = self._ink("\377\377\377")
+            # calculate dots per inch from bbox and frame
+            xdpi = 2540 * (x1 - y0) / (frame[2] - frame[0])
+            ydpi = 2540 * (y1 - y0) / (frame[3] - frame[1])
 
-        self.im = Image.core.fill(self.mode, self.size, paper)
+            self.info["wmf_bbox"] = x0, y0, x1, y1
 
-        #
-        # render metafile into image, using the standard palette
-
-        id = ImageDraw.ImageDraw(self)
-
-        while 1:
-
-            s = self.fp.read(6)
-
-            size = i32(s)*2
-            func = i16(s[4:])
-
-            if not func:
-                break
-
-            s = self.fp.read(size-6)
-
-            if func == META_SETPOLYFILLMODE:
-                fill = i16(s)
-                id.setfill(fill)
-
-            elif func == META_CREATEBRUSHINDIRECT:
-                brush = self._ink(s[2:5])
-
-            elif func == META_CREATEPENINDIRECT:
-                pen = self._ink(s[6:9])
-
-            elif func == META_POLYGON:
-                xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
-                if fill:
-                    id.setink(brush)
-                    id.polygon(xy)
-                    id.setink(pen)
-                    id.setfill(0)
-                    id.polygon(xy)
-                    id.setfill(1)
-                else:
-                    id.setink(pen)
-                    id.polygon(xy)
-
-            elif func == META_POLYLINE:
-                xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
-                id.setink(pen)
-                id.line(xy)
-
-            elif func == META_RECTANGLE:
-                xy = (i16(s[2:4])/10, i16(s[0:2])/10,
-                      i16(s[6:8])/10, i16(s[4:6])/10)
-                if fill:
-                    id.setink(brush)
-                    id.rectangle(xy)
-                    id.setink(pen)
-                    id.setfill(0)
-                    id.rectangle(xy)
-                    id.setfill(1)
-                else:
-                    id.setink(pen)
-                    id.rectangle(xy)
+            if xdpi == ydpi:
+                self.info["dpi"] = xdpi
             else:
-                if Image.DEBUG:
-                    print size, hex(func), NAME[func]
-                pass
+                self.info["dpi"] = xdpi, ydpi
 
-        #
-        # attach palette to image
+        else:
+            raise SyntaxError("Unsupported file format")
 
-        palette = ["\0\0\0"] * 256
-        for rgb, i in self.palette.items():
-            if i < 256:
-                palette[i] = rgb
-        self.im.putpalette("RGB", string.join(palette, ""))
+        self.mode = "RGB"
+        self.size = size
+
+        loader = self._load()
+        if loader:
+            loader.open(self)
+
+    def _load(self):
+        return _handler
+
+
+def _save(im, fp, filename):
+    if _handler is None or not hasattr("_handler", "save"):
+        raise IOError("WMF save handler not installed")
+    _handler.save(im, fp, filename)
 
 #
 # --------------------------------------------------------------------
 # Registry stuff
 
-Image.register_open("WMF", WmfImageFile, _accept)
+Image.register_open(WmfStubImageFile.format, WmfStubImageFile, _accept)
+Image.register_save(WmfStubImageFile.format, _save)
 
-Image.register_extension("WMF", ".wmf")
+Image.register_extension(WmfStubImageFile.format, ".wmf")
+Image.register_extension(WmfStubImageFile.format, ".emf")

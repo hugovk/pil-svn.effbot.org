@@ -2,15 +2,16 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/PcfFontFile.py#4 $
+# $Id: PcfFontFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # portable compiled font file parser
 #
 # history:
-# 97-08-19 fl   created
+# 1997-08-19 fl   created
+# 2003-09-13 fl   fixed loading of unicode fonts
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1997.
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1997-2003 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -23,7 +24,7 @@ import string
 # --------------------------------------------------------------------
 # declarations
 
-PCF_MAGIC = 0x70636601
+PCF_MAGIC = 0x70636601 # "\x01fcp"
 
 PCF_PROPERTIES = (1<<0)
 PCF_ACCELERATORS = (1<<1)
@@ -92,8 +93,8 @@ class PcfFontFile(FontFile.FontFile):
             ix = encoding[ch]
             if ix is not None:
                 x, y, l, r, w, a, d, f = metrics[ix]
-                self.glyph[ch] = (w, 0), (l, d-y, x+l, d), (0, 0, x, y), bitmaps[ix]
-
+                glyph = (w, 0), (l, d-y, x+l, d), (0, 0, x, y), bitmaps[ix]
+                self.glyph[ch] = glyph
 
     def _getformat(self, tag):
 
@@ -176,6 +177,8 @@ class PcfFontFile(FontFile.FontFile):
                 ascent = i16(fp.read(2))
                 descent = i16(fp.read(2))
                 attributes = i16(fp.read(2))
+                xsize = right - left
+                ysize = ascent + descent
                 append(
                     (xsize, ysize, left, right, width,
                      ascent, descent, attributes)
@@ -220,18 +223,17 @@ class PcfFontFile(FontFile.FontFile):
             mode = "1"
 
         for i in range(nbitmaps):
-
             x, y, l, r, w, a, d, f = metrics[i]
             b, e = offsets[i], offsets[i+1]
-
-            im = Image.fromstring("1", (x, y), data[b:e], "raw", mode, pad(x))
-
-            bitmaps.append(im)
+            bitmaps.append(
+                Image.fromstring("1", (x, y), data[b:e], "raw", mode, pad(x))
+                )
 
         return bitmaps
 
     def _load_encoding(self):
 
+        # map character code to bitmap index
         encoding = [None] * 256
 
         fp, format, i16, i32 = self._getformat(PCF_BDF_ENCODINGS)
@@ -246,6 +248,9 @@ class PcfFontFile(FontFile.FontFile):
         for i in range(nencoding):
             encodingOffset = i16(fp.read(2))
             if encodingOffset != 0xFFFF:
-                encoding[i+firstCol] = encodingOffset
+                try:
+                    encoding[i+firstCol] = encodingOffset
+                except IndexError:
+                    break # only load ISO-8859-1 glyphs
 
         return encoding

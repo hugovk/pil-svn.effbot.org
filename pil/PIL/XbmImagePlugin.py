@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/XbmImagePlugin.py#4 $
+# $Id: XbmImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # XBM File handling
 #
@@ -11,21 +11,22 @@
 # 1997-07-22 fl   Fixed yet another parser bug
 # 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.4)
 # 2001-05-13 fl   Added hotspot handling (based on code from Bernhard Herzog)
+# 2004-02-24 fl   Allow some whitespace before first #define
 #
-# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1997-2004 by Secret Labs AB
 # Copyright (c) 1996-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4"
+__version__ = "0.6"
 
 import re, string
 import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
-    "#define[ \t]+[^_]*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    "\s*#define[ \t]+[^_]*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
     "#define[ \t]+[^_]*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
     "(?P<hotspot>"
     "#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
@@ -35,7 +36,7 @@ xbm_head = re.compile(
 )
 
 def _accept(prefix):
-    return prefix[:7] == "#define"
+    return string.lstrip(prefix)[:7] == "#define"
 
 ##
 # Image plugin for X11 bitmaps.

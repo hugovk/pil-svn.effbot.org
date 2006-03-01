@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Except.c#2 $
+ * $Id: Except.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * default exception handling
  *
@@ -9,11 +9,12 @@
  * linking errors, remove this file from your project/library.
  *
  * history:
- * 95-06-15 fl	Created
- * 98-12-29 fl	Minor tweaks
+ * 1995-06-15 fl   Created
+ * 1998-12-29 fl   Minor tweaks
+ * 2003-09-13 fl   Added ImagingEnter/LeaveSection()
  *
- * Copyright (c) Fredrik Lundh 1995.
- * Copyright (c) Secret Labs AB 1997-98.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1995-2003 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -21,6 +22,8 @@
 
 #include "Imaging.h"
 
+
+/* exception state */
 
 void *
 ImagingError_IOError(void)
@@ -59,3 +62,17 @@ ImagingError_ValueError(const char *message)
     return NULL;
 }
 
+
+/* thread state */
+
+void
+ImagingSectionEnter(ImagingSectionCookie* cookie)
+{
+    /* pass */
+}
+
+void
+ImagingSectionLeave(ImagingSectionCookie* cookie)
+{
+    /* pass */
+}

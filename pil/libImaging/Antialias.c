@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Antialias.c#7 $
+ * $Id: Antialias.c 2182 2004-11-15 19:59:59Z fredrik $
  *
  * pilopen antialiasing support 
  *
@@ -24,7 +24,7 @@ struct filter {
     float support;
 };
 
-static float sinc(float x)
+static inline float sinc_filter(float x)
 {
     if (x == 0.0)
         return 1.0;
@@ -32,26 +32,26 @@ static float sinc(float x)
     return sin(x) / x;
 }
 
-static float antialias(float x)
+static inline float antialias_filter(float x)
 {
     /* lanczos (truncated sinc) */
     if (-3.0 <= x && x < 3.0)
-        return sinc(x) * sinc(x/3);
+        return sinc_filter(x) * sinc_filter(x/3);
     return 0.0;
 }
 
-static struct filter ANTIALIAS = { antialias, 3.0 };
+static struct filter ANTIALIAS = { antialias_filter, 3.0 };
 
-static float nearest(float x)
+static inline float nearest_filter(float x)
 {
     if (-0.5 <= x && x < 0.5)
         return 1.0;
     return 0.0;
 }
 
-static struct filter NEAREST = { nearest, 0.5 };
+static struct filter NEAREST = { nearest_filter, 0.5 };
 
-static float bilinear(float x)
+static inline float bilinear_filter(float x)
 {
     if (x < 0.0)
         x = -x;
@@ -60,9 +60,9 @@ static float bilinear(float x)
     return 0.0;
 }
 
-static struct filter BILINEAR = { bilinear, 1.0 };
+static struct filter BILINEAR = { bilinear_filter, 1.0 };
 
-static float bicubic(float x)
+static inline float bicubic_filter(float x)
 {
     /* FIXME: double-check this algorithm */
     /* FIXME: for best results, "a" should be -0.5 to -1.0, but we'll
@@ -78,7 +78,7 @@ static float bicubic(float x)
 #undef a
 }
 
-static struct filter BICUBIC = { bicubic, 2.0 };
+static struct filter BICUBIC = { bicubic_filter, 2.0 };
 
 Imaging
 ImagingStretch(Imaging imOut, Imaging imIn, int filter)
@@ -86,6 +86,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     /* FIXME: this is a quick and straightforward translation from a
        python prototype.  might need some further C-ification... */
 
+    ImagingSectionCookie cookie;
     struct filter *filterp;
     float support, scale, filterscale;
     float center, ww, ss, ymin, ymax, xmin, xmax;
@@ -140,6 +141,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     if (!k)
         return (Imaging) ImagingError_MemoryError();
 
+    ImagingSectionEnter(&cookie);
     if (imIn->xsize == imOut->xsize) {
         /* vertical stretch */
         for (yy = 0; yy < imOut->ysize; yy++) {
@@ -170,11 +172,11 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                         ss = ss + imIn->image8[y][xx] * k[y - (int) ymin];
                     ss = ss * ww;
                     if (ss <= 0.0)
-                        imOut->image[yy][xx] = 0;
+                        imOut->image8[yy][xx] = 0;
                     else if (ss >= 255.0)
-                        imOut->image[yy][xx] = 255;
+                        imOut->image8[yy][xx] = 255;
                     else
-                        imOut->image[yy][xx] = ss;
+                        imOut->image8[yy][xx] = (UINT8) ss;
                 }
             } else
                 switch(imIn->type) {
@@ -187,11 +189,11 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                             ss = ss + (UINT8) imIn->image[y][xx] * k[y-(int) ymin];
                         ss = ss * ww;
                         if (ss <= 0.0)
-                            imOut->image[yy][xx] = 0;
+                            imOut->image[yy][xx] = (UINT8) 0;
                         else if (ss >= 255.0)
-                            imOut->image[yy][xx] = 255;
+                            imOut->image[yy][xx] = (UINT8) 255;
                         else
-                            imOut->image[yy][xx] = ss;
+                            imOut->image[yy][xx] = (UINT8) ss;
                     }
                     break;
                 case IMAGING_TYPE_INT32:
@@ -213,6 +215,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     }
                     break;
                 default:
+                    ImagingSectionLeave(&cookie);
                     return (Imaging) ImagingError_ModeError();
                 }
         }
@@ -245,11 +248,11 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                         ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
                     ss = ss * ww;
                     if (ss <= 0.0)
-                        imOut->image[yy][xx] = 0;
+                        imOut->image8[yy][xx] = (UINT8) 0;
                     else if (ss >= 255.0)
-                        imOut->image[yy][xx] = 255;
+                        imOut->image8[yy][xx] = (UINT8) 255;
                     else
-                        imOut->image[yy][xx] = ss;
+                        imOut->image8[yy][xx] = (UINT8) ss;
                 }
             } else
                 switch(imIn->type) {
@@ -257,16 +260,18 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     /* n-bit grayscale */
                     for (yy = 0; yy < imOut->ysize; yy++) {
                         for (b = 0; b < imIn->bands; b++) {
+                            if (imIn->bands == 2 && b)
+                                b = 3; /* hack to deal with LA images */
                             ss = 0.0;
                             for (x = (int) xmin; x < (int) xmax; x++)
                                 ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
                             ss = ss * ww;
                             if (ss <= 0.0)
-                                imOut->image[yy][xx*4+b] = 0;
+                                imOut->image[yy][xx*4+b] = (UINT8) 0;
                             else if (ss >= 255.0)
-                                imOut->image[yy][xx*4+b] = 255;
+                                imOut->image[yy][xx*4+b] = (UINT8) 255;
                             else
-                                imOut->image[yy][xx*4+b] = ss;
+                                imOut->image[yy][xx*4+b] = (UINT8) ss;
                         }
                     }
                     break;
@@ -289,10 +294,12 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     }
                     break;
                 default:
+                    ImagingSectionLeave(&cookie);
                     return (Imaging) ImagingError_ModeError();
                 }
         }
     }
+    ImagingSectionLeave(&cookie);
 
     free(k);
 

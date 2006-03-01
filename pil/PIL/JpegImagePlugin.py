@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/JpegImagePlugin.py#6 $
+# $Id: JpegImagePlugin.py 2199 2004-12-18 08:49:05Z fredrik $
 #
 # JPEG (JFIF) file handling
 #
@@ -20,6 +20,8 @@
 # 2001-04-16 fl   Extract DPI settings from JFIF files (0.4.2)
 # 2002-07-01 fl   Skip pad bytes before markers; identify Exif files (0.4.3)
 # 2003-04-25 fl   Added experimental EXIF decoder (0.5)
+# 2003-06-06 fl   Added experimental EXIF GPSinfo decoder
+# 2003-09-13 fl   Extract COM markers
 #
 # Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
@@ -42,14 +44,16 @@ def i32(c,o=0):
 # Parser
 
 def Skip(self, marker):
-    self.fp.read(i16(self.fp.read(2))-2)
+    n = i16(self.fp.read(2))-2
+    ImageFile._safe_read(self.fp, n)
 
 def APP(self, marker):
     #
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
 
-    s = self.fp.read(i16(self.fp.read(2))-2)
+    n = i16(self.fp.read(2))-2
+    s = ImageFile._safe_read(self.fp, n)
 
     app = "APP%d" % (marker&15)
 
@@ -87,6 +91,16 @@ def APP(self, marker):
         else:
             self.info["adobe_transform"] = adobe_transform
 
+def COM(self, marker):
+    #
+    # Comment marker.  Store these in the APP dictionary.
+
+    n = i16(self.fp.read(2))-2
+    s = ImageFile._safe_read(self.fp, n)
+
+    self.app["COM"] = s # compatibility
+    self.applist.append(("COM", s))
+
 def SOF(self, marker):
     #
     # Start of frame marker.  Defines the size and mode of the
@@ -95,7 +109,8 @@ def SOF(self, marker):
     # mode.  Note that this could be made a bit brighter, by
     # looking for JFIF and Adobe APP markers.
 
-    s = self.fp.read(i16(self.fp.read(2))-2)
+    n = i16(self.fp.read(2))-2
+    s = ImageFile._safe_read(self.fp, n)
     self.size = i16(s[3:]), i16(s[1:])
 
     self.bits = ord(s[0])
@@ -129,7 +144,8 @@ def DQT(self, marker):
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
 
-    s = self.fp.read(i16(self.fp.read(2))-2)
+    n = i16(self.fp.read(2))-2
+    s = ImageFile._safe_read(self.fp, n)
     while len(s):
         if len(s) < 65:
             raise SyntaxError("bad quantization table marker")
@@ -208,7 +224,7 @@ MARKER = {
     0xFFFB: ("JPG11", "Extension 11", None),
     0xFFFC: ("JPG12", "Extension 12", None),
     0xFFFD: ("JPG13", "Extension 13", None),
-    0xFFFE: ("COM", "Comment", Skip)
+    0xFFFE: ("COM", "Comment", COM)
 }
 
 
@@ -260,8 +276,8 @@ class JpegImageFile(ImageFile.ImageFile):
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
-            elif i == 65535:
-                # padded marker; move on
+            elif i == 0 or i == 65535:
+                # padded marker or junk; move on
                 s = "\xff"
             else:
                 raise SyntaxError("no marker found")
@@ -335,11 +351,22 @@ class JpegImageFile(ImageFile.ImageFile):
         for key, value in info.items():
             exif[key] = fixup(value)
         # get exif extension
-        file.seek(info[0x8769][0])
+        file.seek(exif[0x8769])
         info = TiffImagePlugin.ImageFileDirectory(head)
         info.load(file)
         for key, value in info.items():
             exif[key] = fixup(value)
+        # get gpsinfo extension
+        try:
+            file.seek(exif[0x8825])
+        except KeyError:
+            pass
+        else:
+            info = TiffImagePlugin.ImageFileDirectory(head)
+            info.load(file)
+            exif[0x8825] = gps = {}
+            for key, value in info.items():
+                gps[key] = fixup(value)
         return exif
 
 # --------------------------------------------------------------------
@@ -362,15 +389,20 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError("cannot write mode %s as JPEG" % im.mode)
 
-    dpi = im.encoderinfo.get("dpi", (0, 0))
+    info = im.encoderinfo
+
+    dpi = info.get("dpi", (0, 0))
 
     # get keyword arguments
     im.encoderconfig = (
-        im.encoderinfo.get("quality", 0),
-        im.encoderinfo.has_key("progressive"),
-        im.encoderinfo.get("smooth", 0),
-        im.encoderinfo.has_key("optimize"),
-        im.encoderinfo.get("streamtype", 0),
+        info.get("quality", 0),
+        # "progressive" is the official name, but older documentation
+        # says "progression"
+        # FIXME: issue a warning if the wrong form is used (post-1.1.5)
+        info.has_key("progressive") or info.has_key("progression"),
+        info.get("smooth", 0),
+        info.has_key("optimize"),
+        info.get("streamtype", 0),
         dpi[0], dpi[1]
         )
 
