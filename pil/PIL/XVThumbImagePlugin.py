@@ -9,9 +9,9 @@
 # available from ftp://ftp.cis.upenn.edu/pub/xv/
 #
 # history:
-# 98-08-15 cec	created (b/w only)
-# 98-12-09 cec	added color palette
-# 98-12-28 fl	added to PIL (with only a few very minor modifications)
+# 98-08-15 cec  created (b/w only)
+# 98-12-09 cec  added color palette
+# 98-12-28 fl   added to PIL (with only a few very minor modifications)
 #
 # To do:
 # FIXME: make save work (this requires quantization support)
@@ -26,8 +26,8 @@ import Image, ImageFile, ImagePalette
 PALETTE = ""
 for r in range(8):
     for g in range(8):
-	for b in range(4):
-	    PALETTE = PALETTE + (chr((r*255)/7)+chr((g*255)/7)+chr((b*255)/3))
+        for b in range(4):
+            PALETTE = PALETTE + (chr((r*255)/7)+chr((g*255)/7)+chr((b*255)/3))
 
 class XVThumbImageFile(ImageFile.ImageFile):
 
@@ -36,29 +36,29 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	# check magic
-	s = self.fp.read(6)
-	if s != "P7 332":
-	    raise SyntaxError, "not an XV thumbnail file"
+        # check magic
+        s = self.fp.read(6)
+        if s != "P7 332":
+            raise SyntaxError, "not an XV thumbnail file"
 
-	# skip info comments
-	while 1:
-	    s = string.strip(self.fp.readline())
-	    if s == "#END_OF_COMMENTS":
-		break
+        # skip info comments
+        while 1:
+            s = string.strip(self.fp.readline())
+            if s == "#END_OF_COMMENTS":
+                break
 
-	# read header line
-	s = string.split(self.fp.readline())
+        # read header line
+        s = string.split(self.fp.readline())
 
-	self.mode = "P"
-	self.size = int(s[0]), int(s[1])
+        self.mode = "P"
+        self.size = int(s[0]), int(s[1])
 
-	self.palette = ImagePalette.raw("RGB", PALETTE)
+        self.palette = ImagePalette.raw("RGB", PALETTE)
 
-	self.tile = [
-	    ("raw", (0, 0)+self.size,
-	     self.fp.tell(), (self.mode, 0, 1)
-	     )]
+        self.tile = [
+            ("raw", (0, 0)+self.size,
+             self.fp.tell(), (self.mode, 0, 1)
+             )]
 
 # --------------------------------------------------------------------
 

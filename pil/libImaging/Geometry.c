@@ -5,19 +5,20 @@
  * the imaging geometry methods
  *
  * history:
- * 95-06-15 fl	Created
- * 96-04-15 fl	Changed origin
- * 96-05-18 fl	Fixed rotate90/270 for rectangular images
- * 96-05-27 fl	Added general purpose transform
- * 96-11-22 fl	Don't crash when resizing from outside source image
- * 97-08-09 fl	Fixed rounding error in resize
- * 98-09-21 fl	Incorporated transformation patches (from Zircon #2)
- * 98-09-22 fl	Added bounding box to transform engines
- * 99-02-03 fl	Fixed bicubic filtering for RGB images
- * 99-02-16 fl	Added fixed-point version of affine transform
+ * 1995-06-15 fl  Created
+ * 1996-04-15 fl  Changed origin
+ * 1996-05-18 fl  Fixed rotate90/270 for rectangular images
+ * 1996-05-27 fl  Added general purpose transform
+ * 1996-11-22 fl  Don't crash when resizing from outside source image
+ * 1997-08-09 fl  Fixed rounding error in resize
+ * 1998-09-21 fl  Incorporated transformation patches (from Zircon #2)
+ * 1998-09-22 fl  Added bounding box to transform engines
+ * 1999-02-03 fl  Fixed bicubic filtering for RGB images
+ * 1999-02-16 fl  Added fixed-point version of affine transform
+ * 2001-03-28 fl  Fixed transform(EXTENT) for xoffset < 0
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) Secret Labs AB 1997-2001.
+ * Copyright (c) Fredrik Lundh 1995-1997.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -595,7 +596,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 	if (yi >= 0 && yi < imIn->ysize) {\
 	    in = imIn->image[yi];\
 	    for (x = xmin; x < xmax; x++)\
-		*out++ = in[xintab[x]];\
+		out[x] = in[xintab[x]];\
 	}\
 	yo += a[5];\
     }

@@ -5,9 +5,9 @@
 # Sun image file handling
 #
 # History:
-# 95-09-10 fl	Created
-# 96-05-28 fl	Fixed 32-bit alignment
-# 98-12-29 fl	Import ImagePalette module
+# 95-09-10 fl   Created
+# 96-05-28 fl   Fixed 32-bit alignment
+# 98-12-29 fl   Import ImagePalette module
 #
 # Copyright (c) Secret Labs AB 1997-98.
 # Copyright (c) Fredrik Lundh 1995-96.
@@ -19,7 +19,7 @@
 __version__ = "0.2"
 
 
-import regex, string
+import string
 import Image, ImageFile, ImagePalette
 
 
@@ -41,40 +41,40 @@ class SunImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	# HEAD
-	s = self.fp.read(32)
-	if i32(s) != 0x59a66a95:
-	    raise SyntaxError, "not an SUN raster file"
+        # HEAD
+        s = self.fp.read(32)
+        if i32(s) != 0x59a66a95:
+            raise SyntaxError, "not an SUN raster file"
 
-	offset = 32
+        offset = 32
 
-	self.size = i32(s[4:8]), i32(s[8:12])
+        self.size = i32(s[4:8]), i32(s[8:12])
 
-	depth = i32(s[12:16])
-	if depth == 1:
-	    self.mode, rawmode = "1", "1;I"
-	elif depth == 8:
-	    self.mode = rawmode = "L"
-	elif depth == 24:
-	    self.mode, rawmode = "RGB", "BGR"
-	else:
-	    raise SyntaxError, "unsupported mode"
+        depth = i32(s[12:16])
+        if depth == 1:
+            self.mode, rawmode = "1", "1;I"
+        elif depth == 8:
+            self.mode = rawmode = "L"
+        elif depth == 24:
+            self.mode, rawmode = "RGB", "BGR"
+        else:
+            raise SyntaxError, "unsupported mode"
 
-	compression = i32(s[20:24])
+        compression = i32(s[20:24])
 
-	if i32(s[24:28]) != 0:
-	    length = i32(s[28:32])
-	    offset = offset + length
-	    self.palette = ImagePalette.raw("RGB;L", self.fp.read(length))
-	    if self.mode == "L":
-		self.mode = "P"
+        if i32(s[24:28]) != 0:
+            length = i32(s[28:32])
+            offset = offset + length
+            self.palette = ImagePalette.raw("RGB;L", self.fp.read(length))
+            if self.mode == "L":
+                self.mode = "P"
 
-	stride = (((self.size[0] * depth + 7) / 8) + 3) & (~3)
+        stride = (((self.size[0] * depth + 7) / 8) + 3) & (~3)
 
-	if compression == 1:
-	    self.tile = [("raw", (0,0)+self.size, offset, (rawmode, stride))]
-	elif compression == 2:
-	    self.tile = [("sun_rle", (0,0)+self.size, offset, rawmode)]
+        if compression == 1:
+            self.tile = [("raw", (0,0)+self.size, offset, (rawmode, stride))]
+        elif compression == 2:
+            self.tile = [("sun_rle", (0,0)+self.size, offset, rawmode)]
 
 #
 # registry

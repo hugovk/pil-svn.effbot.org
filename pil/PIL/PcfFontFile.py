@@ -29,10 +29,10 @@ PCF_PROPERTIES = (1<<0)
 PCF_ACCELERATORS = (1<<1)
 PCF_METRICS = (1<<2)
 PCF_BITMAPS = (1<<3)
-PCF_INK_METRICS	= (1<<4)
+PCF_INK_METRICS = (1<<4)
 PCF_BDF_ENCODINGS = (1<<5)
 PCF_SWIDTHS = (1<<6)
-PCF_GLYPH_NAMES	= (1<<7)
+PCF_GLYPH_NAMES = (1<<7)
 PCF_BDF_ACCELERATORS = (1<<8)
 
 BYTES_PER_ROW = [
@@ -163,9 +163,9 @@ class PcfFontFile(FontFile.FontFile):
                 xsize = right - left
                 ysize = ascent + descent
                 append(
-		    (xsize, ysize, left, right, width,
-		     ascent, descent, 0)
-		    )
+                    (xsize, ysize, left, right, width,
+                     ascent, descent, 0)
+                    )
 
         else:
 
@@ -178,9 +178,9 @@ class PcfFontFile(FontFile.FontFile):
                 descent = i16(fp.read(2))
                 attributes = i16(fp.read(2))
                 append(
-		    (xsize, ysize, left, right, width,
-		     ascent, descent, attributes)
-		    )
+                    (xsize, ysize, left, right, width,
+                     ascent, descent, attributes)
+                    )
 
         return metrics
 

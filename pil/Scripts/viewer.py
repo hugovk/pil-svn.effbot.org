@@ -13,9 +13,9 @@ class UI(Label):
 
     def __init__(self, master, im):
 
-	if im.mode == "1":
+        if im.mode == "1":
             # bitmap image
-	    self.image = ImageTk.BitmapImage(im, foreground="white")
+            self.image = ImageTk.BitmapImage(im, foreground="white")
             Label.__init__(self, master, image=self.image, bg="black", bd=0)
 
         else:
@@ -31,8 +31,8 @@ if __name__ == "__main__":
     import sys
 
     if not sys.argv[1:]:
-	print "Syntax: python viewer.py imagefile"
-	sys.exit(1)
+        print "Syntax: python viewer.py imagefile"
+        sys.exit(1)
 
     filename = sys.argv[1]
 

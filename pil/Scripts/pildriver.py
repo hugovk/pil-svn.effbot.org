@@ -63,10 +63,10 @@ class PILDriver:
 
     # The evaluation stack (internal only)
 
-    stack = []		# Stack of pending operations
+    stack = []          # Stack of pending operations
 
     def push(self, item):
-	"Push an argument onto the evaluation stack."
+        "Push an argument onto the evaluation stack."
         self.stack = [item] + self.stack
 
     def top(self):
@@ -96,7 +96,7 @@ class PILDriver:
         
         Duplicate the top-of-stack item.
         """
-        if hasattr(self, 'format'):	# If it's an image, do a real copy 
+        if hasattr(self, 'format'):     # If it's an image, do a real copy 
             dup = self.stack[0].copy()
         else:
              dup = self.stack[0]
@@ -126,7 +126,7 @@ class PILDriver:
         
         Open the indicated image, read it, push the image on the stack.
         """
-    	self.push(Image.open(self.do_pop()))
+        self.push(Image.open(self.do_pop()))
 
     def do_blend(self):
         """usage: blend <image:pic1> <image:pic2> <float:alpha>
@@ -476,9 +476,9 @@ class PILDriver:
 if __name__ == '__main__': 
     import sys
     try:
-	import readline
+        import readline
     except ImportError:
-	pass # not available on all platforms
+        pass # not available on all platforms
 
     # If we see command-line arguments, interpret them as a stack state
     # and execute.  Otherwise go interactive.

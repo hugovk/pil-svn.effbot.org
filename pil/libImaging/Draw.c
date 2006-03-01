@@ -896,19 +896,19 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6])
 
         X0 = (int) (a0*x0 + a1*y0 + a2);
 
-        printf("");
+        /* printf(""); */
 
         Y0 = (int) (a3*x0 + a4*y0 + a5);
 
-        printf("");
+        /* printf(""); */
 
         X1 = (int) (a0*x1 + a1*y1 + a2);
 
-        printf("");
+        /* printf(""); */
 
         Y1 = (int) (a3*x1 + a4*y1 + a5);
 
-        printf("");
+        /* printf(""); */
 
         add_edge(eOut, X0, Y0, X1, Y1);
 

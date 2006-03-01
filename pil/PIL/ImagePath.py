@@ -5,7 +5,7 @@
 # path interface
 #
 # History:
-#	96-11-04 fl	Created
+#       96-11-04 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.

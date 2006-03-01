@@ -271,8 +271,6 @@ cmyk2rgb(UINT8* out, const UINT8* in, int xsize)
     }
 }
 
-/* FIXME: translate indexed versions to pointer versions below this line */
-
 /* ------------- */
 /* I conversions */
 /* ------------- */
@@ -300,13 +298,13 @@ i2l(UINT8* out, const UINT8* in_, int xsize)
 {
     int x;
     INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++) {
-        if (in[x] <= 0)
-            *out++ = 0;
-        else if (in[x] >= 255)
-            *out++ = 255;
+    for (x = 0; x < xsize; x++, in++, out++) {
+        if (*in <= 0)
+            *out = 0;
+        else if (*in >= 255)
+            *out = 255;
         else
-            *out++ = (UINT8) in[x];
+            *out = (UINT8) *in;
     }
 }
 
@@ -347,13 +345,13 @@ f2l(UINT8* out, const UINT8* in_, int xsize)
 {
     int x;
     FLOAT32* in = (FLOAT32*) in_;
-    for (x = 0; x < xsize; x++) {
-        if (in[x] <= 0.0)
-            *out++ = 0;
-        else if (in[x] >= 255.0)
-            *out++ = 255;
+    for (x = 0; x < xsize; x++, in++, out++) {
+        if (*in <= 0.0)
+            *out = 0;
+        else if (*in >= 255.0)
+            *out = 255;
         else
-            *out++ = (UINT8) in[x];
+            *out = (UINT8) *in;
     }
 }
 
@@ -402,8 +400,8 @@ i2i16(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
     INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++) {
-        v = CLIP16(in[x]);
+    for (x = 0; x < xsize; x++, in++) {
+        v = CLIP16(*in);
 	*out++ = (UINT8) v;
         *out++ = (UINT8) (v >> 8);
     }
@@ -414,8 +412,8 @@ i2i16b(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
     INT32* in = (INT32*) in_;
-    for (x = 0; x < xsize; x++) {
-        v = CLIP16(in[x]);
+    for (x = 0; x < xsize; x++, in++) {
+        v = CLIP16(*in);
         *out++ = (UINT8) (v >> 8);
 	*out++ = (UINT8) v;
     }
@@ -426,8 +424,8 @@ i162i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
     INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-	*out++ = in[x+x] + ((int) in[x+x+1] << 8);
+    for (x = 0; x < xsize; x++, in += 2)
+	*out++ = in[0] + ((int) in[1] << 8);
 }
 
 static void
@@ -435,8 +433,8 @@ i16b2i(UINT8* out_, const UINT8* in, int xsize)
 {
     int x;
     INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++)
-	*out++ = ((int) in[x+x] << 8) + in[x+x+1];
+    for (x = 0; x < xsize; x++, in += 2)
+	*out++ = ((int) in[0] << 8) + in[1];
 }
 
 
@@ -515,6 +513,7 @@ static struct {
     { NULL }
 };
 
+/* FIXME: translate indexed versions to pointer versions below this line */
 
 /* ------------------- */
 /* Palette conversions */

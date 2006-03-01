@@ -10,9 +10,9 @@
 # PCX files.
 #
 # History:
-#	95-09-09 fl	Created
-#	96-03-20 fl	Properly derived from PcxImageFile.
-#	98-07-15 fl	Renamed offset attribute to avoid name clash
+#       95-09-09 fl     Created
+#       96-03-20 fl     Properly derived from PcxImageFile.
+#       98-07-15 fl     Renamed offset attribute to avoid name clash
 #
 # Copyright (c) Secret Labs AB 1997-98.
 # Copyright (c) Fredrik Lundh 1995-96.
@@ -45,30 +45,30 @@ class DcxImageFile(PcxImageFile):
 
     def _open(self):
 
-	# Header
-	s = self.fp.read(4)
-	if i32(s) != MAGIC:
-	    raise SyntaxError, "not a DCX file"
+        # Header
+        s = self.fp.read(4)
+        if i32(s) != MAGIC:
+            raise SyntaxError, "not a DCX file"
 
-	# Component directory
-	self._offset = []
-	for i in range(1024):
-	    offset = i32(self.fp.read(4))
-	    if not offset:
-		break
-	    self._offset.append(offset)
+        # Component directory
+        self._offset = []
+        for i in range(1024):
+            offset = i32(self.fp.read(4))
+            if not offset:
+                break
+            self._offset.append(offset)
 
         self.seek(0)
 
     def seek(self, frame):
-	if frame >= len(self._offset):
-	    raise IndexError, "attempt to seek outside DCX directory"
-	self.frame = frame
-	self.fp.seek(self._offset[frame])
-	PcxImageFile._open(self)
+        if frame >= len(self._offset):
+            raise IndexError, "attempt to seek outside DCX directory"
+        self.frame = frame
+        self.fp.seek(self._offset[frame])
+        PcxImageFile._open(self)
 
     def tell(self):
-	return self.frame
+        return self.frame
 
 
 Image.register_open("DCX", DcxImageFile, _accept)

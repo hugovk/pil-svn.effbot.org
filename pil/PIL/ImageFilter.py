@@ -5,7 +5,7 @@
 # standard filters
 #
 # History:
-#	95-11-27 fl	Created
+#       95-11-27 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995.
@@ -15,8 +15,8 @@
 
 class _BuiltinFilter:
     def __init__(self, id, name = None):
-	self.id = id
-	self.name = name
+        self.id = id
+        self.name = name
 
 # FIXME: numbers correspond to table in _imagingmodule.c
 

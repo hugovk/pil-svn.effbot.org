@@ -68,7 +68,7 @@ void
 #ifdef WIN32
 __declspec(dllexport)
 #endif
-init_imagingtk()
+init_imagingtk(void)
 {
     Py_InitModule("_imagingtk", functions);
 }

@@ -8,7 +8,7 @@
 # <ftp://ftp.sgi.com/graphics/SGIIMAGESPEC>
 #
 # History:
-#	95-09-10 fl	Created
+# 1995-09-10 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995.
@@ -20,7 +20,7 @@
 __version__ = "0.1"
 
 
-import regex, string
+import string
 import Image, ImageFile
 
 
@@ -42,40 +42,40 @@ class SgiImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	# HEAD
-	s = self.fp.read(512)
-	if i16(s) != 474:
-	    raise SyntaxError, "not an SGI image file"
+        # HEAD
+        s = self.fp.read(512)
+        if i16(s) != 474:
+            raise SyntaxError, "not an SGI image file"
 
-	# relevant header entries
-	compression = ord(s[2])
+        # relevant header entries
+        compression = ord(s[2])
 
-	# bytes, dimension, zsize
-	layout = ord(s[3]), i16(s[4:]), i16(s[10:])
+        # bytes, dimension, zsize
+        layout = ord(s[3]), i16(s[4:]), i16(s[10:])
 
-	# determine mode from bytes/zsize
-	if layout == (1, 2, 1):
-	    self.mode = "L"
-	elif layout == (1, 3, 3):
-	    self.mode = "RGB"
-	else:
-	    raise SyntaxError, "unsupported SGI image mode"
+        # determine mode from bytes/zsize
+        if layout == (1, 2, 1):
+            self.mode = "L"
+        elif layout == (1, 3, 3):
+            self.mode = "RGB"
+        else:
+            raise SyntaxError, "unsupported SGI image mode"
 
-	# size
-	self.size = i16(s[6:]), i16(s[8:])
+        # size
+        self.size = i16(s[6:]), i16(s[8:])
 
-	# decoder info
-	if compression == 0:
-	    if self.mode == "RGB":
-		# RGB images are band interleaved
-		size = self.size[0]*self.size[1]
-		self.tile = [("raw", (0,0)+self.size, 512, ("R",0,1)),
-			     ("raw", (0,0)+self.size, 512+size, ("G",0,1)),
-			     ("raw", (0,0)+self.size, 512+2*size, ("B",0,1))]
-	    else:
-		self.tile = [("raw", (0,0)+self.size, 512, (self.mode, 0, 1))]
-	if compression == 1:
-	    self.tile = [("sgi_rle", (0,0)+self.size, 512, (self.mode, 0, 1))]
+        # decoder info
+        if compression == 0:
+            if self.mode == "RGB":
+                # RGB images are band interleaved
+                size = self.size[0]*self.size[1]
+                self.tile = [("raw", (0,0)+self.size, 512, ("R",0,1)),
+                             ("raw", (0,0)+self.size, 512+size, ("G",0,1)),
+                             ("raw", (0,0)+self.size, 512+2*size, ("B",0,1))]
+            else:
+                self.tile = [("raw", (0,0)+self.size, 512, (self.mode, 0, 1))]
+        if compression == 1:
+            self.tile = [("sgi_rle", (0,0)+self.size, 512, (self.mode, 0, 1))]
 
 #
 # registry

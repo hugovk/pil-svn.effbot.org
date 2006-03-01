@@ -5,18 +5,18 @@
  * standard encoder interfaces for the Imaging library
  *
  * History:
- * 96-04-19 fl	Based on decoders.c
- * 96-05-12 fl	Compile cleanly as C++
- * 96-12-30 fl	Plugged potential memory leak for tiled images
- * 97-01-03 fl	Added GIF encoder
- * 97-01-05 fl	Plugged encoder buffer leaks
- * 97-01-11 fl	Added encode_to_file method
- * 98-03-09 fl	Added mode/rawmode argument to encoders
- * 98-07-09 fl	Added interlace argument to GIF encoder
- * 99-02-07 fl	Added PCX encoder
+ * 1996-04-19 fl   Based on decoders.c
+ * 1996-05-12 fl   Compile cleanly as C++
+ * 1996-12-30 fl   Plugged potential memory leak for tiled images
+ * 1997-01-03 fl   Added GIF encoder
+ * 1997-01-05 fl   Plugged encoder buffer leaks
+ * 1997-01-11 fl   Added encode_to_file method
+ * 1998-03-09 fl   Added mode/rawmode argument to encoders
+ * 1998-07-09 fl   Added interlace argument to GIF encoder
+ * 1999-02-07 fl   Added PCX encoder
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1996-97.
+ * Copyright (c) 1997-2001 by Secret Labs AB
+ * Copyright (c) 1996-1997 by Fredrik Lundh 
  *
  * See the README file for information on usage and redistribution.
  */

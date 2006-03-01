@@ -2,10 +2,10 @@
 The Python Imaging Library
 $Id: README$
 
-Release 1.1.1 (Oct 20, 2000)
+Release 1.1.2 (May 7, 2001)
 
 ====================================================================
-The Python Imaging Library 1.1.1
+The Python Imaging Library 1.1.2
 ====================================================================
 
 Contents
@@ -30,11 +30,11 @@ image processing capabilities.
 This source kit has been built and tested on Windows 95, 98 and NT,
 and a number of Unix platforms (including Alpha, Solaris, and Intel
 systems).  We believe that it should work on most modern platforms
-(people are using it on Cray's, after all ;-)
+(people are using it on Crays, after all ;-)
 
 The main distribution site for this software is:
 
-	http://www.pythonware.com/products/pil/
+        http://www.pythonware.com/products/pil/
 
 That site also contains information about free and commercial support
 options, PIL add-ons, answers to frequently asked questions, and more.
@@ -42,7 +42,7 @@ options, PIL add-ons, answers to frequently asked questions, and more.
 The PIL handbook is not included in this distribution; to get the
 latest version, check:
 
-	http://www.pythonware.com/library.htm
+        http://www.pythonware.com/library/
 
 For installation and licensing details, see below.
 
@@ -55,11 +55,11 @@ Support Options
 For support and general questions on the Python Imaging Library, send
 e-mail to the Image SIG mailing list:
 
-	image-sig@python.org
+        image-sig@python.org
 
 You can join the Image SIG by sending a mail to:
 
-	image-sig-request@python.org
+        image-sig-request@python.org
 
 Put "subscribe" in the message body to automatically subscribe to the
 list, or "help" to get additional information.  Alternatively, you can
@@ -75,25 +75,28 @@ extensions to the PIL library, sample applications, and more.
 
 For the full story, check:
 
-	http://www.pythonware.com/products/pil/support.htm
+        http://www.pythonware.com/products/pil/support.htm
 
 Or send a mail to:
 
-	sales@pythonware.com
+        sales@pythonware.com
 
 --------------------------------------------------------------------
-News Highlights in 1.1.1 (as compared to 1.0):
+News Highlights in 1.1.2 (as compared to 1.0):
 --------------------------------------------------------------------
 
-+ Adapted to 1.6 and 2.0
++ Adapted to Python 1.6, 2.0 and 2.1.
 
 + To reduce module dependencies, the Tkinter support has been
   moved to a separate binary module.
 
-+ The usual crop of bug fixes.
++ The JPEG decoder is more tolerant for broken files.  As long
+  as all image data can be read, it won't complain.
+
++ The usual crop of bug fixes and performance tweaks.
 
 For more information on these and other changes, see the CHANGES
-document.
+documents.
 
 --------------------------------------------------------------------
 Software License
@@ -101,8 +104,8 @@ Software License
 
 The Python Imaging Library is
 
-Copyright (c) 1997-2000 by Secret Labs AB
-Copyright (c) 1995-2000 by Fredrik Lundh
+Copyright (c) 1997-2001 by Secret Labs AB
+Copyright (c) 1995-2001 by Fredrik Lundh
 
 By obtaining, using, and/or copying this software and/or its
 associated documentation, you agree that you have read, understood,
@@ -141,9 +144,18 @@ support.
 
    - for JPEG support, get the IJG JPEG library, version 6a or 6b.
 
+     You can find this library here:
+
+          http://www.ijg.org
+          ftp://ftp.uu.net/graphics/jpeg/
+
    - for PNG and ZIP support, get the ZLIB library (by Gailly/Adler).
      PIL was tested with version 1.0.4, but is likely to work with
      versions from 0.95 and onwards.
+
+     You can find this library here:
+
+          http://www.info-zip.org/pub/infozip/zlib/
 
      If you have RedHat 4.2 or newer, the libraries provided with
      the operating system should work just fine.
@@ -159,29 +171,29 @@ support.
    though.
 
 3. Unpack the PIL distribution (the file Imaging-1.1.tar.gz)
-   in your Python extensions directory (or any other suitable
-   directory).
+   in your Python extensions directory (if you have one.  If
+   not, feel free to unpack it in any other suitable directory).
 
-	$ cd Python-1.5/Extensions # example
-	$ gunzip Imaging-1.1.tar.gz
-	$ tar xvf Imaging-1.1.tar
+        $ cd Python-2.0/Extensions # example
+        $ gunzip Imaging-1.1.2.tar.gz
+        $ tar xvf Imaging-1.1.2.tar
 
 
 4. Now build the Imaging core library (libImaging.a):
 
-	$ cd Imaging-1.1/libImaging
-	$ ./configure
-	$ make
+        $ cd Imaging-1.1.2/libImaging
+        $ ./configure
+        $ make
 
    If you need to specify additional compiler options, the
    second line should look something like:
 
-	$ CC="cc -ansi" ./configure
+        $ CC="cc -ansi" ./configure
 
 
 5. To check that this library works as it should, type:
 
-	$ make check
+        $ make check
 
    (It isn't much of a test, but at least it shouldn't crash :-)
 
@@ -196,7 +208,7 @@ support.
 7. Edit Makefile.pre.in and build a Makefile following the instructions
    there.  In most cases, you can simply give the following command:
 
-	$ make -f Makefile.pre.in boot
+        $ make -f Makefile.pre.in boot
 
    If this doesn't generate a Makefile, you probably don't have the
    necessary build files on your machine.  See step 2 above for more
@@ -205,7 +217,7 @@ support.
 
 8. To build a dynamically loaded module, just type "make":
 
-	$ make
+        $ make
 
    This will create two files; "_imaging.so", and "_imagingtk.so"
    (the latter isn't created if you commented out the Tcl/Tk inter-
@@ -213,11 +225,11 @@ support.
 
    Then type (assuming a standard shell):
 
-	$ PYTHONPATH=.:./PIL ; export PYTHONPATH
-	$ python
+        $ PYTHONPATH=.:./PIL ; export PYTHONPATH
+        $ python
 
-	>>> import _imaging
-	>>> import Image
+        >>> import _imaging
+        >>> import Image
 
    If both imports works, you've successfully added PIL to your Python
    environment.
@@ -236,17 +248,17 @@ support.
 
    Example:
 
-	$ cp PIL.pth /usr/local/lib/Python1.5/site-packages
-	$ mkdir /usr/local/lib/Python1.5/site-packages/PIL
-	$ cp *.so PIL/* /usr/local/lib/Python1.5/site-packages/PIL
+        $ cp PIL.pth /usr/local/lib/Python1.5/site-packages
+        $ mkdir /usr/local/lib/Python1.5/site-packages/PIL
+        $ cp *.so PIL/* /usr/local/lib/Python1.5/site-packages/PIL
 
    You can also place "PIL" subdirectory anywhere along the Python
    path, and use PIL as a package.
 
    Example:
 
-	$ mkdir /usr/local/lib/Python1.5/PIL
-	$ cp *.so PIL/* /usr/local/lib/Python1.5/PIL
+        $ mkdir /usr/local/lib/Python1.5/PIL
+        $ cp *.so PIL/* /usr/local/lib/Python1.5/PIL
 
 --------------------------------------------------------------------
 Build instructions for Windows
@@ -255,7 +267,7 @@ Build instructions for Windows
 The current release does not include Windows makefiles.  For prebuilt
 versions, check the product site:
 
-	http://www.pythonware.com/products/pil/
+        http://www.pythonware.com/products/pil/
 
 Building your own copy under Visual Studio should be straightforward;
 create a new project based on the sample extensions provided with

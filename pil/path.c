@@ -5,19 +5,20 @@
  * 2D path utilities
  *
  * history:
- * 96-11-04 fl  Added to PIL (incomplete)
- * 96-11-05 fl	Added sequence semantics
- * 97-02-28 fl	Fixed getbbox
- * 97-06-12 fl	Added id attribute
- * 97-06-14 fl	Added slicing and setitem
- * 98-12-29 fl	Improved sequence handling (from Richard Jones)
- * 99-01-10 fl	Fixed IndexError test for 1.5 (from Fred Drake)
+ * 1996-11-04 fl   Added to PIL (incomplete)
+ * 1996-11-05 fl   Added sequence semantics
+ * 1997-02-28 fl   Fixed getbbox
+ * 1997-06-12 fl   Added id attribute
+ * 1997-06-14 fl   Added slicing and setitem
+ * 1998-12-29 fl   Improved sequence handling (from Richard Jones)
+ * 1999-01-10 fl   Fixed IndexError test for 1.5 (from Fred Drake)
+ * 2000-10-12 fl   Added special cases for tuples and lists
  *
  * notes:
  * FIXME: fill in remaining slots in the sequence api
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1997.
+ * Copyright (c) 1997-2000 by Secret Labs AB
+ * Copyright (c) 1997-2000 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -125,30 +126,73 @@ PyPath_Flatten(PyObject* data, double **pxy)
     }
 
     /* Copy table to path array */
-    for (i = 0; i < n; i++) {
-	double x, y;
-	PyObject *op = PySequence_GetItem(data, i);
-        if (!op) {
-            /* Treat IndexError as end of sequence */
-            if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_IndexError)) {
-                PyErr_Clear();
-                break;
+    if (PyList_Check(data)) {
+        for (i = 0; i < n; i++) {
+            double x, y;
+            PyObject *op = PyList_GET_ITEM(data, i);
+            if (PyFloat_Check(op))
+		xy[j++] = PyFloat_AS_DOUBLE(op);
+            else if (PyInt_Check(op))
+		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyNumber_Check(op))
+                xy[j++] = PyFloat_AsDouble(op);
+            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+                xy[j++] = x;
+                xy[j++] = y;
             } else {
                 free(xy);
                 return -1;
             }
         }
-	if (PyNumber_Check(op))
-	    xy[j++] = PyFloat_AsDouble(op);
-	else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
-	    xy[j++] = x;
-	    xy[j++] = y;
-	} else {
-	    Py_DECREF(op);
-	    free(xy);
-	    return -1;
-	}
-	Py_DECREF(op);
+    } else if (PyTuple_Check(data)) {
+        for (i = 0; i < n; i++) {
+            double x, y;
+            PyObject *op = PyTuple_GET_ITEM(data, i);
+            if (PyFloat_Check(op))
+		xy[j++] = PyFloat_AS_DOUBLE(op);
+            else if (PyInt_Check(op))
+		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyNumber_Check(op))
+                xy[j++] = PyFloat_AsDouble(op);
+            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+                xy[j++] = x;
+                xy[j++] = y;
+            } else {
+                free(xy);
+                return -1;
+            }
+        }
+    } else {
+        for (i = 0; i < n; i++) {
+            double x, y;
+            PyObject *op = PySequence_GetItem(data, i);
+            if (!op) {
+                /* treat IndexError as end of sequence */
+                if (PyErr_Occurred() &&
+                    PyErr_ExceptionMatches(PyExc_IndexError)) {
+                    PyErr_Clear();
+                    break;
+                } else {
+                    free(xy);
+                    return -1;
+                }
+            }
+            if (PyFloat_Check(op))
+		xy[j++] = PyFloat_AS_DOUBLE(op);
+            else if (PyInt_Check(op))
+		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyNumber_Check(op))
+                xy[j++] = PyFloat_AsDouble(op);
+            else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+                xy[j++] = x;
+                xy[j++] = y;
+            } else {
+                Py_DECREF(op);
+                free(xy);
+                return -1;
+            }
+            Py_DECREF(op);
+        }
     }
 
     if (j & 1) {

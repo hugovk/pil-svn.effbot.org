@@ -8,18 +8,18 @@
 # Part 1, Requirements and Guidelines" (CCITT T.81 / ISO 10918-1)
 #
 # History:
-#	95-09-09 fl	Created
-#	95-09-13 fl	Added full parser
-#	96-03-25 fl	Added hack to use the IJG command line utilities
-#	96-05-05 fl	Workaround Photoshop 2.5 CMYK polarity bug
-# 0.1	96-05-28 fl	Added draft support, JFIF version
-# 0.2	96-12-30 fl	Added encoder options, added progression property
-# 0.3	97-08-27 fl	Save mode 1 images as BW
-# 0.4	98-07-12 fl	Added YCbCr to draft and save methods
-# 0.4.1	98-10-19 fl	Don't hang on files using 16-bit DQT's
+# 1995-09-09 fl   Created
+# 1995-09-13 fl   Added full parser
+# 1996-03-25 fl   Added hack to use the IJG command line utilities
+# 1996-05-05 fl   Workaround Photoshop 2.5 CMYK polarity bug
+# 1996-05-28 fl   Added draft support, JFIF version (0.1)
+# 1996-12-30 fl   Added encoder options, added progression property (0.2)
+# 1997-08-27 fl   Save mode 1 images as BW (0.3)
+# 1998-07-12 fl   Added YCbCr to draft and save methods (0.4)
+# 1998-10-19 fl   Don't hang on files using 16-bit DQT's (0.4.1)
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1995-96.
+# Copyright (c) 1997-2001 by Secret Labs AB.
+# Copyright (c) 1995-1996 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -29,12 +29,11 @@ __version__ = "0.4.1"
 import array, string
 import Image, ImageFile
 
+def i16(c,o=0):
+    return ord(c[o+1]) + (ord(c[o])<<8)
 
-def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
-
-def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+def i32(c,o=0):
+    return ord(c[o+3]) + (ord(c[o+2])<<8) + (ord(c[o+1])<<16) + (ord(c[o])<<24)
 
 #
 # Parser
@@ -54,7 +53,7 @@ def APP(self, marker):
         self.info["jfif"] = i16(s[5:])
     if marker == 0xFFEE and s[:5] == "Adobe":
         self.info["adobe"] = i16(s[5:])
-	self.info["adobe_transform"] = ord(s[11])
+        self.info["adobe_transform"] = ord(s[11])
 
 def SOF(self, marker):
     #
@@ -69,25 +68,25 @@ def SOF(self, marker):
 
     self.bits = ord(s[0])
     if self.bits != 8:
-	raise SyntaxError, "cannot handle %d-bit layers" % self.bits
+        raise SyntaxError, "cannot handle %d-bit layers" % self.bits
 
     self.layers = ord(s[5])
     if self.layers == 1:
-	self.mode = "L"
+        self.mode = "L"
     elif self.layers == 3:
-	self.mode = "RGB"
+        self.mode = "RGB"
     elif self.layers == 4:
-	self.mode = "CMYK"
+        self.mode = "CMYK"
     else:
-	raise SyntaxError, "cannot handle %d-layer images" % self.layers
+        raise SyntaxError, "cannot handle %d-layer images" % self.layers
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
-	self.info["progression"] = 1
+        self.info["progression"] = 1
 
     for i in range(6, len(s), 3):
-	t = s[i:i+3]
-	# 4-tuples: id, vsamp, hsamp, qtable
-	self.layer.append((t[0], ord(t[1])/16, ord(t[1])&15, ord(t[2])))
+        t = s[i:i+3]
+        # 4-tuples: id, vsamp, hsamp, qtable
+        self.layer.append((t[0], ord(t[1])/16, ord(t[1])&15, ord(t[2])))
 
 def DQT(self, marker):
     #
@@ -100,15 +99,15 @@ def DQT(self, marker):
 
     s = self.fp.read(i16(self.fp.read(2))-2)
     while len(s):
-	if len(s) < 65:
-	    raise SyntaxError, "bad quantization table marker"
-	v = ord(s[0])
-	if v/16 == 0:
-	    self.quantization[v&15] = array.array("b", s[1:65])
-	    s = s[65:]
-	else:
-	    return # FIXME: add code to read 16-bit tables!
-	    # raise SyntaxError, "bad quantization table element size"
+        if len(s) < 65:
+            raise SyntaxError, "bad quantization table marker"
+        v = ord(s[0])
+        if v/16 == 0:
+            self.quantization[v&15] = array.array("b", s[1:65])
+            s = s[65:]
+        else:
+            return # FIXME: add code to read 16-bit tables!
+            # raise SyntaxError, "bad quantization table element size"
 
 
 #
@@ -191,94 +190,94 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	s = self.fp.read(1)
+        s = self.fp.read(1)
 
-	if ord(s[0]) != 255:
-	    raise SyntaxError, "not an JPEG file"
+        if ord(s[0]) != 255:
+            raise SyntaxError, "not an JPEG file"
 
-	# Create attributes
-	self.bits = self.layers = 0
+        # Create attributes
+        self.bits = self.layers = 0
 
-	# JPEG specifics (internal)
-	self.layer = []
-	self.huffman_dc = {}
-	self.huffman_ac = {}
-	self.quantization = {}
-	self.app = {}
+        # JPEG specifics (internal)
+        self.layer = []
+        self.huffman_dc = {}
+        self.huffman_ac = {}
+        self.quantization = {}
+        self.app = {}
 
-	while 1:
+        while 1:
 
-	    s = s + self.fp.read(1)
+            s = s + self.fp.read(1)
 
-	    i = i16(s)
+            i = i16(s)
 
-	    if MARKER.has_key(i):
-		name, description, handler = MARKER[i]
-		# print hex(i), name, description
-		if handler is not None:
-		    handler(self, i)
-		if i == 0xFFDA: # start of scan
-		    rawmode = self.mode
-		    if self.mode == "CMYK" and self.info.has_key("adobe"):
-			rawmode = "CMYK;I" # Photoshop 2.5 is broken!
-		    self.tile = [("jpeg", (0,0) + self.size, 0, (rawmode, ""))]
-		    # self.__offset = self.fp.tell()
-		    break
-		s = self.fp.read(1)
-	    else:
-	        raise SyntaxError, "no marker found"
+            if MARKER.has_key(i):
+                name, description, handler = MARKER[i]
+                # print hex(i), name, description
+                if handler is not None:
+                    handler(self, i)
+                if i == 0xFFDA: # start of scan
+                    rawmode = self.mode
+                    if self.mode == "CMYK" and self.info.has_key("adobe"):
+                        rawmode = "CMYK;I" # Photoshop 2.5 is broken!
+                    self.tile = [("jpeg", (0,0) + self.size, 0, (rawmode, ""))]
+                    # self.__offset = self.fp.tell()
+                    break
+                s = self.fp.read(1)
+            else:
+                raise SyntaxError, "no marker found"
 
     def draft(self, mode, size):
 
-	if len(self.tile) != 1:
-	    return
+        if len(self.tile) != 1:
+            return
 
-	d, e, o, a = self.tile[0]
-	scale = 0
+        d, e, o, a = self.tile[0]
+        scale = 0
 
-	if a[0] == "RGB" and mode in ["L", "YCbCr"]:
-	    self.mode = mode
-	    a = mode, ""
+        if a[0] == "RGB" and mode in ["L", "YCbCr"]:
+            self.mode = mode
+            a = mode, ""
 
-	if size:
-	    scale = max(self.size[0] / size[0], self.size[1] / size[1])
-	    for s in [8, 4, 2, 1]:
-		if scale >= s:
-		    break
-	    e = e[0], e[1], (e[2]-e[0]+s-1)/s+e[0], (e[3]-e[1]+s-1)/s+e[1]
-	    self.size = ((self.size[0]+s-1)/s, (self.size[1]+s-1)/s)
-	    scale = s
+        if size:
+            scale = max(self.size[0] / size[0], self.size[1] / size[1])
+            for s in [8, 4, 2, 1]:
+                if scale >= s:
+                    break
+            e = e[0], e[1], (e[2]-e[0]+s-1)/s+e[0], (e[3]-e[1]+s-1)/s+e[1]
+            self.size = ((self.size[0]+s-1)/s, (self.size[1]+s-1)/s)
+            scale = s
 
-	self.tile = [(d, e, o, a)]
-	self.decoderconfig = (scale, 1)
+        self.tile = [(d, e, o, a)]
+        self.decoderconfig = (scale, 1)
 
-	return self
+        return self
 
     def load_djpeg(self):
 
-	# ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
-	import tempfile, os
-	file = tempfile.mktemp()
-	os.system("djpeg %s >%s" % (self.filename, file))
+        import tempfile, os
+        file = tempfile.mktemp()
+        os.system("djpeg %s >%s" % (self.filename, file))
 
-	try:
-	    self.im = Image.core.open_ppm(file)
-	finally:
-	    try: os.unlink(file)
-	    except: pass
+        try:
+            self.im = Image.core.open_ppm(file)
+        finally:
+            try: os.unlink(file)
+            except: pass
 
-	self.mode = self.im.mode
-	self.size = self.im.size
+        self.mode = self.im.mode
+        self.size = self.im.size
 
-	self.tile = []
+        self.tile = []
 
 
 def _fetch(dict, key, default = 0):
     try:
-	return dict[key]
+        return dict[key]
     except KeyError:
-	return default
+        return default
 
 RAWMODE = {
     "1": "L",
@@ -295,14 +294,14 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-	raise IOError, "cannot write mode %s as JPEG" % im.mode
+        raise IOError, "cannot write mode %s as JPEG" % im.mode
 
     # get keyword arguments
     im.encoderconfig = (_fetch(im.encoderinfo, "quality", 0),
-			im.encoderinfo.has_key("progressive"),
-			_fetch(im.encoderinfo, "smooth", 0),
-			im.encoderinfo.has_key("optimize"),
-			_fetch(im.encoderinfo, "streamtype", 0))
+                        im.encoderinfo.has_key("progressive"),
+                        _fetch(im.encoderinfo, "smooth", 0),
+                        im.encoderinfo.has_key("optimize"),
+                        _fetch(im.encoderinfo, "streamtype", 0))
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
 

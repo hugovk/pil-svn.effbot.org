@@ -6,8 +6,8 @@
 #
 # to use the module, import it and access the "IMAGE" variable
 #
-#	import img1
-#	im = img1.IMAGE
+#       import img1
+#       im = img1.IMAGE
 #
 # the variable name can be changed with the -n option
 #
@@ -50,11 +50,11 @@ compress = 1
 
 for o, a in opt:
     if o == "-n":
-	name = a
+        name = a
     elif o == "-l":
-	lossy = 1
+        lossy = 1
     elif o == "-u":
-	compress = 0
+        compress = 0
 
 if len(argv) != 2:
     usage()
@@ -75,12 +75,12 @@ else:
     fp = StringIO.StringIO()
 
     if compress:
-	if lossy and im.mode in ["L", "RGB"]:
-	    im.save(fp, "JPEG")
-	else:
-	    im.convert("RGB").save(fp, "PNG")
+        if lossy and im.mode in ["L", "RGB"]:
+            im.save(fp, "JPEG")
+        else:
+            im.convert("RGB").save(fp, "PNG")
     else:
-	im.save(fp, "PPM") # FIXME: won't work with "P" images
+        im.save(fp, "PPM") # FIXME: won't work with "P" images
 
     data = fp.getvalue()
 
@@ -102,23 +102,23 @@ c = len(word)
 i = 1
 while i < len(data)-1:
     if data[i] != "\\":
-	word = data[i]
-	i = i + 1
+        word = data[i]
+        i = i + 1
     else:
-	if data[i+1] in octdigits:
-	    for n in range(2, 5):
-		if data[i+n] not in octdigits:
-		    break
-	    word = data[i:i+n]
-	    i = i + n
+        if data[i+1] in octdigits:
+            for n in range(2, 5):
+                if data[i+n] not in octdigits:
+                    break
+            word = data[i:i+n]
+            i = i + n
         else:
-	    word = data[i:i+2]
-	    i = i + 2
+            word = data[i:i+2]
+            i = i + 2
     l = len(word)
     if c + l >= 78-1:
-	# fp.write("'\n'")
-	fp.write("\\\n")
-	c = 0
+        # fp.write("'\n'")
+        fp.write("\\\n")
+        c = 0
     fp.write(word)
     c = c + l
 

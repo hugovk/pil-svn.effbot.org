@@ -4,7 +4,7 @@
  *
  * declarations for the ZIP codecs
  *
- * Copyright (c) Fredrik Lundh 1996.  All rights reserved.
+ * Copyright (c) Fredrik Lundh 1996.
  */
 
 

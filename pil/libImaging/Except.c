@@ -4,8 +4,9 @@
  *
  * default exception handling
  *
- * description:
- * This code is usually overridden by application code.
+ * This module is usually overridden by application code (e.g.
+ * _imaging.c for PIL's standard Python bindings).  If you get
+ * linking errors, remove this file from your project/library.
  *
  * history:
  * 95-06-15 fl	Created
