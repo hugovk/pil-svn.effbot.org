@@ -1,18 +1,63 @@
-
 The Python Imaging Library
 $Id: CHANGES$
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Anthony Baxter, Jan Blom,
-Roger Burnham, Gene Cash, Kevin Cazabon, Greg Coats, Greg Couch, Bill
-Crutchfield, Fred Drake, Tim Docker, Robin Friedrich, Mark Hammond,
-Bernhard Herzog, Rob Hooft, Jack Jansen, Edward Jones, Richard Jones,
-Robert Kern, Skip Montanaro, Fredrik Nehr, Håkan Karlsson, Robert
-Kern, Matthias Klose, Magnus Källström, Eric Raymond, Bertil
-Reinhammar, Toby Sargeant, Barry Scott, Les Schaffer, Joel Shprentz,
-Perry Stoll, Paul Svensson, Ivan Tkatchev, and Charles Waldman.
+Duncan Booth, Roger Burnham, Gene Cash, Kevin Cazabon, Greg Coats,
+Greg Couch, Bill Crutchfield, Tim Docker, Fred Drake, Robin Friedrich,
+Mark Hammond, Bernhard Herzog, Rob Hooft, Jack Jansen, Edward Jones,
+Richard Jones, Robert Kern, Gordon McMillan, Skip Montanaro, Fredrik
+Nehr, Håkan Karlsson, Robert Kern, Matthias Klose, Magnus Källström,
+Eric Raymond, Bertil Reinhammar, Toby Sargeant, Barry Scott, Les
+Schaffer, Joel Shprentz, Perry Stoll, Paul Svensson, Ivan Tkatchev,
+Rune Uhlin, Sasha Voynow, and Charles Waldman.
 
-*** Changes from release 1.0 to 1.1.1 ***
+*** Changes from release 1.1 to 1.1.2 ***
+
+(1.1.2c1 and 1.1.2 final released)
+
++ Adapted to Python 2.1.  Among other things, all uses of the
+  "regex" module has been repleased with "re".
+
++ Fixed attribute error when reading large PNG files (this bug
+  was introduced in maintenance code released after the 1.1.1
+  release)
+
++ Ignore non-string objects in sys.path
+
++ Fixed Image.transform(EXTENT) for negative xoffsets
+
++ Fixed loading of image plugins if PIL is installed as a package.
+  (The plugin loader now always looks in the directory where the
+  Image.py module itself is found, even if that directory isn't on
+  the standard search path)
+
++ The Png plugin has been added to the list of preloaded standard
+  formats
+
++ Fixed bitmap/text drawing in fill mode.
+
++ Fixed "getextrema" to work also for multiband images.
+
++ Added transparency support for L and P images to the PNG codec.
+
++ Improved support for read-only images.  The "load" method now
+  sets the "readonly" attribute for memory-mapped images.  Operations
+  that modifies an image in place (such as "paste" and drawing operations)
+  creates an in-memory copy of the image, if necessary.  (before this
+  change, any attempt to modify a memory-mapped image resulted in a
+  core dump...)
+
++ Added special cases for lists everywhere PIL expects a sequence.
+  This should speed up things like "putdata" and drawing operations.
+
++ The Image.offset method is deprecated.  Use the ImageChops.offset
+  function instead. 
+
++ Changed ImageChops operators to copy palette and info dictionary
+  from the first image argument.
+
+(1.1.1 released)
 
 + Additional fixes for Python 1.6/2.0, including TIFF "save" bug. 
 

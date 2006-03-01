@@ -8,20 +8,22 @@
 # W3C Recommendation", 1996-10-01, Thomas Boutell (ed.).
 #
 # history:
-# 0.1	96-05-06 fl	Created (couldn't resist it)
-# 0.2	96-12-14 fl	Upgraded, added read and verify support
-#	96-12-15 fl	Separate PNG stream parser
-# 	96-12-29 fl	Added write support, added getchunks
-# 0.3	96-12-30 fl	Eliminated circular references in decoder
-# 0.4	98-07-12 fl	Read/write 16-bit images as mode I
+# 1996-05-06 fl   Created (couldn't resist it)
+# 1996-12-14 fl   Upgraded, added read and verify support (0.2)
+# 1996-12-15 fl   Separate PNG stream parser
+# 1996-12-29 fl   Added write support, added getchunks
+# 1996-12-30 fl   Eliminated circular references in decoder (0.3)
+# 1998-07-12 fl   Read/write 16-bit images as mode I (0.4)
+# 2001-02-08 fl   Added transparency support (from Zircon) (0.5)
+# 2001-04-16 fl   Don't close data source in "open" method (0.6)
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1996.
+# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1996 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4"
+__version__ = "0.6"
 
 import string
 
@@ -64,71 +66,70 @@ class ChunkStream:
 
     def __init__(self, fp):
 
-	self.fp = fp
-	self.queue = []
+        self.fp = fp
+        self.queue = []
 
-	if not hasattr(Image.core, "crc32"):
-	    self.crc = self.crc_skip
+        if not hasattr(Image.core, "crc32"):
+            self.crc = self.crc_skip
 
     def read(self):
-	"Fetch a new chunk. Returns header information."
+        "Fetch a new chunk. Returns header information."
 
-	if self.queue:
-	    cid, pos, len = self.queue[-1]
-	    del self.queue[-1]
-	    self.fp.seek(pos)
-	else:
-	    s = self.fp.read(8)
-	    cid = s[4:]
-	    pos = self.fp.tell()
-	    len = i32(s)
+        if self.queue:
+            cid, pos, len = self.queue[-1]
+            del self.queue[-1]
+            self.fp.seek(pos)
+        else:
+            s = self.fp.read(8)
+            cid = s[4:]
+            pos = self.fp.tell()
+            len = i32(s)
 
-	return cid, pos, len
+        return cid, pos, len
 
     def close(self):
-	del self.queue
-	self.fp = None
+        self.queue = self.crc = self.fp = None
 
     def push(self, cid, pos, len):
 
-	self.queue.append((cid, pos, len))
+        self.queue.append((cid, pos, len))
 
     def call(self, cid, pos, len):
-	"Call the appropriate chunk handler"
+        "Call the appropriate chunk handler"
 
-	if Image.DEBUG:
-	    print "STREAM", cid, pos, len
-	return getattr(self, "chunk_" + cid)(pos, len)
+        if Image.DEBUG:
+            print "STREAM", cid, pos, len
+        return getattr(self, "chunk_" + cid)(pos, len)
 
     def crc(self, cid, data):
-	"Read and verify checksum"
+        "Read and verify checksum"
 
-	crc1 = Image.core.crc32(data, Image.core.crc32(cid))
-	crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
-	if crc1 != crc2:
-	    raise SyntaxError, "broken PNG file"\
-		"(bad header checksum in %s)" % cid
+        crc1 = Image.core.crc32(data, Image.core.crc32(cid))
+        crc2 = i16(self.fp.read(2)), i16(self.fp.read(2))
+        if crc1 != crc2:
+            raise SyntaxError, "broken PNG file"\
+                "(bad header checksum in %s)" % cid
 
     def crc_skip(self, cid, data):
-	"Read checksum.  Used if the C module is not present"
+        "Read checksum.  Used if the C module is not present"
 
-	self.fp.read(4)
+        self.fp.read(4)
 
     def verify(self, endchunk = "IEND"):
 
-	# Simple approach; just calculate checksum for all remaining
-	# blocks.  Must be called directly after open.
+        # Simple approach; just calculate checksum for all remaining
+        # blocks.  Must be called directly after open.
 
-	cids = []
+        cids = []
 
-	while 1:
-	    cid, pos, len = self.read()
-	    if cid == endchunk:
-		break
-	    self.crc(cid, self.fp.read(len))
-	    cids.append(cid)
+        while 1:
+            cid, pos, len = self.read()
+            if cid == endchunk:
+                break
+            self.crc(cid, self.fp.read(len))
+            cids.append(cid)
 
-	return cids
+        return cids
 
 
 # --------------------------------------------------------------------
@@ -138,64 +139,76 @@ class PngStream(ChunkStream):
 
     def __init__(self, fp):
 
-	ChunkStream.__init__(self, fp)
+        ChunkStream.__init__(self, fp)
 
-	# local copies of Image attributes
-	self.im_info = {}
-	self.im_size = (0,0)
-	self.im_mode = None
-	self.im_tile = None
-	self.im_palette = None
+        # local copies of Image attributes
+        self.im_info = {}
+        self.im_size = (0,0)
+        self.im_mode = None
+        self.im_tile = None
+        self.im_palette = None
 
     def chunk_IHDR(self, pos, len):
-	
-	# image header
-	s = self.fp.read(len)
-	self.im_size = i32(s), i32(s[4:])
-	try:
-	    self.im_mode, self.im_rawmode = _MODES[(ord(s[8]), ord(s[9]))]
-	except:
-	    pass
-	if ord(s[12]):
-	    self.im_info["interlace"] = 1
-	if ord(s[11]):
-	    raise SyntaxError, "unknown filter category"
-	return s
+
+        # image header
+        s = self.fp.read(len)
+        self.im_size = i32(s), i32(s[4:])
+        try:
+            self.im_mode, self.im_rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+        except:
+            pass
+        if ord(s[12]):
+            self.im_info["interlace"] = 1
+        if ord(s[11]):
+            raise SyntaxError, "unknown filter category"
+        return s
 
     def chunk_IDAT(self, pos, len):
 
-	# image data
-	self.im_tile = [("zip", (0,0)+self.im_size, pos, self.im_rawmode)]
-	self.im_idat = len
-	raise EOFError
+        # image data
+        self.im_tile = [("zip", (0,0)+self.im_size, pos, self.im_rawmode)]
+        self.im_idat = len
+        raise EOFError
 
     def chunk_IEND(self, pos, len):
 
-	# end of PNG image
-	raise EOFError
+        # end of PNG image
+        raise EOFError
 
     def chunk_PLTE(self, pos, len):
-	
-	# palette
-	s = self.fp.read(len)
-	if self.im_mode == "P":
-	    self.im_palette = "RGB", s
-	return s
+
+        # palette
+        s = self.fp.read(len)
+        if self.im_mode == "P":
+            self.im_palette = "RGB", s
+        return s
+
+    def chunk_tRNS(self, pos, len):
+
+        # transparency
+        s = self.fp.read(len)
+        if self.im_mode == "P":
+            i = string.find(s, chr(0))
+            if i >= 0:
+                self.im_info["transparency"] = i
+        elif self.im_mode == "L":
+            self.im_info["transparency"] = i16(s)
+        return s
 
     def chunk_gAMA(self, pos, len):
 
-	# gamma setting
-	s = self.fp.read(len)
-	self.im_info["gamma"] = i32(s) / 100000.0
-	return s
+        # gamma setting
+        s = self.fp.read(len)
+        self.im_info["gamma"] = i32(s) / 100000.0
+        return s
 
     def chunk_tEXt(self, pos, len):
 
-	# text
-	s = self.fp.read(len)
-	[k, v] = string.split(s, "\0")
-	self.im_info[k] = v
-	return s
+        # text
+        s = self.fp.read(len)
+        [k, v] = string.split(s, "\0")
+        self.im_info[k] = v
+        return s
 
 
 # --------------------------------------------------------------------
@@ -211,90 +224,98 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	if self.fp.read(8) != _MAGIC:
-	    raise SyntaxError, "not a PNG file"
+        if self.fp.read(8) != _MAGIC:
+            raise SyntaxError, "not a PNG file"
 
-	#
-	# Parse headers up to the first IDAT chunk
+        #
+        # Parse headers up to the first IDAT chunk
 
-	self.png = PngStream(self.fp)
+        self.png = PngStream(self.fp)
 
-	while 1:
+        while 1:
 
-	    #
-	    # get next chunk
+            #
+            # get next chunk
 
-	    cid, pos, len = self.png.read()
+            cid, pos, len = self.png.read()
 
-	    try:
-	        s = self.png.call(cid, pos, len)
-	    except EOFError:
-		break
+            try:
+                s = self.png.call(cid, pos, len)
+            except EOFError:
+                break
 
-	    except AttributeError:
-		if Image.DEBUG:
-		    print cid, pos, len, "(unknown)"
-		s = self.fp.read(len)
+            except AttributeError:
+                if Image.DEBUG:
+                    print cid, pos, len, "(unknown)"
+                s = self.fp.read(len)
 
-	    self.png.crc(cid, s)
+            self.png.crc(cid, s)
 
-	#
-	# Copy relevant attributes from the PngStream.  An alternative
-	# would be to let the PngStream class modify these attributes
-	# directly, but that introduces circular references which are
-	# difficult to break no matter what happens in the decoders.
-	# (believe me, I've tried ;-)
+        #
+        # Copy relevant attributes from the PngStream.  An alternative
+        # would be to let the PngStream class modify these attributes
+        # directly, but that introduces circular references which are
+        # difficult to break if things go wrong in the decoder...
+        # (believe me, I've tried ;-)
 
-	self.mode = self.png.im_mode
-	self.size = self.png.im_size
-	self.info = self.png.im_info
-	self.tile = self.png.im_tile
-	if self.png.im_palette:
-	    rawmode, data = self.png.im_palette
-	    self.palette = ImagePalette.raw(rawmode, data)
+        self.mode = self.png.im_mode
+        self.size = self.png.im_size
+        self.info = self.png.im_info
+        self.tile = self.png.im_tile
 
-	self.__idat = len # used by load_read()
+        if self.png.im_palette:
+            rawmode, data = self.png.im_palette
+            self.palette = ImagePalette.raw(rawmode, data)
+
+        self.__idat = len # used by load_read()
 
 
     def verify(self):
-	"Verify PNG file"
+        "Verify PNG file"
 
-	# back up to beginning of IDAT block
-	self.fp.seek(self.tile[0][2] - 8)
+        # back up to beginning of IDAT block
+        self.fp.seek(self.tile[0][2] - 8)
 
-	self.png.verify()
-	self.png.close()
+        self.png.verify()
+        self.png.close()
 
-	self.fp = None
+        self.fp = None
 
 
     def load_read(self, bytes):
-	"Read more data from chunks (used by ImageFile.load)"
+        "internal: read more image data"
 
-	while self.__idat == 0:
-	    # end of chunk, skip forward to next one
+        while self.__idat == 0:
+            # end of chunk, skip forward to next one
 
-	    self.fp.read(4) # CRC
+            self.fp.read(4) # CRC
 
-	    cid, pos, len = self.png.read()
+            cid, pos, len = self.png.read()
 
-	    if cid not in ["IDAT", "DDAT"]:
-		self.png.push(cid, pos, len)
-		return ""
+            if cid not in ["IDAT", "DDAT"]:
+                self.png.push(cid, pos, len)
+                return ""
 
-	    self.__idat = len # empty chunks are allowed
+            self.__idat = len # empty chunks are allowed
 
-	# read more data from this chunk
-	if bytes <= 0:
-	    bytes = self.__idat
-	else:
-	    bytes = min(bytes, self.__idat)
+        # read more data from this chunk
+        if bytes <= 0:
+            bytes = self.__idat
+        else:
+            bytes = min(bytes, self.__idat)
 
-	self.__idat = self.__idat - bytes
+        self.__idat = self.__idat - bytes
 
-	return self.fp.read(bytes)
+        return self.fp.read(bytes)
 
-#
+
+    def load_end(self):
+        "internal: finished reading image data"
+
+        self.png.close()
+        self.png = None
+
+
 # --------------------------------------------------------------------
 # PNG writer
 
@@ -334,10 +355,10 @@ class _idat:
     # wrap output from the encoder in IDAT chunks
 
     def __init__(self, fp, chunk):
-	self.fp = fp
-	self.chunk = chunk
+        self.fp = fp
+        self.chunk = chunk
     def write(self, data):
-	self.chunk(self.fp, "IDAT", data)
+        self.chunk(self.fp, "IDAT", data)
 
 def _save(im, fp, filename, chunk=putchunk, check=0):
     # save an image to disk (called by the save method)
@@ -346,47 +367,47 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     if mode == "P":
 
-	#
-	# attempt to minimize storage requirements for palette images
+        #
+        # attempt to minimize storage requirements for palette images
 
-	if im.encoderinfo.has_key("bits"):
+        if im.encoderinfo.has_key("bits"):
 
-	    # number of bits specified by user
-	    n = 1 << im.encoderinfo["bits"]
+            # number of bits specified by user
+            n = 1 << im.encoderinfo["bits"]
 
-	else:
+        else:
 
-	    # check palette contents
-	    n = 256 # FIXME
+            # check palette contents
+            n = 256 # FIXME
 
-	if n <= 2:
-	    bits = 1
-	elif n <= 4:
-	    bits = 2
-	elif n <= 16:
-	    bits = 4
-	else:
-	    bits = 8
+        if n <= 2:
+            bits = 1
+        elif n <= 4:
+            bits = 2
+        elif n <= 16:
+            bits = 4
+        else:
+            bits = 8
 
-	if bits != 8:
-	    mode = "%s;%d" % (mode, bits)
+        if bits != 8:
+            mode = "%s;%d" % (mode, bits)
 
     # encoder options
     if im.encoderinfo.has_key("dictionary"):
-	dictionary = im.encoderinfo["dictionary"]
+        dictionary = im.encoderinfo["dictionary"]
     else:
-	dictionary = ""
+        dictionary = ""
 
     im.encoderconfig = (im.encoderinfo.has_key("optimize"), dictionary)
 
     # get the corresponding PNG mode
     try:
-	rawmode, mode = _OUTMODES[mode]
+        rawmode, mode = _OUTMODES[mode]
     except KeyError:
-	raise IOError, "cannot write mode %s as PNG" % mode
+        raise IOError, "cannot write mode %s as PNG" % mode
 
     if check:
-	return check
+        return check
 
     #
     # write minimal PNG file
@@ -394,18 +415,28 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
     fp.write(_MAGIC)
 
     chunk(fp, "IHDR",
-	  o32(im.size[0]), o32(im.size[1]),	#  0: size
-	  mode,					#  8: depth/type
-	  chr(0),				# 10: compression
-	  chr(0),				# 11: filter category
-	  chr(0))				# 12: interlace flag
+          o32(im.size[0]), o32(im.size[1]),     #  0: size
+          mode,                                 #  8: depth/type
+          chr(0),                               # 10: compression
+          chr(0),                               # 11: filter category
+          chr(0))                               # 12: interlace flag
 
     if im.mode == "P":
-	chunk(fp, "PLTE", im.im.getpalette("RGB"))
+        chunk(fp, "PLTE", im.im.getpalette("RGB"))
+
+    if im.encoderinfo.has_key("transparency"):
+        if im.mode == "P":
+            transparency = max(0, min(255, im.encoderinfo["transparency"]))
+            chunk(fp, "tRNS", chr(255) * transparency + chr(0))
+        elif im.mode == "L":
+            transparency = max(0, min(65535, im.encoderinfo["transparency"]))
+            chunk(fp, "tRNS", o16(transparency))
+        else:
+            raise IOError, "cannot use transparency for this mode"
 
     if 0:
-	# FIXME: to be supported some day
-	chunk(fp, "gAMA", o32(int(gamma * 100000.0)))
+        # FIXME: to be supported some day
+        chunk(fp, "gAMA", o32(int(gamma * 100000.0)))
 
     ImageFile._save(im, _idat(fp, chunk), [("zip", (0,0)+im.size, 0, rawmode)])
 
@@ -425,23 +456,23 @@ def getchunks(im, **params):
     class collector:
         data = []
         def write(self, data):
-	    pass
-	def append(self, chunk):
-	    self.data.append(chunk)
+            pass
+        def append(self, chunk):
+            self.data.append(chunk)
 
     def append(fp, cid, *data):
-	data = string.join(data, "")
-	hi, lo = Image.core.crc32(data, Image.core.crc32(cid))
-	crc = o16(hi) + o16(lo)
-	fp.append((cid, data, crc))
+        data = string.join(data, "")
+        hi, lo = Image.core.crc32(data, Image.core.crc32(cid))
+        crc = o16(hi) + o16(lo)
+        fp.append((cid, data, crc))
 
     fp = collector()
 
     try:
-	im.encoderinfo = params
-	_save(im, fp, None, append)
+        im.encoderinfo = params
+        _save(im, fp, None, append)
     finally:
-	del im.encoderinfo
+        del im.encoderinfo
 
     return fp.data
 

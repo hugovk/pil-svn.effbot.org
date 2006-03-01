@@ -5,9 +5,9 @@
 # Adobe PSD 2.5/3.0 file handling
 #
 # History:
-#	95-09-01 fl	Created
-#	97-01-03 fl	Read most PSD images
-#	97-01-18 fl	Fixed P and CMYK support
+#       95-09-01 fl     Created
+#       97-01-03 fl     Read most PSD images
+#       97-01-18 fl     Fixed P and CMYK support
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1995-97.
@@ -54,78 +54,78 @@ class PsdImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	#
-	# header
+        #
+        # header
 
-	s = self.fp.read(26)
-	if s[:4] != "8BPS" or i16(s[4:]) != 1:
-	    raise SyntaxError, "not a PSD file"
+        s = self.fp.read(26)
+        if s[:4] != "8BPS" or i16(s[4:]) != 1:
+            raise SyntaxError, "not a PSD file"
 
-	bits, layers = i16(s[22:]), i16(s[12:])
+        bits, layers = i16(s[22:]), i16(s[12:])
 
-	self.mode = MODES[i16(s[24:])]
-	if self.mode == "MLS":
-	    self.mode = string.uppercase[:layers] + "*8"
+        self.mode = MODES[i16(s[24:])]
+        if self.mode == "MLS":
+            self.mode = string.uppercase[:layers] + "*8"
 
-	self.size = i32(s[18:]), i32(s[14:])
+        self.size = i32(s[18:]), i32(s[14:])
 
-	#
-	# mode data
+        #
+        # mode data
 
-	size = i32(self.fp.read(4))
-	if size:
-	    data = self.fp.read(size)
-	    if self.mode == "P" and size == 768:
-		self.palette = ImagePalette.raw("RGB;L", data)
+        size = i32(self.fp.read(4))
+        if size:
+            data = self.fp.read(size)
+            if self.mode == "P" and size == 768:
+                self.palette = ImagePalette.raw("RGB;L", data)
 
-	#
-	# resources
+        #
+        # resources
 
-	size = i32(self.fp.read(4))
-	if size:
-	    self.fp.seek(size, 1) # ignored
+        size = i32(self.fp.read(4))
+        if size:
+            self.fp.seek(size, 1) # ignored
 
-	#
-	# reserved block (overlays?)
+        #
+        # reserved block (overlays?)
 
-	size = i32(self.fp.read(4))
-	if size:
-	    self.fp.seek(size, 1) # ignored
+        size = i32(self.fp.read(4))
+        if size:
+            self.fp.seek(size, 1) # ignored
 
-	#
-	# image descriptor
+        #
+        # image descriptor
 
-	self.tile = []
+        self.tile = []
 
-	compression = i16(self.fp.read(2))
+        compression = i16(self.fp.read(2))
 
-	if compression == 0:
+        if compression == 0:
 
-	    #
-	    # raw compression
+            #
+            # raw compression
 
-	    offset = self.fp.tell()
-	    for layer in self.mode:
-		if self.mode == "CMYK":
-		    layer = layer + ";I"
-		self.tile.append(("raw", (0,0)+self.size, offset, layer))
-		offset = offset + self.size[0]*self.size[1]
+            offset = self.fp.tell()
+            for layer in self.mode:
+                if self.mode == "CMYK":
+                    layer = layer + ";I"
+                self.tile.append(("raw", (0,0)+self.size, offset, layer))
+                offset = offset + self.size[0]*self.size[1]
 
-	elif compression == 1:
+        elif compression == 1:
 
-	    #
-	    # packbits compression
+            #
+            # packbits compression
 
-	    i = 0
-	    s = self.fp.read(layers * self.size[1] * 2) # byte counts
-	    offset = self.fp.tell()
-	    for layer in self.mode:
-		if self.mode == "CMYK":
-		    layer = layer + ";I"
-		self.tile.append(("packbits", (0,0)+self.size, offset, layer))
-		for y in range(self.size[1]):
-		    offset = offset + i16(s[i:i+2])
-		    i = i + 2
+            i = 0
+            s = self.fp.read(layers * self.size[1] * 2) # byte counts
+            offset = self.fp.tell()
+            for layer in self.mode:
+                if self.mode == "CMYK":
+                    layer = layer + ";I"
+                self.tile.append(("packbits", (0,0)+self.size, offset, layer))
+                for y in range(self.size[1]):
+                    offset = offset + i16(s[i:i+2])
+                    i = i + 2
 
 # --------------------------------------------------------------------
 # registry

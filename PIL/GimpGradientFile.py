@@ -5,7 +5,7 @@
 # stuff to read (and render) GIMP gradient files
 #
 # History:
-#	97-08-23 fl	Created
+#       97-08-23 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
@@ -14,7 +14,7 @@
 #
 
 from math import pi, log, sin, sqrt
-import string, sys
+import string
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from
@@ -26,17 +26,17 @@ EPSILON = 1e-10
 
 def linear(middle, pos):
     if pos <= middle:
-	if middle < EPSILON:
-	    return 0.0
-	else:
-	    return 0.5 * pos / middle
+        if middle < EPSILON:
+            return 0.0
+        else:
+            return 0.5 * pos / middle
     else:
         pos = pos - middle
-	middle = 1.0 - middle
-	if middle < EPSILON:
-	    return 1.0
-	else:
-	    return 0.5 + 0.5 * pos / middle
+        middle = 1.0 - middle
+        if middle < EPSILON:
+            return 1.0
+        else:
+            return 0.5 + 0.5 * pos / middle
 
 def curved(middle, pos):
     return pos ** (log(0.5) / log(max(middle, EPSILON)))
@@ -57,67 +57,69 @@ SEGMENTS = [ linear, curved, sine, sphere_increasing, sphere_decreasing ]
 
 class GradientFile:
 
+    gradient = None
+
     def getpalette(self, entries = 256):
 
-	palette = []
+        palette = []
 
-	ix = 0
-	x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
+        ix = 0
+        x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
 
-	for i in range(entries):
+        for i in range(entries):
 
-	    x = i / float(entries-1)
+            x = i / float(entries-1)
 
-	    while x1 < x:
-		ix = ix + 1
-		x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
+            while x1 < x:
+                ix = ix + 1
+                x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
 
-	    w = x1 - x0
+            w = x1 - x0
 
-	    if w < EPSILON:
-		scale = segment(0.5, 0.5)
-	    else:
-		scale = segment((xm - x0) / w, (x - x0) / w)
+            if w < EPSILON:
+                scale = segment(0.5, 0.5)
+            else:
+                scale = segment((xm - x0) / w, (x - x0) / w)
 
-	    # expand to RGBA
-	    r = chr(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
-	    g = chr(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
-	    b = chr(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
-	    a = chr(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
+            # expand to RGBA
+            r = chr(int(255 * ((rgb1[0] - rgb0[0]) * scale + rgb0[0]) + 0.5))
+            g = chr(int(255 * ((rgb1[1] - rgb0[1]) * scale + rgb0[1]) + 0.5))
+            b = chr(int(255 * ((rgb1[2] - rgb0[2]) * scale + rgb0[2]) + 0.5))
+            a = chr(int(255 * ((rgb1[3] - rgb0[3]) * scale + rgb0[3]) + 0.5))
 
-	    # add to palette
-	    palette.append(r + g + b + a)
+            # add to palette
+            palette.append(r + g + b + a)
 
-	return string.join(palette, ""), "RGBA"
+        return string.join(palette, ""), "RGBA"
 
 
 class GimpGradientFile(GradientFile):
 
     def __init__(self, fp):
 
-	if fp.readline()[:13] != "GIMP Gradient":
-	    raise SyntaxError, "not a GIMP gradient file"
+        if fp.readline()[:13] != "GIMP Gradient":
+            raise SyntaxError, "not a GIMP gradient file"
 
-	count = string.atoi(fp.readline())
+        count = string.atoi(fp.readline())
 
-	gradient = []
+        gradient = []
 
-	for i in range(count):
+        for i in range(count):
 
-	    s = string.split(fp.readline())
-	    w = map(string.atof, s[:11])
+            s = string.split(fp.readline())
+            w = map(string.atof, s[:11])
 
-	    x0, x1  = w[0], w[2]
-	    xm      = w[1]
-	    rgb0    = w[3:7]
-	    rgb1    = w[7:11]
+            x0, x1  = w[0], w[2]
+            xm      = w[1]
+            rgb0    = w[3:7]
+            rgb1    = w[7:11]
 
-	    segment = SEGMENTS[string.atoi(s[11])]
-	    cspace  = string.atoi(s[12])
+            segment = SEGMENTS[string.atoi(s[11])]
+            cspace  = string.atoi(s[12])
 
-	    if cspace != 0:
-		raise IOError, "cannot handle HSV colour space"
+            if cspace != 0:
+                raise IOError, "cannot handle HSV colour space"
 
-	    gradient.append((x0, x1, xm, rgb0, rgb1, segment))
+            gradient.append((x0, x1, xm, rgb0, rgb1, segment))
 
-	self.gradient = gradient
+        self.gradient = gradient

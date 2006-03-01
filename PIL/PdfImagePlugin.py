@@ -5,8 +5,8 @@
 # PDF (Acrobat) file handling
 #
 # History:
-#	96-07-16 fl	Created
-#	97-01-18 fl	Fixed header
+#       96-07-16 fl     Created
+#       97-01-18 fl     Fixed header
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996-97.
@@ -34,11 +34,11 @@ import StringIO
 def _obj(fp, obj, **dict):
     fp.write("%d 0 obj\n" % obj)
     if dict:
-	fp.write("<<\n")
-	for k, v in dict.items():
-	    if v is not None:
-		fp.write("/%s %s\n" % (k, v))
-	fp.write(">>\n")
+        fp.write("<<\n")
+        for k, v in dict.items():
+            if v is not None:
+                fp.write("/%s %s\n" % (k, v))
+        fp.write(">>\n")
 
 def _endobj(fp):
     fp.write("endobj\n")
@@ -66,23 +66,23 @@ def _save(im, fp, filename):
     params = None
 
     if im.mode == "1":
-	filter = "/ASCIIHexDecode"
-	config = "/DeviceGray", "/ImageB", 1
+        filter = "/ASCIIHexDecode"
+        config = "/DeviceGray", "/ImageB", 1
     elif im.mode == "L":
-	filter = "/DctDecode"
-	# params = "<< /Predictor 15 /Columns %d >>" % (width-2)
-	config = "/DeviceGray", "/ImageB", 8
+        filter = "/DctDecode"
+        # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
+        config = "/DeviceGray", "/ImageB", 8
     elif im.mode == "P":
-	filter = "/ASCIIHexDecode"
-	config = "/Indexed", "/ImageI", 8
+        filter = "/ASCIIHexDecode"
+        config = "/Indexed", "/ImageI", 8
     elif im.mode == "RGB":
-	filter = "/DCTDecode"
-	config = "/DeviceRGB", "/ImageC", 8
+        filter = "/DCTDecode"
+        config = "/DeviceRGB", "/ImageC", 8
     elif im.mode == "CMYK":
-	filter = "/DCTDecode"	
-	config = "/DeviceRGB", "/ImageC", 8
+        filter = "/DCTDecode"   
+        config = "/DeviceRGB", "/ImageC", 8
     else:
-	raise ValueError, "illegal mode"
+        raise ValueError, "illegal mode"
 
     colorspace, proc, bits = config
 
@@ -91,7 +91,7 @@ def _save(im, fp, filename):
 
     xref[1] = fp.tell()
     _obj(fp, 1, Type = "/Catalog",
-		Pages = "2 0 R")
+                Pages = "2 0 R")
     _endobj(fp)
 
     #
@@ -99,8 +99,8 @@ def _save(im, fp, filename):
 
     xref[2] = fp.tell()
     _obj(fp, 2, Type = "/Pages",
-		Count = 1,
-		Kids = "[4 0 R]")
+                Count = 1,
+                Kids = "[4 0 R]")
     _endobj(fp)
 
     #
@@ -109,26 +109,26 @@ def _save(im, fp, filename):
     op = StringIO.StringIO()
 
     if filter == "/ASCIIHexDecode":
-	ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, None)])
+        ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, None)])
     elif filter == "/DCTDecode":
-	ImageFile._save(im, op, [("jpeg", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("jpeg", (0,0)+im.size, 0, im.mode)])
     elif filter == "/FlateDecode":
-	ImageFile._save(im, op, [("zip", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("zip", (0,0)+im.size, 0, im.mode)])
     elif filter == "/RunLengthDecode":
-	ImageFile._save(im, op, [("packbits", (0,0)+im.size, 0, im.mode)])
+        ImageFile._save(im, op, [("packbits", (0,0)+im.size, 0, im.mode)])
     else:
-	raise ValueError, "unsupported PDF filter"
+        raise ValueError, "unsupported PDF filter"
 
     xref[3] = fp.tell()
     _obj(fp, 3, Type = "/XObject",
-		Subtype = "/Image",
-		Width = width,
-		Height = height,
-		Length = len(op.getvalue()),
-		Filter = filter,
-		BitsPerComponent = bits,
-		DecodeParams = params,
-		ColorSpace = colorspace)
+                Subtype = "/Image",
+                Width = width,
+                Height = height,
+                Length = len(op.getvalue()),
+                Filter = filter,
+                BitsPerComponent = bits,
+                DecodeParams = params,
+                ColorSpace = colorspace)
 
     fp.write("stream\n")
     fp.write(op.getvalue())
@@ -143,8 +143,8 @@ def _save(im, fp, filename):
     fp.write("4 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n"\
              "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
              "/XObject << /image 3 0 R >>\n>>\n"\
-	     "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-	     (proc, width, height))
+             "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
+             (proc, width, height))
 
     #
     # page contents
@@ -166,7 +166,7 @@ def _save(im, fp, filename):
     startxref = fp.tell()
     fp.write("xref\n0 %d\n0000000000 65535 f \n" % len(xref))
     for x in xref[1:]:
-	fp.write("%010d 00000 n \n" % x)
+        fp.write("%010d 00000 n \n" % x)
     fp.write("trailer\n<<\n/Size %d\n/Root 1 0 R\n>>\n" % len(xref))
     fp.write("startxref\n%d\n%%%%EOF\n" % startxref)
     fp.flush()

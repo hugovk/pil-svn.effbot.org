@@ -7,11 +7,11 @@
 # WMF support for PIL
 #
 # history:
-#	96-12-14 fl	Created
+#       96-12-14 fl     Created
 #
 # notes:
-#	This code currently supports placable metafiles only, and
-#	just a few graphics operations are implemented.
+#       This code currently supports placable metafiles only, and
+#       just a few graphics operations are implemented.
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
@@ -110,7 +110,7 @@ META_TEXTOUT = 0x0521
 NAME = {}
 for k, v in vars().items():
     if k[:5] == "META_":
-	NAME[v] = k[5:]
+        NAME[v] = k[5:]
 
 #
 # --------------------------------------------------------------------
@@ -126,149 +126,149 @@ class WmfImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	# check placable header
-	s = self.fp.read(22)
-	if s[:6] != "\327\315\306\232\000\000":
-	    raise SyntaxError, "Not a placable WMF file"
+        # check placable header
+        s = self.fp.read(22)
+        if s[:6] != "\327\315\306\232\000\000":
+            raise SyntaxError, "Not a placable WMF file"
 
-	# position on output device
-	bbox = i16(s[6:8]), i16(s[8:10]), i16(s[10:12]), i16(s[12:14])
+        # position on output device
+        bbox = i16(s[6:8]), i16(s[8:10]), i16(s[10:12]), i16(s[12:14])
 
-	# FIXME: should take the scale into account
+        # FIXME: should take the scale into account
 
-	self.mode = "P"
-	self.size = (bbox[2]-bbox[0]) / 20, (bbox[3]-bbox[1]) / 20
+        self.mode = "P"
+        self.size = (bbox[2]-bbox[0]) / 20, (bbox[3]-bbox[1]) / 20
 
-	# FIXME: while hacking
-	self.size = (bbox[2] + bbox[0])/10, (bbox[3] + bbox[1])/10
+        # FIXME: while hacking
+        self.size = (bbox[2] + bbox[0])/10, (bbox[3] + bbox[1])/10
 
-	self.bbox = bbox
+        self.bbox = bbox
 
-	# check standard header
-	s = self.fp.read(18)
-	if s[:6] != "\001\000\011\000\000\003":
-	    raise SyntaxError, "Not a WMF file"
+        # check standard header
+        s = self.fp.read(18)
+        if s[:6] != "\001\000\011\000\000\003":
+            raise SyntaxError, "Not a WMF file"
 
     def _ink(self, rgb):
 
-	# lookup colour in current palette
-	try:
-	    return self.palette[rgb]
-	except KeyError:
-	    # hmm. what if the palette becomes full?
-	    ink = len(self.palette)
-	    self.palette[rgb] = ink
-	    return ink
+        # lookup colour in current palette
+        try:
+            return self.palette[rgb]
+        except KeyError:
+            # hmm. what if the palette becomes full?
+            ink = len(self.palette)
+            self.palette[rgb] = ink
+            return ink
 
     def load(self):
 
-	if self.im:
-	    return
+        if self.im:
+            return
 
-	#
-	# windows standard palette
+        #
+        # windows standard palette
 
-	self.palette = {
-	    '\000\000\000': 0,
-	    '\200\000\000': 1,
-	    '\000\200\000': 2,
-	    '\200\200\000': 3,
-	    '\000\000\200': 4,
-	    '\200\000\200': 5,
-	    '\000\200\200': 6,
-	    '\300\300\300': 7,
-	    '\300\334\300': 8,
-	    '\246\312\360': 9,
-	    '\377\373\360': 246,
-	    '\240\240\244': 247,
-	    '\200\200\200': 248,
-	    '\377\000\000': 249,
-	    '\000\377\000': 250,
-	    '\377\377\000': 251,
-	    '\000\000\377': 252,
-	    '\377\000\377': 253,
-	    '\000\377\377': 254,
-	    '\377\377\377': 255,
-	}
+        self.palette = {
+            '\000\000\000': 0,
+            '\200\000\000': 1,
+            '\000\200\000': 2,
+            '\200\200\000': 3,
+            '\000\000\200': 4,
+            '\200\000\200': 5,
+            '\000\200\200': 6,
+            '\300\300\300': 7,
+            '\300\334\300': 8,
+            '\246\312\360': 9,
+            '\377\373\360': 246,
+            '\240\240\244': 247,
+            '\200\200\200': 248,
+            '\377\000\000': 249,
+            '\000\377\000': 250,
+            '\377\377\000': 251,
+            '\000\000\377': 252,
+            '\377\000\377': 253,
+            '\000\377\377': 254,
+            '\377\377\377': 255,
+        }
 
-	fill = 0
+        fill = 0
 
-	pen = brush = self._ink("\000\000\000")
-	paper = self._ink("\377\377\377")
+        pen = brush = self._ink("\000\000\000")
+        paper = self._ink("\377\377\377")
 
-	self.im = Image.core.fill(self.mode, self.size, paper)
+        self.im = Image.core.fill(self.mode, self.size, paper)
 
-	#
-	# render metafile into image, using the standard palette
+        #
+        # render metafile into image, using the standard palette
 
-	id = ImageDraw.ImageDraw(self)
+        id = ImageDraw.ImageDraw(self)
 
-	while 1:
+        while 1:
 
-	    s = self.fp.read(6)
+            s = self.fp.read(6)
 
-	    size = i32(s)*2
-	    func = i16(s[4:])
+            size = i32(s)*2
+            func = i16(s[4:])
 
-	    if not func:
-		break
+            if not func:
+                break
 
-	    s = self.fp.read(size-6)
+            s = self.fp.read(size-6)
 
-	    if func == META_SETPOLYFILLMODE:
-		fill = i16(s)
-		id.setfill(fill)
+            if func == META_SETPOLYFILLMODE:
+                fill = i16(s)
+                id.setfill(fill)
 
-	    elif func == META_CREATEBRUSHINDIRECT:
-		brush = self._ink(s[2:5])
+            elif func == META_CREATEBRUSHINDIRECT:
+                brush = self._ink(s[2:5])
 
-	    elif func == META_CREATEPENINDIRECT:
-		pen = self._ink(s[6:9])
+            elif func == META_CREATEPENINDIRECT:
+                pen = self._ink(s[6:9])
 
-	    elif func == META_POLYGON:
-		xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
-		if fill:
-		    id.setink(brush)
-		    id.polygon(xy)
-		    id.setink(pen)
-		    id.setfill(0)
-		    id.polygon(xy)
-		    id.setfill(1)
-		else:
-		    id.setink(pen)
-		    id.polygon(xy)
+            elif func == META_POLYGON:
+                xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
+                if fill:
+                    id.setink(brush)
+                    id.polygon(xy)
+                    id.setink(pen)
+                    id.setfill(0)
+                    id.polygon(xy)
+                    id.setfill(1)
+                else:
+                    id.setink(pen)
+                    id.polygon(xy)
 
-	    elif func == META_POLYLINE:
-		xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
-		id.setink(pen)
-		id.line(xy)
+            elif func == META_POLYLINE:
+                xy = map(lambda i,s=s: i16(s[i:i+2])/10, range(2, len(s), 2))
+                id.setink(pen)
+                id.line(xy)
 
-	    elif func == META_RECTANGLE:
-		xy = (i16(s[2:4])/10, i16(s[0:2])/10,
-		      i16(s[6:8])/10, i16(s[4:6])/10)
-		if fill:
-		    id.setink(brush)
-		    id.rectangle(xy)
-		    id.setink(pen)
-		    id.setfill(0)
-		    id.rectangle(xy)
-		    id.setfill(1)
-		else:
-		    id.setink(pen)
-		    id.rectangle(xy)
-	    else:
-		if Image.DEBUG:
-		    print size, hex(func), NAME[func]
-		pass
+            elif func == META_RECTANGLE:
+                xy = (i16(s[2:4])/10, i16(s[0:2])/10,
+                      i16(s[6:8])/10, i16(s[4:6])/10)
+                if fill:
+                    id.setink(brush)
+                    id.rectangle(xy)
+                    id.setink(pen)
+                    id.setfill(0)
+                    id.rectangle(xy)
+                    id.setfill(1)
+                else:
+                    id.setink(pen)
+                    id.rectangle(xy)
+            else:
+                if Image.DEBUG:
+                    print size, hex(func), NAME[func]
+                pass
 
-	#
-	# attach palette to image
+        #
+        # attach palette to image
 
-	palette = ["\0\0\0"] * 256
-	for rgb, i in self.palette.items():
-	    if i < 256:
-		palette[i] = rgb
-	self.im.putpalette("RGB", string.join(palette, ""))
+        palette = ["\0\0\0"] * 256
+        for rgb, i in self.palette.items():
+            if i < 256:
+                palette[i] = rgb
+        self.im.putpalette("RGB", string.join(palette, ""))
 
 #
 # --------------------------------------------------------------------

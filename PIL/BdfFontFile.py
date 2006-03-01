@@ -7,7 +7,7 @@
 # bitmap distribution font file parser
 #
 # history:
-# 96-05-16 fl	created (as bdf2pil)
+# 96-05-16 fl   created (as bdf2pil)
 # 97-08-25 fl   converted to FontFile driver
 #
 # Copyright (c) Secret Labs AB 1997-98.
@@ -44,29 +44,29 @@ def bdf_char(f):
 
     # skip to STARTCHAR
     while 1:
-	s = f.readline()
-	if not s:
-	    return None
-	if s[:9] == "STARTCHAR":
-	    break
+        s = f.readline()
+        if not s:
+            return None
+        if s[:9] == "STARTCHAR":
+            break
     id = string.strip(s[9:])
 
     # load symbol properties
     props = {}
     while 1:
-	s = f.readline()
-	if not s or s[:6] == "BITMAP":
-	    break
-	i = string.find(s, " ")
-	props[s[:i]] = s[i+1:-1]
+        s = f.readline()
+        if not s or s[:6] == "BITMAP":
+            break
+        i = string.find(s, " ")
+        props[s[:i]] = s[i+1:-1]
 
     # load bitmap
     bitmap = []
     while 1:
-	s = f.readline()
-	if not s or s[:7] == "ENDCHAR":
-	    break
-	bitmap.append(s[:-1])
+        s = f.readline()
+        if not s or s[:7] == "ENDCHAR":
+            break
+        bitmap.append(s[:-1])
     bitmap = string.join(bitmap, "")
 
     [x, y, l, d] = map(string.atoi, string.split(props["BBX"]))
@@ -82,6 +82,8 @@ def bdf_char(f):
 class BdfFontFile(FontFile.FontFile):
 
     def __init__(self, fp):
+
+        FontFile.FontFile.__init__()
 
         s = fp.readline()
         if s[:13] != "STARTFONT 2.1":
@@ -114,7 +116,7 @@ class BdfFontFile(FontFile.FontFile):
 
         # print "#", fontname
         # for i in comments:
-        #	print "#", i
+        #       print "#", i
 
         font = []
         while 1:

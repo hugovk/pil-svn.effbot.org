@@ -173,6 +173,10 @@ Imaging/Images/lena.gif
 Imaging/Images/lena.ppm
 Imaging/Images/lena.jpg
 
+Imaging/Images/courB08.bdf
+Imaging/Images/courB08.pbm
+Imaging/Images/courB08.pil
+
 Imaging/Sane/README
 Imaging/Sane/sanedoc.txt
 Imaging/Sane/_sanemodule.c
@@ -194,3 +198,5 @@ Imaging/Tk/tkImaging.c
 Imaging/Tk/install.txt
 Imaging/Tk/booster.txt
 Imaging/Tk/pilbitmap.txt
+
+Imaging/MiniTest/*.py

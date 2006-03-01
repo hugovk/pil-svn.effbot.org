@@ -6,11 +6,11 @@
 # convert image files
 #
 # History:
-# 0.1	96-04-20 fl	Created
-# 0.2	96-10-04 fl	Use draft mode when converting images
-# 0.3	96-12-30 fl	Optimize output (PNG, JPEG)
-# 0.4	97-01-18 fl	Made optimize an option (PNG, JPEG)
-# 0.5	98-12-30 fl	Fixed -f option (from Anthony Baxter)
+# 0.1   96-04-20 fl     Created
+# 0.2   96-10-04 fl     Use draft mode when converting images
+# 0.3   96-12-30 fl     Optimize output (PNG, JPEG)
+# 0.4   97-01-18 fl     Made optimize an option (PNG, JPEG)
+# 0.5   98-12-30 fl     Fixed -f option (from Anthony Baxter)
 #
 
 import Image
@@ -53,30 +53,30 @@ for o, a in opt:
 
     if o == "-f":
         Image.init()
-	id = Image.ID[:]
-	id.sort()
-	print "Supported formats (* indicates output format):"
-	for i in id:
-	    if Image.SAVE.has_key(i):
-		print i+"*",
-	    else:
-		print i, 
-	sys.exit(1)
+        id = Image.ID[:]
+        id.sort()
+        print "Supported formats (* indicates output format):"
+        for i in id:
+            if Image.SAVE.has_key(i):
+                print i+"*",
+            else:
+                print i, 
+        sys.exit(1)
 
     elif o == "-c":
-	format = a
+        format = a
 
     if o == "-g":
-	convert = "L"
+        convert = "L"
     elif o == "-p":
-	convert = "P"
+        convert = "P"
     elif o == "-r":
-	convert = "RGB"
+        convert = "RGB"
 
     elif o == "-o":
-	options["optimize"] = 1
+        options["optimize"] = 1
     elif o == "-q":
-	options["quality"] = string.atoi(a)
+        options["quality"] = string.atoi(a)
 
 if len(argv) != 2:
     usage()
@@ -84,12 +84,12 @@ if len(argv) != 2:
 try:
     im = Image.open(argv[0])
     if convert and im.mode != convert:
-	im.draft(convert, im.size)
-	im = im.convert(convert)
+        im.draft(convert, im.size)
+        im = im.convert(convert)
     if format:
-	apply(im.save, (argv[1], format), options)
+        apply(im.save, (argv[1], format), options)
     else:
-	apply(im.save, (argv[1],), options)
+        apply(im.save, (argv[1],), options)
 except:
     print "cannot convert image",
     print "(%s:%s)" % (sys.exc_type, sys.exc_value)

@@ -5,7 +5,7 @@
 # kludge to get basic ImageFileIO functionality
 #
 # History:
-# 98-08-06 fl	Recreated
+# 98-08-06 fl   Recreated
 #
 # Copyright (c) Secret Labs AB 1998.
 #
@@ -16,8 +16,8 @@ from StringIO import StringIO
 
 class ImageFileIO(StringIO):
     def __init__(self, fp):
-	data = fp.read()
-	StringIO.__init__(self, data)
+        data = fp.read()
+        StringIO.__init__(self, data)
 
 if __name__ == "__main__":
 

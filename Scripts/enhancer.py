@@ -15,26 +15,26 @@ import sys
 
 class Enhance(Frame):
     def __init__(self, master, image, name, enhancer, lo, hi):
-	Frame.__init__(self, master)
+        Frame.__init__(self, master)
 
-	# set up the image
-	self.tkim = ImageTk.PhotoImage(image.mode, image.size)
-	self.enhancer = enhancer(image)
-	self.update("1.0") # normalize
+        # set up the image
+        self.tkim = ImageTk.PhotoImage(image.mode, image.size)
+        self.enhancer = enhancer(image)
+        self.update("1.0") # normalize
 
-	# image window
-	Label(self, image=self.tkim).pack()
+        # image window
+        Label(self, image=self.tkim).pack()
 
-	# scale
-	s = Scale(self, label=name, orient=HORIZONTAL,
-		  from_=lo, to=hi, resolution=0.01,
-		  command=self.update)
-	s.set(self.value)
+        # scale
+        s = Scale(self, label=name, orient=HORIZONTAL,
+                  from_=lo, to=hi, resolution=0.01,
+                  command=self.update)
+        s.set(self.value)
         s.pack()
 
     def update(self, value):
-	self.value = eval(value)
-	self.tkim.paste(self.enhancer.enhance(self.value))
+        self.value = eval(value)
+        self.tkim.paste(self.enhancer.enhance(self.value))
 
 #
 # main

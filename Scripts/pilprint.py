@@ -6,8 +6,8 @@
 # print image files to postscript printer
 #
 # History:
-# 0.1	96-04-20 fl	Created
-# 0.2a1	96-10-04 fl	Use draft mode when converting.
+# 0.1   96-04-20 fl     Created
+# 0.2a1 96-10-04 fl     Use draft mode when converting.
 #
 
 VERSION = "pilprint 0.2a1/96-10-04"
@@ -22,7 +22,7 @@ def description(file, image):
     title = os.path.splitext(os.path.split(file)[1])[0]
     format = " (%dx%d "
     if image.format:
-	format = " (" + image.format + " %dx%d "
+        format = " (" + image.format + " %dx%d "
     return title + format % image.size + image.mode + ")"
 
 import getopt, os, sys
@@ -47,46 +47,46 @@ monochrome = 1 # reduce file size for most common case
 
 for o, a in opt:
     if o == "-d":
-	# debug: show available drivers
+        # debug: show available drivers
         Image.import_plugins()
-	print Image.ID
-	sys.exit(1)
+        print Image.ID
+        sys.exit(1)
     elif o == "-c":
-	# colour printer
-	monochrome = 0
+        # colour printer
+        monochrome = 0
     elif o == "-p":
-	# default printer channel
-	printer = "lpr"
+        # default printer channel
+        printer = "lpr"
     elif o == "-P":
-	# printer channel
-	printer = "lpr -P%s" % v
+        # printer channel
+        printer = "lpr -P%s" % v
 
 for file in argv:
     try:
 
-	im = Image.open(file)
+        im = Image.open(file)
 
-	title = description(file, im)
+        title = description(file, im)
 
-	if monochrome and im.mode not in ["1", "L"]:
-	    im.draft("L", im.size)
-	    im = im.convert("L")
+        if monochrome and im.mode not in ["1", "L"]:
+            im.draft("L", im.size)
+            im = im.convert("L")
 
-	if printer:
-	    fp = os.popen(printer, "w")
-	else:
-	    fp = sys.stdout
+        if printer:
+            fp = os.popen(printer, "w")
+        else:
+            fp = sys.stdout
 
-	ps = PSDraw.PSDraw(fp)
+        ps = PSDraw.PSDraw(fp)
 
-	ps.begin_document()
-	ps.setfont("Helvetica-Narrow-Bold", 18)
-	ps.text((letter[0], letter[3]+24), title)
-	ps.setfont("Helvetica-Narrow-Bold", 8)
-	ps.text((letter[0], letter[1]-30), VERSION)
-	ps.image(letter, im)
-	ps.end_document()
+        ps.begin_document()
+        ps.setfont("Helvetica-Narrow-Bold", 18)
+        ps.text((letter[0], letter[3]+24), title)
+        ps.setfont("Helvetica-Narrow-Bold", 8)
+        ps.text((letter[0], letter[1]-30), VERSION)
+        ps.image(letter, im)
+        ps.end_document()
 
     except:
-	print "cannot print image",
-	print "(%s:%s)" % (sys.exc_type, sys.exc_value)
+        print "cannot print image",
+        print "(%s:%s)" % (sys.exc_type, sys.exc_value)

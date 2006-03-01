@@ -5,7 +5,7 @@
 # stuff to read GIMP palette files
 #
 # History:
-#	97-08-23 fl	Created
+#       97-08-23 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
@@ -23,8 +23,8 @@ class GimpPaletteFile:
 
         self.palette = map(lambda i: chr(i)*3, range(256))
 
-	if fp.readline()[:12] != "GIMP Palette":
-	    raise SyntaxError, "not a GIMP palette file"
+        if fp.readline()[:12] != "GIMP Palette":
+            raise SyntaxError, "not a GIMP palette file"
 
         i = 0
 

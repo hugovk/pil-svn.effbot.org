@@ -4,8 +4,8 @@
  * 
  * declarations for the imaging core library
  *
- * Copyright (c) Secret Labs AB 1997-98.  All rights reserved.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) Secret Labs AB 1997-2000.
+ * Copyright (c) Fredrik Lundh 1995-2000.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -17,7 +17,6 @@
 #include <math.h>
 
 #include <string.h>
-
 
 #include "ImPlatform.h"
 
@@ -318,7 +317,7 @@ extern int ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
 				const void* ink, int fill);
 
 /* Level 2 graphics (WORK IN PROGRESS) */
-extern ImagingOutline ImagingOutlineNew();
+extern ImagingOutline ImagingOutlineNew(void);
 extern void ImagingOutlineDelete(ImagingOutline outline);
 
 extern int ImagingDrawOutline(Imaging im, ImagingOutline outline,

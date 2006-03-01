@@ -33,7 +33,7 @@ def puti16(fp, values):
     for v in values:
         if v < 0:
             v = v + 65536
-	fp.write(chr(v>>8&255) + chr(v&255))
+        fp.write(chr(v>>8&255) + chr(v&255))
 
 class FontFile:
 
@@ -104,17 +104,17 @@ class FontFile:
         self.bitmap.save(os.path.splitext(filename)[0] + ".pbm", "PNG")
 
         # font metrics
-	fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
-	fp.write("PILfont\n")
-	fp.write(";;;;;;%d;\n" % self.ysize) # HACK!!!
-	fp.write("DATA\n")
-	for id in range(256):
-	    m = self.metrics[id]
+        fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
+        fp.write("PILfont\n")
+        fp.write(";;;;;;%d;\n" % self.ysize) # HACK!!!
+        fp.write("DATA\n")
+        for id in range(256):
+            m = self.metrics[id]
             if not m:
-		puti16(fp, [0] * 10)
+                puti16(fp, [0] * 10)
             else:
-		puti16(fp, m[0] + m[1] + m[2])
-	fp.close()
+                puti16(fp, m[0] + m[1] + m[2])
+        fp.close()
 
 
     def save2(self, filename):
@@ -129,7 +129,7 @@ class FontFile:
         else:
             data = "u" + data
 
-	fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
+        fp = open(os.path.splitext(filename)[0] + ".pil", "wb")
 
         fp.write("PILfont2\n" + self.name + "\n" + "DATA\n")
 

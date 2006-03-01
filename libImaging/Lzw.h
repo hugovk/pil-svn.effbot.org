@@ -4,7 +4,7 @@
  *
  * declarations for the TIFF LZW decoder.
  *
- * Copyright (c) Fredrik Lundh 1995-96.  All rights reserved.
+ * Copyright (c) Fredrik Lundh 1995-96.
  */
 
 

@@ -93,13 +93,13 @@ while 1:
         im.save(outfile % ix)
         print outfile % ix
 
-	if html:
-	    html.write("<img src='%s'><br>\n" % outfile % ix)
+        if html:
+            html.write("<img src='%s'><br>\n" % outfile % ix)
 
     try:
-	im.seek(ix)
+        im.seek(ix)
     except EOFError:
-	break
+        break
 
     ix = ix + 1
 

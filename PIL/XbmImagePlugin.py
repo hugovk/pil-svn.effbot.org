@@ -5,27 +5,28 @@
 # XBM File handling
 #
 # History:
-#	95-09-08 fl	Created
-#	96-11-01 fl	Added save support
-#	97-07-07 fl	Made header parser more tolerant
-#	97-07-22 fl	Fixed yet another parser bug
+# 1995-09-08 fl   Created
+# 1996-11-01 fl   Added save support
+# 1997-07-07 fl   Made header parser more tolerant
+# 1997-07-22 fl   Fixed yet another parser bug
+# 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.4)
 #
-# Copyright (c) Secret Labs AB 1997.
-# Copyright (c) Fredrik Lundh 1996-97.
+# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1996-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.3"
+__version__ = "0.4"
 
-import regex, string
+import re, string
 import Image, ImageFile
 
 # XBM header
-xbm_head = regex.compile(
-    "#define[ \t]+[^_]*_width[ \t]+\([0-9]*\)[\r\n]+"
-    "#define[ \t]+[^_]*_height[ \t]+\([0-9]*\)[\r\n]+"
-    "[\000-\377]*_bits\[\]"
+xbm_head = re.compile(
+    "#define[ \t]+[^_]*_width[ \t]+([0-9]*)[\r\n]+"
+    "#define[ \t]+[^_]*_height[ \t]+([0-9]*)[\r\n]+"
+    "[\\000-\\377]*_bits\\[\\]"
 )
 
 
@@ -40,23 +41,23 @@ class XbmImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	s = xbm_head.match(self.fp.read(512))
+        m = xbm_head.match(self.fp.read(512))
 
-	if s > 0:
+        if m:
 
-	    xsize = string.atoi(xbm_head.group(1))
-	    ysize = string.atoi(xbm_head.group(2))
+            xsize = int(m.group(1))
+            ysize = int(m.group(2))
 
-	    self.mode = "1"
-	    self.size = xsize, ysize
+            self.mode = "1"
+            self.size = xsize, ysize
 
-	    self.tile = [("xbm", (0, 0)+self.size, s, None)]
+            self.tile = [("xbm", (0, 0)+self.size, m.end(), None)]
 
 
 def _save(im, fp, filename):
 
     if im.mode != "1":
-	raise IOError, "cannot write mode %s as XBM" % im.mode
+        raise IOError, "cannot write mode %s as XBM" % im.mode
 
     fp.write("#define im_width %d\n" % im.size[0])
     fp.write("#define im_height %d\n" % im.size[1])

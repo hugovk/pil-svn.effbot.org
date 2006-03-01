@@ -26,12 +26,13 @@
  * Note that _tkinter.c must be compiled with WITH_APPINIT.
  *
  * History:
- * 95-09-12 fl	Created
- * 96-04-08 fl	Ready for release
- * 97-05-09 fl	Use command instead of image type
+ * 1995-09-12 fl  Created
+ * 1996-04-08 fl  Ready for release
+ * 1997-05-09 fl  Use command instead of image type
+ * 2001-03-18 fl  Reset alpha index
  *
- * Copyright (c) Fredrik Lundh 1995-97.
- * Copyright (c) Secret Labs AB 1997.
+ * Copyright (c) 1997-2001 by Secret Labs AB
+ * Copyright (c) 1995-2001 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -112,6 +113,7 @@ PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
 	block.offset[0] = 0;
 	block.offset[1] = 1;
 	block.offset[2] = 2;
+	block.offset[3] = 0; /* no alpha (or reserved, under 8.2) */
     } else {
         Tcl_AppendResult(interp, "Bad mode", (char*) NULL);
 	return TCL_ERROR;
@@ -142,6 +144,7 @@ PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
         run.offset[0] = 0;
         run.offset[1] = 1;
         run.offset[2] = 2;
+	run.offset[3] = 0; /* no alpha (or reserved, under 8.2) */
 
         /* Copy opaque runs to photo image */
         for (y = 0; y < block.height; y++) {
@@ -176,8 +179,7 @@ PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
     } else
 
         /* Copy opaque block to photo image, and leave the rest to TK */
-        Tk_PhotoPutBlock(photo, &block, 0, 0,
-                         block.width, block.height);
+        Tk_PhotoPutBlock(photo, &block, 0, 0, block.width, block.height);
 
     return TCL_OK;
 }

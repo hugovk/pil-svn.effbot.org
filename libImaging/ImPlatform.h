@@ -4,19 +4,18 @@
  *
  * platform declarations for the imaging core library
  *
- * Copyright (c) Fredrik Lundh 1995-96.  All rights reserved.
+ * Copyright (c) Fredrik Lundh 1995-96.
  */
 
 
 #include "ImConfig.h"
 
-
-/* For now, we require an ANSI compliant compiler */
-#if HAVE_PROTOTYPES == 0
-#error Sorry, this library uses ANSI prototypes.
+/* Check that we have an ANSI compliant compiler */
+#ifndef HAVE_PROTOTYPES
+#error Sorry, this library requires support for ANSI prototypes.
 #endif
-#if STDC_HEADERS == 0
-#error Sorry, this library assumes ANSI header files.
+#ifndef STDC_HEADERS
+#error Sorry, this library requires ANSI header files.
 #endif
 
 #if SIZEOF_SHORT == 2

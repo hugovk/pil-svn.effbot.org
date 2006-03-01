@@ -5,48 +5,49 @@
  * the imaging library bindings
  *
  * history:
- * 95-09-24 fl	Created
- * 96-03-24 fl	Ready for first public release (release 0.0)
- * 96-03-25 fl	Added fromstring (for Jack's "img" library)
- * 96-03-28 fl	Added channel operations
- * 96-03-31 fl	Added point operation
- * 96-04-08 fl	Added new/new_block/new_array factories
- * 96-04-13 fl	Added decoders
- * 96-05-04 fl	Added palette hack
- * 96-05-12 fl	Compile cleanly as C++
- * 96-05-19 fl	Added matrix conversions, gradient fills
- * 96-05-27 fl	Added display_mode
- * 96-07-22 fl	Added getbbox, offset
- * 96-07-23 fl	Added sequence semantics
- * 96-08-13 fl	Added logical operators, point mode
- * 96-08-16 fl	Modified paste interface
- * 96-09-06 fl	Added putdata methods, use abstract interface
- * 96-11-01 fl	Added xbm encoder
- * 96-11-04 fl	Added experimental path stuff, draw_lines, etc
- * 96-12-10 fl	Added zip decoder, crc32 interface
- * 96-12-14 fl	Added modulo arithmetics
- * 96-12-29 fl	Added zip encoder
- * 97-01-03 fl	Added fli and msp decoders
- * 97-01-04 fl	Added experimental sun_rle and tga_rle decoders
- * 97-01-05 fl	Added gif encoder, getpalette hack
- * 97-02-23 fl	Added histogram mask
- * 97-05-12 fl	Minor tweaks to match the IFUNC95 interface
- * 97-05-21 fl	Added noise generator, spread effect
- * 97-06-05 fl	Added mandelbrot generator
- * 97-08-02 fl	Modified putpalette to coerce image mode if necessary
- * 98-01-11 fl	Added INT32 support
- * 98-01-22 fl	Fixed draw_points to draw the last point too
- * 98-06-28 fl	Added getpixel, getink, draw_ink
- * 98-07-12 fl	Added getextrema
- * 98-07-17 fl	Added point conversion to arbitrary formats
- * 98-09-21 fl	Added support for resampling filters
- * 98-09-22 fl	Added support for quad transform
- * 98-12-29 fl	Added support for arcs, chords, and pieslices
- * 99-01-10 fl	Added some experimental arrow graphics stuff
- * 99-02-06 fl	Added draw_bitmap, font acceleration stuff
+ * 1995-09-24 fl   Created
+ * 1996-03-24 fl   Ready for first public release (release 0.0)
+ * 1996-03-25 fl   Added fromstring (for Jack's "img" library)
+ * 1996-03-28 fl   Added channel operations
+ * 1996-03-31 fl   Added point operation
+ * 1996-04-08 fl   Added new/new_block/new_array factories
+ * 1996-04-13 fl   Added decoders
+ * 1996-05-04 fl   Added palette hack
+ * 1996-05-12 fl   Compile cleanly as C++
+ * 1996-05-19 fl   Added matrix conversions, gradient fills
+ * 1996-05-27 fl   Added display_mode
+ * 1996-07-22 fl   Added getbbox, offset
+ * 1996-07-23 fl   Added sequence semantics
+ * 1996-08-13 fl   Added logical operators, point mode
+ * 1996-08-16 fl   Modified paste interface
+ * 1996-09-06 fl   Added putdata methods, use abstract interface
+ * 1996-11-01 fl   Added xbm encoder
+ * 1996-11-04 fl   Added experimental path stuff, draw_lines, etc
+ * 1996-12-10 fl   Added zip decoder, crc32 interface
+ * 1996-12-14 fl   Added modulo arithmetics
+ * 1996-12-29 fl   Added zip encoder
+ * 1997-01-03 fl   Added fli and msp decoders
+ * 1997-01-04 fl   Added experimental sun_rle and tga_rle decoders
+ * 1997-01-05 fl   Added gif encoder, getpalette hack
+ * 1997-02-23 fl   Added histogram mask
+ * 1997-05-12 fl   Minor tweaks to match the IFUNC95 interface
+ * 1997-05-21 fl   Added noise generator, spread effect
+ * 1997-06-05 fl   Added mandelbrot generator
+ * 1997-08-02 fl   Modified putpalette to coerce image mode if necessary
+ * 1998-01-11 fl   Added INT32 support
+ * 1998-01-22 fl   Fixed draw_points to draw the last point too
+ * 1998-06-28 fl   Added getpixel, getink, draw_ink
+ * 1998-07-12 fl   Added getextrema
+ * 1998-07-17 fl   Added point conversion to arbitrary formats
+ * 1998-09-21 fl   Added support for resampling filters
+ * 1998-09-22 fl   Added support for quad transform
+ * 1998-12-29 fl   Added support for arcs, chords, and pieslices
+ * 1999-01-10 fl   Added some experimental arrow graphics stuff
+ * 1999-02-06 fl   Added draw_bitmap, font acceleration stuff
+ * 2001-04-17 fl   Fixed some egcs compiler nits
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2001 by Secret Labs AB 
+ * Copyright (c) 1995-2001 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -185,14 +186,14 @@ ImagingError_MemoryError(void)
 }
 
 void *
-ImagingError_Mismatch()
+ImagingError_Mismatch(void)
 {
     PyErr_SetString(PyExc_ValueError, "images do not match");
     return NULL;
 }
 
 void *
-ImagingError_ModeError()
+ImagingError_ModeError(void)
 {
     PyErr_SetString(PyExc_ValueError, "image has wrong mode");
     return NULL;
@@ -231,7 +232,7 @@ getbands(const char* mode)
     return bands;
 }
 
-#define TYPE_UINT8 (0x100|sizeof(INT32))
+#define TYPE_UINT8 (0x100|sizeof(UINT8))
 #define TYPE_INT32 (0x200|sizeof(INT32))
 #define TYPE_FLOAT32 (0x300|sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400|sizeof(double))
@@ -261,41 +262,75 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
 
     switch (type) {
     case TYPE_UINT8:
-        for (i = 0; i < n; i++) {
-            PyObject *op = PySequence_GetItem(arg, i);
-            int temp = PyInt_AsLong(op);
-            Py_DECREF(op);
-            ((UINT8*)list)[i] = (temp <= 0) ? 0 : (temp >= 255) ? 255 : temp;
+        if (PyList_Check(arg)) {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PyList_GET_ITEM(arg, i);
+                int temp = PyInt_AsLong(op);
+                ((UINT8*)list)[i] = CLIP(temp);
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PySequence_GetItem(arg, i);
+                int temp = PyInt_AsLong(op);
+                Py_XDECREF(op);
+                ((UINT8*)list)[i] = CLIP(temp);
+            }
         }
         break;
     case TYPE_INT32:
-        for (i = 0; i < n; i++) {
-            PyObject *op = PySequence_GetItem(arg, i);
-            int temp = PyInt_AsLong(op);
-            Py_DECREF(op);
-            ((INT32*)list)[i] = temp;
+        if (PyList_Check(arg)) {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PyList_GET_ITEM(arg, i);
+                int temp = PyInt_AsLong(op);
+                ((INT32*)list)[i] = temp;
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PySequence_GetItem(arg, i);
+                int temp = PyInt_AsLong(op);
+                Py_XDECREF(op);
+                ((INT32*)list)[i] = temp;
+            }
         }
         break;
     case TYPE_FLOAT32:
-        for (i = 0; i < n; i++) {
-            PyObject *op = PySequence_GetItem(arg, i);
-            double temp = PyFloat_AsDouble(op);
-            Py_DECREF(op);
-            ((FLOAT32*)list)[i] = temp;
+        if (PyList_Check(arg)) {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PyList_GET_ITEM(arg, i);
+                double temp = PyFloat_AsDouble(op);
+                ((FLOAT32*)list)[i] = temp;
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PySequence_GetItem(arg, i);
+                double temp = PyFloat_AsDouble(op);
+                Py_XDECREF(op);
+                ((FLOAT32*)list)[i] = temp;
+            }
         }
         break;
     case TYPE_DOUBLE:
-        for (i = 0; i < n; i++) {
-            PyObject *op = PySequence_GetItem(arg, i);
-            double temp = PyFloat_AsDouble(op);
-            Py_DECREF(op);
-            ((double*)list)[i] = temp;
+        if (PyList_Check(arg)) {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PyList_GET_ITEM(arg, i);
+                double temp = PyFloat_AsDouble(op);
+                ((double*)list)[i] = temp;
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                PyObject *op = PySequence_GetItem(arg, i);
+                double temp = PyFloat_AsDouble(op);
+                Py_XDECREF(op);
+                ((double*)list)[i] = temp;
+            }
         }
         break;
     }
 
     if (length)
         *length = n;
+
+    PyErr_Clear();
 
     return list;
 }
@@ -951,27 +986,45 @@ _putdata(ImagingObject* self, PyObject* args)
 		    x = 0, y++;
 	    }
     } else {
-	if (scale == 1.0 && offset == 0.0)
+	if (scale == 1.0 && offset == 0.0) {
 	    /* Clipped data */
-	    for (i = x = y = 0; i < n; i++) {
-		PyObject *op = PySequence_GetItem(data, i);
-                image->image8[y][x] = CLIP(PyInt_AsLong(op));
-                /* FIXME: test for errors */
-		Py_DECREF(op);
-		if (++x >= (int) image->xsize)
-		    x = 0, y++;
+            if (PyList_Check(data)) {
+                for (i = x = y = 0; i < n; i++) {
+                    PyObject *op = PyList_GET_ITEM(data, i);
+                    image->image8[y][x] = CLIP(PyInt_AsLong(op));
+                    if (++x >= (int) image->xsize)
+                        x = 0, y++;
+                }
+            } else {
+                for (i = x = y = 0; i < n; i++) {
+                    PyObject *op = PySequence_GetItem(data, i);
+                    image->image8[y][x] = CLIP(PyInt_AsLong(op));
+                    Py_XDECREF(op);
+                    if (++x >= (int) image->xsize)
+                        x = 0, y++;
+                }
 	    }
-	else
-	    /* Scaled and clipped data */
-	    for (i = x = y = 0; i < n; i++) {
-		PyObject *op = PySequence_GetItem(data, i);
-		image->image8[y][x] = CLIP(
-                    (int) (PyFloat_AsDouble(op) * scale + offset));
-                /* FIXME: test for errors */
-		Py_DECREF(op);
-		if (++x >= (int) image->xsize)
-		    x = 0, y++;
-	    }
+	} else {
+            if (PyList_Check(data)) {
+                /* Scaled and clipped data */
+                for (i = x = y = 0; i < n; i++) {
+                    PyObject *op = PyList_GET_ITEM(data, i);
+                    image->image8[y][x] = CLIP(
+                        (int) (PyFloat_AsDouble(op) * scale + offset));
+                    if (++x >= (int) image->xsize)
+                        x = 0, y++;
+                }
+            } else {
+                for (i = x = y = 0; i < n; i++) {
+                    PyObject *op = PySequence_GetItem(data, i);
+                    image->image8[y][x] = CLIP(
+                        (int) (PyFloat_AsDouble(op) * scale + offset));
+                    Py_XDECREF(op);
+                    if (++x >= (int) image->xsize)
+                        x = 0, y++;
+                }
+            }
+        }
 	PyErr_Clear(); /* Avoid weird exceptions */
     }
 
@@ -1304,19 +1357,18 @@ _getextrema(ImagingObject* self, PyObject* args)
     if (status < 0)
         return NULL;
 
-    if (status == 0) {
-	Py_INCREF(Py_None);
-	return Py_None;
-    }
+    if (status)
+        switch (self->image->type) {
+        case 0:
+            return Py_BuildValue("ii", extrema.u[0], extrema.u[1]);
+        case 1:
+            return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
+        case 2:
+            return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
+        }
 
-    switch (self->image->type) {
-    case 0:
-        return Py_BuildValue("ii", extrema.u[0], extrema.u[1]);
-    case 1:
-        return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
-    case 2:
-        return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
-    }
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyObject* 
@@ -2424,7 +2476,7 @@ void
 #ifdef WIN32
 __declspec(dllexport)
 #endif
-init_imaging()
+init_imaging(void)
 {
     /* Patch object type */
     Imaging_Type.ob_type = &PyType_Type;

@@ -5,7 +5,7 @@
 # GD file handling
 #
 # History:
-#	96-04-12 fl	Created
+#       96-04-12 fl     Created
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996.
@@ -39,20 +39,20 @@ class GdImageFile(ImageFile.ImageFile):
 
     def _open(self):
 
-	# Header
-	s = self.fp.read(775)
+        # Header
+        s = self.fp.read(775)
 
-	self.mode = "L" # FIXME: "P"
-	self.size = i16(s[0:2]), i16(s[2:4])
+        self.mode = "L" # FIXME: "P"
+        self.size = i16(s[0:2]), i16(s[2:4])
 
-	# transparency index
-	tindex = i16(s[5:7])
-	if tindex < 256:
-	    self.info["transparent"] = tindex
+        # transparency index
+        tindex = i16(s[5:7])
+        if tindex < 256:
+            self.info["transparent"] = tindex
 
-	self.palette = ImagePalette.raw("RGB", s[7:])
+        self.palette = ImagePalette.raw("RGB", s[7:])
 
-	self.tile = [("raw", (0,0)+self.size, 775, ("L", 0, -1))]
+        self.tile = [("raw", (0,0)+self.size, 775, ("L", 0, -1))]
 
 
 def open(fp, mode = "r"):
@@ -63,14 +63,14 @@ def open(fp, mode = "r"):
 
     if type(fp) == type(""):
         import __builtin__
-	filename = fp
+        filename = fp
         fp = __builtin__.open(fp, "rb")
     else:
         filename = ""
 
     try:
-	return GdImageFile(fp, filename)
+        return GdImageFile(fp, filename)
     except SyntaxError:
-	raise IOError, "cannot identify this image file"
+        raise IOError, "cannot identify this image file"
 
 # save is not supported
