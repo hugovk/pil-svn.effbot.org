@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ArgImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/ArgImagePlugin.py#3 $
 #
 # ARG animation support code
 #
@@ -487,6 +487,8 @@ class ArgStream(ChunkStream):
 def _accept(prefix):
     return prefix[:8] == MAGIC
 
+##
+# Image plugin for the experimental Animate Raster Graphics format.
 
 class ArgImageFile(ImageFile.ImageFile):
 

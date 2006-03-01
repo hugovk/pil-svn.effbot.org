@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PcdImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/PcdImagePlugin.py#4 $
 #
 # PCD file handling
 #
@@ -20,6 +20,10 @@ __version__ = "0.1"
 
 import Image, ImageFile
 
+##
+# Image plugin for PhotoCD images.  This plugin only reads the 768x512
+# image from the file; higher resolutions are encoded in a proprietary
+# encoding.
 
 class PcdImageFile(ImageFile.ImageFile):
 

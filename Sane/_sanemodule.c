@@ -1,38 +1,30 @@
 /***********************************************************
-Copyright 1991-1995 by Stichting Mathematisch Centrum, Amsterdam,
-The Netherlands.
-
-                        All Rights Reserved
+(C) Copyright 2003 A.M. Kuchling.  All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Stichting Mathematisch
-Centrum or CWI or Corporation for National Research Initiatives or
-CNRI not be used in advertising or publicity pertaining to
-distribution of the software without specific, written prior
-permission.
+supporting documentation, and that the name of A.M. Kuchling not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.
 
-While CWI is the initial source for this software, a modified version
-is made available by the Corporation for National Research Initiatives
-(CNRI) at the Internet address ftp://ftp.python.org.
-
-STICHTING MATHEMATISCH CENTRUM AND CNRI DISCLAIM ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL STICHTING MATHEMATISCH
-CENTRUM OR CNRI BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+A.M. KUCHLING DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+EVENT SHALL A.M. KUCHLING BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
+/* $Id: _sanemodule.c 20715 2003-02-11 17:46:51Z akuchlin $ */
+
 /* SaneDev objects */
 
 #include "Python.h"
-#include "Imaging.h"
+#include "PIL/Imaging.h"
 #include <sane/sane.h>
 
 static PyObject *ErrorObject;
@@ -44,10 +36,9 @@ typedef struct {
 
 /* Raise a SANE exception */
 PyObject * 
-PySane_Error(st)
-     SANE_Status st;
+PySane_Error(SANE_Status st)
 {
-  char *string;
+  const char *string;
   
   if (st==SANE_STATUS_GOOD) {Py_INCREF(Py_None); return (Py_None);}
   string=sane_strstatus(st);
@@ -60,8 +51,7 @@ staticforward PyTypeObject SaneDev_Type;
 #define SaneDevObject_Check(v)	((v)->ob_type == &SaneDev_Type)
 
 static SaneDevObject *
-newSaneDevObject(arg)
-	PyObject *arg;
+newSaneDevObject(void)
 {
 	SaneDevObject *self;
 	self = PyObject_NEW(SaneDevObject, &SaneDev_Type);
@@ -74,18 +64,26 @@ newSaneDevObject(arg)
 /* SaneDev methods */
 
 static void
-SaneDev_dealloc(self)
-	SaneDevObject *self;
+SaneDev_dealloc(SaneDevObject *self)
 {
   if (self->h) sane_close(self->h);
   self->h=NULL;
-  PyMem_DEL(self);
+  PyObject_DEL(self);
 }
 
 static PyObject *
-SaneDev_get_parameters(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_close(SaneDevObject *self, PyObject *args)
+{
+  if (!PyArg_ParseTuple(args, ""))
+    return NULL;
+  if (self->h) sane_close(self->h);
+  self->h=NULL;
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+static PyObject *
+SaneDev_get_parameters(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
   SANE_Parameters p;
@@ -93,6 +91,11 @@ SaneDev_get_parameters(self, args)
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   st=sane_get_parameters(self->h, &p);
   if (st) return PySane_Error(st);
   switch (p.format)
@@ -110,29 +113,35 @@ SaneDev_get_parameters(self, args)
 
 
 static PyObject *
-SaneDev_fileno(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_fileno(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
   SANE_Int fd;
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   st=sane_get_select_fd(self->h, &fd);
   if (st) return PySane_Error(st);
   return PyInt_FromLong(fd);
 }
 
 static PyObject *
-SaneDev_start(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_start(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   st=sane_start(self->h);
   if (st) return PySane_Error(st);
   Py_INCREF(Py_None);
@@ -140,28 +149,34 @@ SaneDev_start(self, args)
 }
 
 static PyObject *
-SaneDev_cancel(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_cancel(SaneDevObject *self, PyObject *args)
 {
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   sane_cancel(self->h);
   Py_INCREF(Py_None);
   return Py_None;
 }
 
 static PyObject *
-SaneDev_get_options(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_get_options(SaneDevObject *self, PyObject *args)
 {
-  SANE_Option_Descriptor *d;
+  const SANE_Option_Descriptor *d;
   PyObject *list, *value;
   int i=1;
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   if (!(list = PyList_New(0)))
 	    return NULL;
 
@@ -175,7 +190,8 @@ SaneDev_get_options(self, args)
 	  
 	  switch (d->constraint_type)
 	    {
-	    case(SANE_CONSTRAINT_NONE): Py_INCREF(Py_None); constraint=Py_None; break;
+	    case(SANE_CONSTRAINT_NONE): 
+	      Py_INCREF(Py_None); constraint=Py_None; break;
 	    case(SANE_CONSTRAINT_RANGE): 
 	      constraint=Py_BuildValue("iii", d->constraint.range->min, d->constraint.range->max, d->constraint.range->quant);
 	      break;
@@ -200,12 +216,10 @@ SaneDev_get_options(self, args)
 }
 
 static PyObject *
-SaneDev_get_option(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_get_option(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
-  SANE_Option_Descriptor *d;
+  const SANE_Option_Descriptor *d;
   SANE_Int i;
   PyObject *value;
   int n;
@@ -213,6 +227,11 @@ SaneDev_get_option(self, args)
   
   if (!PyArg_ParseTuple(args, "i", &n))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   d=sane_get_option_descriptor(self->h, n);
   v=malloc(d->size+1);
   st=sane_control_option(self->h, n, SANE_ACTION_GET_VALUE,
@@ -243,12 +262,10 @@ SaneDev_get_option(self, args)
 }
 
 static PyObject *
-SaneDev_set_option(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_set_option(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
-  SANE_Option_Descriptor *d;
+  const SANE_Option_Descriptor *d;
   SANE_Int i;
   PyObject *value;
   int n;
@@ -256,6 +273,11 @@ SaneDev_set_option(self, args)
   
   if (!PyArg_ParseTuple(args, "iO", &n, &value))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   d=sane_get_option_descriptor(self->h, n);
   v=malloc(d->size+1);
 
@@ -294,7 +316,7 @@ SaneDev_set_option(self, args)
 	  free(v);
 	  return NULL;
 	}
-      memcpy(v, PyString_AsString(value), PyString_Size(value));
+      strcpy(v, PyString_AsString(value));
       break;
     case(SANE_TYPE_BUTTON): 
     case(SANE_TYPE_GROUP):
@@ -310,17 +332,20 @@ SaneDev_set_option(self, args)
 }
 
 static PyObject *
-SaneDev_set_auto_option(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_set_auto_option(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
-  SANE_Option_Descriptor *d;
+  const SANE_Option_Descriptor *d;
   SANE_Int i;
   int n;
   
   if (!PyArg_ParseTuple(args, "i", &n))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   d=sane_get_option_descriptor(self->h, n);
   st=sane_control_option(self->h, n, SANE_ACTION_SET_AUTO,
 			 NULL, &i);
@@ -329,49 +354,492 @@ SaneDev_set_auto_option(self, args)
   return Py_BuildValue("i", i);
  }
 
+#define READSIZE 32768
+
 static PyObject *
-SaneDev_snap(self, args)
-	SaneDevObject *self;
-	PyObject *args;
+SaneDev_snap(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st; 
-  SANE_Byte buffer[8192];  /* XXX how big should the buffer be? */
-  SANE_Int len;
+   /* The buffer should be a multiple of 3 in size, so each sane_read
+      operation will return an integral number of RGB triples. */
+  SANE_Byte buffer[READSIZE];  /* XXX how big should the buffer be? */
+  SANE_Int len, lastlen;
   Imaging im;
   SANE_Parameters p;
-  char *format="unknown format";
-  int px, py;
+  int px, py, remain, cplen, bufpos, padbytes;
   long L;
+  char errmsg[80];
+  union 
+    { char c[2];
+      INT16 i16;
+    } 
+  endian;
+    
+  endian.i16 = 1;
   
   if (!PyArg_ParseTuple(args, "i", &L))
     return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
   im=(Imaging)L;
 
   st=SANE_STATUS_GOOD; px=py=0;
-  while (st!=SANE_STATUS_EOF)
+  /* xxx not yet implemented
+     - handscanner support (i.e., unknown image length during start)
+     - generally: move the functionality from method snap in sane.py
+       down here -- I don't like this cross-dependency.
+       we need to call sane_get_parameters here, and we can create
+       the result Image object here.
+  */
+  sane_get_parameters(self->h, &p);
+  if (p.format == SANE_FRAME_GRAY)
     {
-      st=sane_read(self->h, buffer, 8192, &len);
-      if (st && (st!=SANE_STATUS_EOF)) return PySane_Error(st);
-      if (st==SANE_STATUS_GOOD)
-	{
-	  if (p.format==SANE_FRAME_RGB) 
-	    {
-	    }
-	  else
-	    {
-	      /* Handle some sort of 8-bit code */
-	      /* XXX Optimize */
-	      int i;
-	      for (i=0; i<len && py <im->ysize; i++)
-		{
-		  im->image8[py][px]=buffer[i];
-		  if (++px >= (int) im->xsize)
-		    px = 0, py++;
-		}
-	    }
-	}
-    }
+      switch (p.depth)
+        {
+          case 1: 
+            remain = p.bytes_per_line * im->ysize;
+            padbytes = p.bytes_per_line - (im->xsize+7)/8;
+            bufpos = 0;
+            lastlen = len = 0;
+            while (st!=SANE_STATUS_EOF && py < im->ysize)
+              {
+                while (len > 0 && py < im->ysize)
+                  {
+                    int i, j, k;
+                    j = buffer[bufpos++];
+                    k = 0x80;
+                    for (i = 0; i < 8 && px < im->xsize; i++)
+                      {
+                        im->image8[py][px++] = (k&j) ? 0 : 0xFF;
+                        k = k >> 1;
+                      }
+                    len--;
+                    if (px >= im->xsize)
+                      {
+                        bufpos += padbytes;
+                        len -= padbytes;
+                        py++;
+                        px = 0;
+                      }
+                  }
+                st=sane_read(self->h, buffer, 
+                             remain<READSIZE ? remain : READSIZE, &len);
+                if (st && (st!=SANE_STATUS_EOF))
+                  {
+                    sane_cancel(self->h);
+                    return PySane_Error(st);
+                  }
+                bufpos -= lastlen;
+                lastlen = len;
+                remain -= len;
+                /* skip possible pad bytes at the start of the buffer */
+                len -= bufpos;
+              }
+            break;
+          case 8:
+            remain = p.bytes_per_line * im->ysize;
+            padbytes = p.bytes_per_line - im->xsize;
+            bufpos = 0;
+            len = 0;
+            while (st!=SANE_STATUS_EOF && py < im->ysize)
+              {
+                while (len > 0 && py < im->ysize)
+                  {
+                    cplen = len;
+                    if (px + cplen >= im->xsize)
+                        cplen = im->xsize - px;
+                    memcpy(&im->image8[py][px], &buffer[bufpos], cplen);
+                    len -= cplen;
+                    bufpos += cplen;
+                    px += cplen;
+                    if (px >= im->xsize)
+                      {
+                        px = 0;
+                        py++;
+                        bufpos += padbytes;
+                        len -= padbytes;
+                      }
+                  }
+                bufpos = -len;
 
+                st=sane_read(self->h, buffer, 
+                             remain<READSIZE ? remain : READSIZE, &len);
+                if (st && (st!=SANE_STATUS_EOF))
+                  {
+                    sane_cancel(self->h);
+                    return PySane_Error(st);
+                  }
+                remain -= len;
+                len -= bufpos;
+              }
+              break;
+          case 16:
+            remain = p.bytes_per_line * im->ysize;
+            padbytes = p.bytes_per_line - 2 * im->xsize;
+            bufpos = endian.c[0];
+            lastlen = len = 0;
+            while (st!=SANE_STATUS_EOF && py < im->ysize)
+              {
+                while (len > 0 && py < im->ysize)
+                  {
+                    im->image8[py][px++] = buffer[bufpos];
+                    bufpos += 2;
+                    len -= 2;
+                    if (px >= im->xsize)
+                      {
+                        bufpos += padbytes;
+                        len -= padbytes;
+                        py++;
+                        px = 0;
+                      }
+                  }
+                st=sane_read(self->h, buffer, 
+                             remain<READSIZE ? remain : READSIZE, &len);
+                if (st && (st!=SANE_STATUS_EOF))
+                  {
+                    sane_cancel(self->h);
+                    return PySane_Error(st);
+                  }
+                remain -= len;
+                bufpos -= lastlen;
+                lastlen = len;
+                len -= bufpos;
+              }
+            break;
+          default:
+            /* other depths are not formally "illegal" according to the 
+               Sane API, but it's agreed by Sane developers that other
+               depths than 1, 8, 16 should not be used
+            */
+            sane_cancel(self->h);
+            snprintf(errmsg, 80, "unsupported pixel depth: %i", p.depth);
+            PyErr_SetString(ErrorObject, errmsg);
+            return NULL;
+        }
+    }
+  else if (p.format == SANE_FRAME_RGB)
+    {
+      int incr, color, pxs, pxmax, bit, val, mask;
+      switch (p.depth)
+        {
+          case 1: 
+            remain = p.bytes_per_line * im->ysize;
+            padbytes = p.bytes_per_line - ((im->xsize+7)/8) * 3;
+            bufpos = 0;
+            len = 0;
+            lastlen = 0;
+            pxmax = 4 * im->xsize;
+            while (st!=SANE_STATUS_EOF && py < im->ysize)
+              {
+                pxs = px;
+                for (color = 0; color < 3; color++)
+                  {
+                    while (len <= 0 && st == SANE_STATUS_GOOD)
+                      {
+                        st=sane_read(self->h, buffer, 
+                                     remain<READSIZE ? remain : READSIZE, &len);
+                        if (st && (st!=SANE_STATUS_EOF))
+                          {
+                            sane_cancel(self->h);
+                            return PySane_Error(st);
+                          }
+                        bufpos -= lastlen;
+                        remain -= len;
+                        lastlen = len;
+                        /* skip possible pad bytes at the start of the buffer */
+                        len -= bufpos;
+                      }
+                    if (st == SANE_STATUS_EOF) break;
+                    pxs = px;
+                    val = buffer[bufpos++];
+                    len--;
+                    mask = 0x80;
+                    for (bit = 0; (bit < 8) && (px < pxmax); bit++)
+                      {
+                         ((UINT8**)(im->image32))[py][px] = (val&mask) ? 0xFF : 0;
+                        mask = mask >> 1;
+                        px += 4;
+                      }
+                    pxs++;
+                    px = pxs;
+                  }
+                if (st == SANE_STATUS_EOF)
+                  break;
+                for (bit = 0; bit < 8 && px < pxmax; bit++)
+                  {
+                     ((UINT8**)(im->image32))[py][px] = 0;
+                     px += 4;
+                  }
+                px -= 3;
+                if (px >= pxmax)
+                  {
+                    bufpos += padbytes;
+                    len -= padbytes;
+                    py++;
+                    px = 0;
+                  }
+              }
+            break;
+          case 8:
+          case 16:
+            if (p.depth == 8)
+              {
+                padbytes = p.bytes_per_line - 3 * im->xsize;
+                bufpos = 0;
+                incr = 1;
+              }
+            else 
+              {
+                padbytes = p.bytes_per_line - 6 * im->xsize;
+                bufpos = endian.c[0];
+                incr = 2;
+              }
+            remain = p.bytes_per_line * im->ysize;
+            len = 0;
+            lastlen = 0;
+            pxmax = 4 * im->xsize;
+            /* probably not very efficient. But we have to deal with these
+               possible conditions:
+               - we may have padding bytes at the end of a scan line
+               - the number of bytes read with sane_read may be smaller
+                 than the number of pad bytes
+               - the buffer may become empty after setting any of the 
+                 red/green/blue pixel values
+             
+            */
+            while (st != SANE_STATUS_EOF && py < im->ysize)
+              {
+                for (color = 0; color < 3; color++)
+                  {
+                    while (len <= 0 && st == SANE_STATUS_GOOD)
+                      {
+                        bufpos -= lastlen;
+                        if (remain == 0)
+                          {
+                            PyErr_SetString(ErrorObject, "internal _sane error: premature end of scan");
+                            sane_cancel(self->h);
+                            return NULL;
+                          }
+                        st = sane_read(self->h, buffer,
+                              remain<(READSIZE) ? remain : (READSIZE), &len);
+                        if (st && (st!=SANE_STATUS_EOF))
+                          {
+                            sane_cancel(self->h);
+                            return PySane_Error(st);
+                          }
+                        lastlen = len;
+                        remain -= len;
+                        len -= bufpos;
+                      }
+                    if (st == SANE_STATUS_EOF) break;
+                    ((UINT8**)(im->image32))[py][px++] = buffer[bufpos]; 
+                    bufpos += incr;
+                    len -= incr;
+                  }
+                if (st == SANE_STATUS_EOF) break;
+
+                ((UINT8**)(im->image32))[py][px++] = 0;
+
+                if (px >= pxmax)
+                  {
+                    px = 0;
+                    py++;
+                    bufpos += padbytes;
+                    len -= padbytes;
+                  }
+              }
+            break;
+          default:
+            sane_cancel(self->h);
+            snprintf(errmsg, 80, "unsupported pixel depth: %i", p.depth);
+            PyErr_SetString(ErrorObject, errmsg);
+            return NULL;
+        }
+      
+    }
+  else /* should be SANE_FRAME_RED, GREEN or BLUE */
+    {
+      int lastlen, pxa, pxmax, offset, incr, frame_count = 0;
+      /* at least the Sane test backend behaves a bit weird, if 
+         it returns "premature EOF" for sane_read, i.e., if the 
+         option "return value of sane_read" is set to SANE_STATUS_EOF.
+         In this case, the test backend does not advance to the next frame,
+         so p.last_frame will never be set...
+         So let's count the number of frames we try to acquire
+      */
+      while (!p.last_frame && frame_count < 4)
+        {
+          frame_count++;
+          st = sane_get_parameters(self->h, &p);
+          if (st)
+            {
+              sane_cancel(self->h);
+              return PySane_Error(st);
+            }
+          remain = p.bytes_per_line * im->ysize;
+          bufpos = 0;
+          len = 0;
+          lastlen = 0;
+          py = 0;
+          switch (p.format)
+            { 
+              case SANE_FRAME_RED:
+                offset = 0;
+                break;
+              case SANE_FRAME_GREEN:
+                offset = 1;
+                break;
+              case SANE_FRAME_BLUE:
+                offset = 2;
+                break;
+              default:
+                sane_cancel(self->h);
+                snprintf(errmsg, 80, "unknown/invalid frame format: %i", p.format);
+                PyErr_SetString(ErrorObject, errmsg);
+                return NULL;
+            }
+          px = offset;
+          pxa = 3;
+          pxmax = im->xsize * 4;
+          switch (p.depth)
+            {
+              case 1:
+                padbytes = p.bytes_per_line - (im->xsize+7)/8;
+                st = SANE_STATUS_GOOD;
+                while (st != SANE_STATUS_EOF && py < im->ysize)
+                  {
+                    while (len > 0)
+                      {
+                        int bit, mask, val;
+                        val = buffer[bufpos++]; len--;
+                        mask = 0x80;
+                        for (bit = 0; bit < 8 && px < pxmax; bit++)
+                          {
+                            ((UINT8**)(im->image32))[py][px] 
+                                = val&mask ? 0xFF : 0;
+                            ((UINT8**)(im->image32))[py][pxa] = 0;
+                            px += 4;
+                            pxa += 4;
+                            mask = mask >> 1;
+                          }
+ 
+                        if (px >= pxmax)
+                          {
+                            px = offset;
+                            pxa = 3;
+                            py++;
+                            bufpos += padbytes;
+                            len -= padbytes;
+                          }
+                      }
+                    while (len <= 0 && st == SANE_STATUS_GOOD && remain > 0)
+                      {
+                        bufpos -= lastlen;
+                        st = sane_read(self->h, buffer,
+                              remain<(READSIZE) ? remain : (READSIZE), &len);
+                        if (st && (st!=SANE_STATUS_EOF))
+                          {
+                            sane_cancel(self->h);
+                            return PySane_Error(st);
+                          }
+                        remain -= len;
+                        lastlen = len;
+                        len -= bufpos;
+                      }
+                  }
+                break;
+              case 8:
+              case 16:
+                if (p.depth == 8)
+                  {
+                    padbytes = p.bytes_per_line - im->xsize;
+                    incr = 1;
+                  }
+                else
+                  {
+                    padbytes = p.bytes_per_line - 2 * im->xsize;
+                    incr = 2;
+                    bufpos = endian.c[0];
+                  }
+                st = SANE_STATUS_GOOD;
+                while (st != SANE_STATUS_EOF && py < im->ysize)
+                  {
+                    while (len <= 0)
+                      {
+                        bufpos -= lastlen;
+                        if (remain == 0)
+                          {
+                            PyErr_SetString(ErrorObject, "internal _sane error: premature end of scan");
+                            sane_cancel(self->h);
+                            return NULL;
+                          }
+                        st = sane_read(self->h, buffer,
+                              remain<(READSIZE) ? remain : (READSIZE), &len);
+                        if (st && (st!=SANE_STATUS_EOF))
+                          {
+                            sane_cancel(self->h);
+                            return PySane_Error(st);
+                          }
+                        if (st == SANE_STATUS_EOF)
+                          break;
+                        lastlen = len;
+                        remain -= len;
+                        if (bufpos >= len)
+                          len = 0;
+                        else
+                          len -= bufpos;
+                      }
+                    if (st == SANE_STATUS_EOF)
+                      break;
+                    ((UINT8**)(im->image32))[py][px] = buffer[bufpos];
+                    ((UINT8**)(im->image32))[py][pxa] = 0;
+                    bufpos += incr;
+                    len -= incr;
+                    px += 4;
+                    pxa += 4;
+
+                    if (px >= pxmax)
+                      {
+                        px = offset;
+                        pxa = 3;
+                        py++;
+                        bufpos += padbytes;
+                        len -= padbytes;
+                      }
+                  }
+                break;
+              default:
+                sane_cancel(self->h);
+                snprintf(errmsg, 80, "unsupported pixel depth: %i", p.depth);
+                PyErr_SetString(ErrorObject, errmsg);
+                return NULL;
+            }
+          if (!p.last_frame)
+            {
+              /* all sane_read calls in the above loop may return
+                 SANE_STATUS_GOOD, but the backend may need another sane_read
+                 call which returns SANE_STATUS_EOF in order to start
+                 a new frame.
+              */
+              do {
+                   st = sane_read(self->h, buffer, READSIZE, &len);
+                 }
+              while (st == SANE_STATUS_GOOD);
+              if (st != SANE_STATUS_EOF)
+                {
+                   sane_cancel(self->h);
+                   return PySane_Error(st);
+                }
+              
+              st = sane_start(self->h);
+              if (st) return PySane_Error(st);
+            }
+        }
+    }
+  sane_cancel(self->h);
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -388,48 +856,14 @@ static PyMethodDef SaneDev_methods[] = {
 	{"cancel",	(PyCFunction)SaneDev_cancel,	1},
 	{"snap",	(PyCFunction)SaneDev_snap,	1},
 	{"fileno",	(PyCFunction)SaneDev_fileno,	1},
+ 	{"close",	(PyCFunction)SaneDev_close,	1},
 	{NULL,		NULL}		/* sentinel */
 };
 
 static PyObject *
-SaneDev_getattr(self, name)
-	SaneDevObject *self;
-	char *name;
+SaneDev_getattr(SaneDevObject *self, char *name)
 {
-#if 0
-	if (self->x_attr != NULL) {
-		PyObject *v = PyDict_GetItemString(self->x_attr, name);
-		if (v != NULL) {
-			Py_INCREF(v);
-			return v;
-		}
-	}
-#endif
 	return Py_FindMethod(SaneDev_methods, (PyObject *)self, name);
-}
-
-static int
-SaneDev_setattr(self, name, v)
-	SaneDevObject *self;
-	char *name;
-	PyObject *v;
-{
-#if 0
-	if (self->x_attr == NULL) {
-		self->x_attr = PyDict_New();
-		if (self->x_attr == NULL)
-			return -1;
-	}
-	if (v == NULL) {
-		int rv = PyDict_DelItemString(self->x_attr, name);
-		if (rv < 0)
-			PyErr_SetString(PyExc_AttributeError,
-			        "delete non-existing SaneDev attribute");
-		return rv;
-	}
-	else
-		return PyDict_SetItemString(self->x_attr, name, v);
-#endif
 }
 
 staticforward PyTypeObject SaneDev_Type = {
@@ -442,7 +876,7 @@ staticforward PyTypeObject SaneDev_Type = {
 	(destructor)SaneDev_dealloc, /*tp_dealloc*/
 	0,			/*tp_print*/
 	(getattrfunc)SaneDev_getattr, /*tp_getattr*/
-	(setattrfunc)SaneDev_setattr, /*tp_setattr*/
+	0, /*tp_setattr*/
 	0,			/*tp_compare*/
 	0,			/*tp_repr*/
 	0,			/*tp_as_number*/
@@ -454,9 +888,7 @@ staticforward PyTypeObject SaneDev_Type = {
 /* --------------------------------------------------------------------- */
 
 static PyObject *
-PySane_init(self, args)
-	PyObject *self; /* Not used */
-	PyObject *args;
+PySane_init(PyObject *self, PyObject *args)
 {
   SANE_Status st;
   SANE_Int version;
@@ -472,9 +904,7 @@ PySane_init(self, args)
 }
 
 static PyObject *
-PySane_exit(self, args)
-	PyObject *self; /* Not used */
-	PyObject *args;
+PySane_exit(PyObject *self, PyObject *args)
 {
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
@@ -485,11 +915,9 @@ PySane_exit(self, args)
 }
 
 static PyObject *
-PySane_get_devices(self, args)
-	PyObject *self; /* Not used */
-	PyObject *args;
+PySane_get_devices(PyObject *self, PyObject *args)
 {
-  const SANE_Device **devlist;
+  SANE_Device **devlist;
   SANE_Device *dev;
   SANE_Status st;
   PyObject *list;
@@ -516,9 +944,7 @@ PySane_get_devices(self, args)
 /* Function returning new SaneDev object */
 
 static PyObject *
-PySane_open(self, args)
-        PyObject *self;
-	PyObject *args;
+PySane_open(PyObject *self, PyObject *args)
 {
 	SaneDevObject *rv;
 	SANE_Status st;
@@ -539,9 +965,7 @@ PySane_open(self, args)
 }
 
 static PyObject *
-PySane_OPTION_IS_ACTIVE(self, args)
-        PyObject *self;
-	PyObject *args;
+PySane_OPTION_IS_ACTIVE(PyObject *self, PyObject *args)
 {
   SANE_Int cap;
   long lg;
@@ -553,9 +977,7 @@ PySane_OPTION_IS_ACTIVE(self, args)
 }
 
 static PyObject *
-PySane_OPTION_IS_SETTABLE(self, args)
-        PyObject *self;
-	PyObject *args;
+PySane_OPTION_IS_SETTABLE(PyObject *self, PyObject *args)
 {
   SANE_Int cap;
   long lg;
@@ -581,10 +1003,7 @@ static PyMethodDef PySane_methods[] = {
 
 
 static void
-insint(d, name, value)
-     PyObject *d;
-     char *name;
-     int value;
+insint(PyObject *d, char *name, int value)
 {
 	PyObject *v = PyInt_FromLong((long) value);
 	if (!v || PyDict_SetItemString(d, name, v))
@@ -594,7 +1013,7 @@ insint(d, name, value)
 }
 
 void
-init_sane()
+init_sane(void)
 {
 	PyObject *m, *d;
 
@@ -634,6 +1053,7 @@ init_sane()
 	insint(d, "UNIT_MM", SANE_UNIT_MM);
 	insint(d, "UNIT_DPI", SANE_UNIT_DPI);
 	insint(d, "UNIT_PERCENT", SANE_UNIT_PERCENT);
+	insint(d, "UNIT_MICROSECOND", SANE_UNIT_MICROSECOND);
 
 	insint(d, "CAP_SOFT_SELECT", SANE_CAP_SOFT_SELECT);
 	insint(d, "CAP_HARD_SELECT", SANE_CAP_HARD_SELECT);
@@ -642,6 +1062,9 @@ init_sane()
 	insint(d, "CAP_AUTOMATIC", SANE_CAP_AUTOMATIC);
 	insint(d, "CAP_INACTIVE", SANE_CAP_INACTIVE);
 	insint(d, "CAP_ADVANCED", SANE_CAP_ADVANCED);
+
+	/* handy for checking array lengths: */
+	insint(d, "SANE_WORD_SIZE", sizeof(SANE_Word));
 
 	/* Check for errors */
 	if (PyErr_Occurred())

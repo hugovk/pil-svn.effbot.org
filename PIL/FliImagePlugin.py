@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/FliImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/FliImagePlugin.py#4 $
 #
 # FLI/FLC file handling.
 #
@@ -34,6 +34,10 @@ def i32(c):
 def _accept(prefix):
     return i16(prefix[4:6]) in [0xAF11, 0xAF12]
 
+##
+# Image plugin for the FLI/FLC animation format.  Use the <b>seek</b>
+# method to load individual frames.
+
 class FliImageFile(ImageFile.ImageFile):
 
     format = "FLI"
@@ -49,12 +53,12 @@ class FliImageFile(ImageFile.ImageFile):
 
         # image characteristics
         self.mode = "P"
-        self.size = i16(s[8:10]), i16(s[10:12]) 
+        self.size = i16(s[8:10]), i16(s[10:12])
 
         # animation speed
         duration = i32(s[16:20])
         if magic == 0xAF11:
-            duration = (duration * 1000) / 70 
+            duration = (duration * 1000) / 70
         self.info["duration"] = duration
 
         # look for palette

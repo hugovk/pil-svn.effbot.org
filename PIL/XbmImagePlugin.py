@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/XbmImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/XbmImagePlugin.py#4 $
 #
 # XBM File handling
 #
@@ -37,6 +37,8 @@ xbm_head = re.compile(
 def _accept(prefix):
     return prefix[:7] == "#define"
 
+##
+# Image plugin for X11 bitmaps.
 
 class XbmImageFile(ImageFile.ImageFile):
 

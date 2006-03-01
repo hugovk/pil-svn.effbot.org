@@ -1,14 +1,14 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/GdImageFile.py#3 $
+# $Id: //modules/pil/PIL/GdImageFile.py#5 $
 #
 # GD file handling
 #
 # History:
-#       96-04-12 fl     Created
+# 1996-04-12 fl   Created
 #
-# Copyright (c) Secret Labs AB 1997.
-# Copyright (c) Fredrik Lundh 1996.
+# Copyright (c) 1997 by Secret Labs AB.
+# Copyright (c) 1996 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -31,6 +31,11 @@ import Image, ImageFile, ImagePalette
 def i16(c):
     return ord(c[1]) + (ord(c[0])<<8)
 
+##
+# Image plugin for the GD uncompressed format.  Note that this format
+# is not supported by the standard <b>Image.open</b> function.  To use
+# this plugin, you have to import the <b>GdImageFile</b> module and
+# use the <b>GdImageFile.open</b> function.
 
 class GdImageFile(ImageFile.ImageFile):
 
@@ -54,12 +59,19 @@ class GdImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0,0)+self.size, 775, ("L", 0, -1))]
 
+##
+# Load texture from a GD image file.
+#
+# @param filename GD file name, or an opened file handle.
+# @param mode Optional mode.  In this version, if the mode argument
+#     is given, it must be "r".
+# @return An image instance.
+# @exception IOError Indicates that the image could not be read.
 
 def open(fp, mode = "r"):
-    "Open a GD image file, without loading the raster data"
 
     if mode != "r":
-        raise ValueError, "bad mode"
+        raise ValueError("bad mode")
 
     if type(fp) == type(""):
         import __builtin__
@@ -71,6 +83,4 @@ def open(fp, mode = "r"):
     try:
         return GdImageFile(fp, filename)
     except SyntaxError:
-        raise IOError, "cannot identify this image file"
-
-# save is not supported
+        raise IOError("cannot identify this image file")

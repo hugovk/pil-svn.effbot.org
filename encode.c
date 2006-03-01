@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/encode.c#3 $
+ * $Id: //modules/pil/encode.c#5 $
  *
  * standard encoder interfaces for the Imaging library
  *
@@ -24,6 +24,10 @@
 /* FIXME: make these pluggable! */
 
 #include "Python.h"
+
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
 
 #include "Imaging.h"
 #include "Gif.h"
@@ -89,7 +93,7 @@ _dealloc(ImagingEncoderObject* encoder)
     free(encoder->state.buffer);
     free(encoder->state.context);
     Py_XDECREF(encoder->lock);
-    PyMem_DEL(encoder);
+    PyObject_DEL(encoder);
 }
 
 static PyObject* 
@@ -114,7 +118,8 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
 			     (UINT8*) PyString_AsString(buf), bufsize);
 
     /* adjust string length to avoid slicing in encoder */
-    _PyString_Resize(&buf, (status > 0) ? status : 0);
+    if (_PyString_Resize(&buf, (status > 0) ? status : 0) < 0)
+        return NULL;
 
     result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
 

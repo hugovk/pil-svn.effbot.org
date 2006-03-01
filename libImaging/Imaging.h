@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Imaging.h#3 $
+ * $Id: //modules/pil/libImaging/Imaging.h#10 $
  * 
  * declarations for the imaging core library
  *
@@ -97,6 +97,21 @@ struct ImagingMemoryInstance {
 
 };
 
+
+#define IMAGING_PIXEL_1(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_L(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_P(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_I(im,x,y) ((im)->image32[(y)][(x)])
+#define IMAGING_PIXEL_F(im,x,y) (((FLOAT32*)(im)->image32[y])[x])
+#define IMAGING_PIXEL_RGB(im,x,y) ((im)->image8[(y)][(x)*4])
+#define IMAGING_PIXEL_RGBA(im,x,y) ((im)->image8[(y)][(x)*4])
+#define IMAGING_PIXEL_CMYK(im,x,y) ((im)->image8[(y)][(x)*4])
+#define IMAGING_PIXEL_YCbCr(im,x,y) ((im)->image8[(y)][(x)*4])
+
+#define IMAGING_PIXEL_UINT8(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_INT32(im,x,y) ((im)->image32[(y)][(x)])
+#define IMAGING_PIXEL_FLOAT32(im,x,y) (((FLOAT32*)(im)->image32[y])[x])
+
 #define IMAGING_ACCESS_HEAD\
     int (*getline)(ImagingAccess access, char *buffer, int y);\
     void (*destroy)(ImagingAccess access)
@@ -150,6 +165,9 @@ extern Imaging ImagingNewMap(const char* filename, int readonly,
 
 extern Imaging ImagingNewPrologue(const char *mode,
                                   unsigned xsize, unsigned ysize);
+extern Imaging ImagingNewPrologueSubtype(const char *mode,
+                                  unsigned xsize, unsigned ysize,
+                                  int structure_size);
 extern Imaging ImagingNewEpilogue(Imaging im);
 
 extern void ImagingCopyInfo(Imaging destination, Imaging source);
@@ -215,10 +233,11 @@ extern Imaging ImagingFill(Imaging im, const void* ink);
 extern int ImagingFill2(
     Imaging into, const void* ink, Imaging mask,
     int x0, int y0, int x1, int y1);
-extern Imaging ImagingFilter(Imaging im, const int* kernel);
-extern Imaging ImagingFilterThin(Imaging im, int maxpass);
 extern Imaging ImagingFillLinearGradient(const char* mode);
 extern Imaging ImagingFillRadialGradient(const char* mode);
+extern Imaging ImagingFilter(
+    Imaging im, int xsize, int ysize, const FLOAT32* kernel,
+    FLOAT32 offset, FLOAT32 divisor);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging ImagingGetBand(Imaging im, int band);
@@ -227,6 +246,7 @@ extern int ImagingGetExtrema(Imaging im, void *extrema);
 extern int ImagingGetProjection(Imaging im, UINT8* xproj, UINT8* yproj);
 extern ImagingHistogram ImagingGetHistogram(
     Imaging im, Imaging mask, void *extrema);
+extern Imaging ImagingModeFilter(Imaging im, int size);
 extern Imaging ImagingNegative(Imaging im);
 extern Imaging ImagingOffset(Imaging im, int xoffset, int yoffset);
 extern int ImagingPaste(
@@ -237,6 +257,7 @@ extern Imaging ImagingPoint(
 extern Imaging ImagingPointTransform(
     Imaging imIn, double scale, double offset);
 extern Imaging ImagingPutBand(Imaging im, Imaging imIn, int band);
+extern Imaging ImagingRankFilter(Imaging im, int size, int rank);
 extern Imaging ImagingResize(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingRotate(
     Imaging imOut, Imaging imIn, double theta, int filter);
@@ -257,18 +278,6 @@ extern Imaging ImagingTransform(
     int fill);
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
-
-/* Standard Image Enhancement Filters */
-extern Imaging ImagingFilterBlur(Imaging im);
-extern Imaging ImagingFilterContour(Imaging im);
-extern Imaging ImagingFilterDetail(Imaging im);
-extern Imaging ImagingFilterEdgeEnhance(Imaging im);
-extern Imaging ImagingFilterEdgeEnhanceMore(Imaging im);
-extern Imaging ImagingFilterEmboss(Imaging im);
-extern Imaging ImagingFilterFindEdges(Imaging im);
-extern Imaging ImagingFilterSmooth(Imaging im);
-extern Imaging ImagingFilterSmoothMore(Imaging im);
-extern Imaging ImagingFilterSharpen(Imaging im);
 
 /* Channel operations */
 /* any mode, except "F" */
@@ -300,29 +309,31 @@ struct ImagingAffineMatrixInstance {
 typedef struct ImagingAffineMatrixInstance *ImagingAffineMatrix;
 
 extern int ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-                          int start, int end, const void* ink);
+                          int start, int end, const void* ink, int op);
 extern int ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap,
-                             const void* ink);
+                             const void* ink, int op);
 extern int ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-                            int start, int end, const void* ink, int fill);
+                            int start, int end, const void* ink, int fill,
+                            int op);
 extern int ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
-                              const void* ink, int fill);
+                              const void* ink, int fill, int op);
 extern int ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1,
-			   const void* ink);
+			   const void* ink, int op);
 extern int ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
-                               int start, int end, const void* ink, int fill);
-extern int ImagingDrawPoint(Imaging im, int x, int y, const void* ink);
+                               int start, int end, const void* ink, int fill,
+                               int op);
+extern int ImagingDrawPoint(Imaging im, int x, int y, const void* ink, int op);
 extern int ImagingDrawPolygon(Imaging im, int points, int *xy,
-			      const void* ink, int fill);
+			      const void* ink, int fill, int op);
 extern int ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-				const void* ink, int fill);
+				const void* ink, int fill, int op);
 
 /* Level 2 graphics (WORK IN PROGRESS) */
 extern ImagingOutline ImagingOutlineNew(void);
 extern void ImagingOutlineDelete(ImagingOutline outline);
 
 extern int ImagingDrawOutline(Imaging im, ImagingOutline outline,
-                              const void* ink, int fill);
+                              const void* ink, int fill, int op);
 
 extern int ImagingOutlineMove(ImagingOutline outline, float x, float y);
 extern int ImagingOutlineLine(ImagingOutline outline, float x, float y);

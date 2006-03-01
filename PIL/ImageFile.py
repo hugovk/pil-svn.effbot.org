@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageFile.py#2 $
+# $Id: //modules/pil/PIL/ImageFile.py#8 $
 #
 # base class for image file handlers
 #
@@ -16,21 +16,27 @@
 # 1999-02-04 fl   Use memory mapping also for "I;16" and "I;16B"
 # 1999-05-31 fl   Added image parser
 # 2000-10-12 fl   Set readonly flag on memory-mapped images
+# 2002-03-20 fl   Use better messages for common decoder errors
+# 2003-04-21 fl   Fall back on mmap/map_buffer if map is not available
 #
-# Copyright (c) 1997-2000 by Secret Labs AB
-# Copyright (c) 1995-2000 by Fredrik Lundh
+# Copyright (c) 1997-2002 by Secret Labs AB
+# Copyright (c) 1995-2002 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 import Image
-import traceback, sys
+import traceback, sys, os
 
 MAXBLOCK = 65536
 
-# raw modes that may be memory mapped.  NOTE: if you change this, you
-# may have to modify the stride calculation in map.c too!
-MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16B")
+ERRORS = {
+    -1: "image buffer overrun error",
+    -2: "decoding error",
+    -3: "unknown error",
+    -8: "bad configuration",
+    -9: "out of memory error"
+}
 
 #
 # --------------------------------------------------------------------
@@ -43,6 +49,9 @@ def _tilesort(t1, t2):
 #
 # --------------------------------------------------------------------
 # ImageFile base class
+
+##
+# Base class for image file handlers.
 
 class ImageFile(Image.Image):
     "Base class for image file format handlers."
@@ -79,6 +88,10 @@ class ImageFile(Image.Image):
             if Image.DEBUG > 1:
                 traceback.print_exc()
             raise SyntaxError, v
+        except EOFError, v: # got header but not the first frame
+            if Image.DEBUG > 1:
+                traceback.print_exc()
+            raise SyntaxError, v
 
         if not self.mode or self.size[0] <= 0:
             raise SyntaxError, "not identified by this driver"
@@ -101,7 +114,7 @@ class ImageFile(Image.Image):
         Image.Image.load(self)
 
         if self.tile is None:
-            raise IOError, "cannot load this image"
+            raise IOError("cannot load this image")
         if not self.tile:
             return
 
@@ -112,15 +125,27 @@ class ImageFile(Image.Image):
         if self.filename and len(self.tile) == 1:
             # try memory mapping
             d, e, o, a = self.tile[0]
-            if d == "raw" and a[0] == self.mode and a[0] in MAPMODES:
+            if d == "raw" and a[0] == self.mode and a[0] in Image._MAPMODES:
                 try:
-                    self.map = Image.core.map(self.filename)
-                    self.map.seek(o)
-                    self.im = self.map.readimage(
-                        self.mode, self.size, a[1], a[2]
-                        )
+                    if hasattr(Image.core, "map"):
+                        # use built-in mapper
+                        self.map = Image.core.map(self.filename)
+                        self.map.seek(o)
+                        self.im = self.map.readimage(
+                            self.mode, self.size, a[1], a[2]
+                            )
+                    else:
+                        # use mmap, if possible
+                        import mmap
+                        file = open(self.filename, "r+")
+                        size = os.path.getsize(self.filename)
+                        # FIXME: on Unix, use PROT_READ etc
+                        self.map = mmap.mmap(file.fileno(), size)
+                        self.im = Image.core.map_buffer(
+                            self.map, self.size, d, e, o, a
+                            )
                     readonly = 1
-                except (AttributeError, IOError):
+                except (AttributeError, IOError, ImportError):
                     self.map = None
 
         self.load_prepare()
@@ -149,7 +174,7 @@ class ImageFile(Image.Image):
                     s = self.load_read(self.decodermaxblock)
                     if not s:
                         self.tile = []
-                        raise IOError, "image file is truncated, %d bytes left in buffer" % len(b)
+                        raise IOError("image file is truncated (%d bytes not processed)" % len(b))
                     b = b + s
                     n, e = d.decode(b)
                     if n < 0:
@@ -163,7 +188,8 @@ class ImageFile(Image.Image):
         self.fp = None # might be shared
 
         if not self.map and e < 0:
-            raise IOError, "decoder error %d when reading image file" % e
+            error = ERRORS.get(e, "decoder error %d" % e)
+            raise IOError(error + " when reading image file")
 
         # post processing
         if hasattr(self, "tile_post_rotate"):
@@ -215,7 +241,7 @@ class _ParserFile:
             self.offset = self.offset + offset
         else:
             # force error in Image.open
-            raise IOError, "illegal argument to seek"
+            raise IOError("illegal argument to seek")
 
     def read(self, bytes=0):
         pos = self.offset
@@ -281,8 +307,8 @@ class Parser:
                 if e < 0:
                     # decoding error
                     self.image = None
-                    raise IOError,\
-                          "decoder error %d when reading image file" % e
+                    error = ERRORS.get(e, "decoder error %d" % e)
+                    raise IOError(error + " when reading image file")
                 else:
                     # end of image
                     return
@@ -303,7 +329,7 @@ class Parser:
 
                 # sanity check
                 if len(im.tile) != 1:
-                    raise IOError, "cannot parse this image"
+                    raise IOError("cannot parse this image")
 
                 # initialize decoder
                 im.load_prepare()
@@ -329,9 +355,9 @@ class Parser:
             self.feed("")
             self.data = self.decoder = None
             if not self.finished:
-                raise IOError, "image was incomplete"
+                raise IOError("image was incomplete")
         if not self.image:
-            raise IOError, "cannot parse this image"
+            raise IOError("cannot parse this image")
         return self.image
 
 #
@@ -362,7 +388,7 @@ def _save(im, fp, tile):
                 if s:
                     break
             if s < 0:
-                raise IOError, "encoder error %d when writing image file" % s
+                raise IOError("encoder error %d when writing image file" % s)
     else:
         # slight speedup: compress to real file object
         for e, b, o, a in tile:
@@ -372,7 +398,7 @@ def _save(im, fp, tile):
             e.setimage(im.im, b)
             s = e.encode_to_file(fh, bufsize)
             if s < 0:
-                raise IOError, "encoder error %d when writing image file" % s
+                raise IOError("encoder error %d when writing image file" % s)
     try:
         fp.flush()
     except: pass

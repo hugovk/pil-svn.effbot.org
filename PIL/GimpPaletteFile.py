@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/GimpPaletteFile.py#3 $
+# $Id: //modules/pil/PIL/GimpPaletteFile.py#4 $
 #
 # stuff to read GIMP palette files
 #
@@ -14,6 +14,9 @@
 #
 
 import string
+
+##
+# File handler for GIMP's palette format.
 
 class GimpPaletteFile:
 

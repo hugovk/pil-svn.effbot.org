@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImtImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/ImtImagePlugin.py#3 $
 #
 # IM Tools support for PIL
 #
@@ -25,6 +25,9 @@ import Image, ImageFile
 # --------------------------------------------------------------------
 
 field = re.compile(r"([a-z]*) ([^ \r\n]*)")
+
+##
+# Image plugin for IM Tools images.
 
 class ImtImageFile(ImageFile.ImageFile):
 

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/Unpack.c#2 $
+ * $Id: //modules/pil/libImaging/Unpack.c#3 $
  *
  * code to unpack raw data from various file formats
  *
@@ -370,7 +370,7 @@ ImagingUnpackBGR(UINT8* out, const UINT8* in, int pixels)
 }
 
 void
-ImagingUnpackBGR5(UINT8* out, const UINT8* in, int pixels)
+ImagingUnpackBGR15(UINT8* out, const UINT8* in, int pixels)
 {
     int i, pixel;
     /* RGB, reversed bytes, 5 bits per pixel */
@@ -379,6 +379,21 @@ ImagingUnpackBGR5(UINT8* out, const UINT8* in, int pixels)
 	out[B] = (pixel & 31) * 255 / 31;
 	out[G] = ((pixel>>5) & 31) * 255 / 31;
 	out[R] = ((pixel>>10) & 31) * 255 / 31;
+	out[A] = 255;
+	out += 4; in += 2;
+    }
+}
+
+void
+ImagingUnpackBGR16(UINT8* out, const UINT8* in, int pixels)
+{
+    int i, pixel;
+    /* RGB, reversed bytes, 5/6/5 bits per pixel */
+    for (i = 0; i < pixels; i++) {
+	pixel = in[0] + (in[1] << 8);
+	out[B] = (pixel & 31) * 255 / 31;
+	out[G] = ((pixel>>5) & 63) * 255 / 63;
+	out[R] = ((pixel>>11) & 31) * 255 / 31;
 	out[A] = 255;
 	out += 4; in += 2;
     }
@@ -763,7 +778,9 @@ static struct {
     {"RGB",	"RGB;L",	24,	unpackRGBL},
     {"RGB",	"RGB;16B",	48,	unpackRGB16B},
     {"RGB",	"BGR",		24,	ImagingUnpackBGR},
-    {"RGB",	"BGR;5",	16,	ImagingUnpackBGR5},
+    {"RGB",	"BGR;15",	16,	ImagingUnpackBGR15},
+    {"RGB",	"BGR;16",	16,	ImagingUnpackBGR16},
+    {"RGB",	"BGR;5",	16,	ImagingUnpackBGR15}, /* compat */
     {"RGB",	"RGBX",		32,	copy4},
     {"RGB",	"RGBX;L",	32,	unpackRGBAL},
     {"RGB",	"BGRX",		32,	ImagingUnpackBGRX},
@@ -795,7 +812,9 @@ static struct {
     {"RGBX",	"RGB;L",	24,	unpackRGBL},
     {"RGBX",	"RGB;16B",	48,	unpackRGB16B},
     {"RGBX",	"BGR",		24,	ImagingUnpackBGR},
-    {"RGBX",	"BGR;5",	16,	ImagingUnpackBGR5},
+    {"RGBX",	"BGR;15",	16,	ImagingUnpackBGR15},
+    {"RGB",	"BGR;16",	16,	ImagingUnpackBGR16},
+    {"RGBX",	"BGR;5",	16,	ImagingUnpackBGR15}, /* compat */
     {"RGBX",	"RGBX",		32,	copy4},
     {"RGBX",	"RGBX;L",	32,	unpackRGBAL},
     {"RGBX",	"BGRX",		32,	ImagingUnpackBGRX},

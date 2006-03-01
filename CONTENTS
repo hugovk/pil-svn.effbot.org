@@ -1,6 +1,6 @@
 Imaging/README
 
-Imaging/CHANGES-113
+Imaging/CHANGES-114
 Imaging/CONTENTS
 
 Imaging/BUILDME
@@ -8,6 +8,9 @@ Imaging/BUILDME
 Imaging/setup.py
 Imaging/Setup.in
 Imaging/Makefile.pre.in
+
+Imaging/selftest.py
+Imaging/doctest.py
 
 Imaging/libImaging/Makefile.win
 Imaging/libImaging/ImConfig.h.win
@@ -52,6 +55,7 @@ Imaging/libImaging/Point.c
 Imaging/libImaging/Quant.c
 Imaging/libImaging/QuantHash.c
 Imaging/libImaging/QuantHeap.c
+Imaging/libImaging/RankFilter.c
 Imaging/libImaging/Storage.c
 Imaging/libImaging/Unpack.c
 Imaging/libImaging/UnpackYCC.c
@@ -101,6 +105,8 @@ Imaging/path.c
 
 Imaging/_imagingtk.c
 
+Imaging/_imagingft.c
+
 Imaging/PIL.pth
 Imaging/PIL/__init__.py
 Imaging/PIL/ArgImagePlugin.py
@@ -110,6 +116,7 @@ Imaging/PIL/ContainerIO.py
 Imaging/PIL/CurImagePlugin.py
 Imaging/PIL/DcxImagePlugin.py
 Imaging/PIL/EpsImagePlugin.py
+Imaging/PIL/ExifTags.py
 Imaging/PIL/FliImagePlugin.py
 Imaging/PIL/FontFile.py
 Imaging/PIL/FpxImagePlugin.py
@@ -121,18 +128,21 @@ Imaging/PIL/GimpPaletteFile.py
 Imaging/PIL/IcoImagePlugin.py
 Imaging/PIL/Image.py
 Imaging/PIL/ImageChops.py
+Imaging/PIL/ImageColor.py
 Imaging/PIL/ImageDraw.py
 Imaging/PIL/ImageEnhance.py
 Imaging/PIL/ImageFile.py
 Imaging/PIL/ImageFileIO.py
 Imaging/PIL/ImageFilter.py
 Imaging/PIL/ImageFont.py
+Imaging/PIL/ImageGrab.py
 Imaging/PIL/ImageOps.py
 Imaging/PIL/ImagePalette.py
 Imaging/PIL/ImagePath.py
 Imaging/PIL/ImageSequence.py
 Imaging/PIL/ImageStat.py
 Imaging/PIL/ImageTk.py
+Imaging/PIL/ImageTransform.py
 Imaging/PIL/ImageWin.py
 Imaging/PIL/ImImagePlugin.py
 Imaging/PIL/ImtImagePlugin.py
@@ -144,6 +154,7 @@ Imaging/PIL/MpegImagePlugin.py
 Imaging/PIL/MspImagePlugin.py
 Imaging/PIL/OleFileIO.py
 Imaging/PIL/PaletteFile.py
+Imaging/PIL/PalmImagePlugin.py
 Imaging/PIL/PcdImagePlugin.py
 Imaging/PIL/PcfFontFile.py
 Imaging/PIL/PcxImagePlugin.py
@@ -159,10 +170,14 @@ Imaging/PIL/TarIO.py
 Imaging/PIL/TgaImagePlugin.py
 Imaging/PIL/TiffImagePlugin.py
 Imaging/PIL/TiffTags.py
+Imaging/PIL/WalImageFile.py
 Imaging/PIL/WmfImagePlugin.py
 Imaging/PIL/XbmImagePlugin.py
 Imaging/PIL/XpmImagePlugin.py
 Imaging/PIL/XVThumbImagePlugin.py
+
+Imaging/Doc/*.html
+Imaging/Doc/*.css
 
 Imaging/Scripts/pilconvert.py
 Imaging/Scripts/pildriver.py
@@ -200,5 +215,3 @@ Imaging/Tk/install.txt
 Imaging/Tk/booster.txt
 Imaging/Tk/pilbitmap.txt
 
-Imaging/MiniTest/test.py
-Imaging/MiniTest/doctest.py

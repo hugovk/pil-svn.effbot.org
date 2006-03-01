@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/IcoImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/IcoImagePlugin.py#4 $
 #
 # Windows Icon support for PIL
 #
@@ -37,6 +37,8 @@ def i32(c):
 def _accept(prefix):
     return prefix[:4] == "\0\0\1\0"
 
+##
+# Image plugin for Windows Icon files.
 
 class IcoImageFile(BmpImagePlugin.BmpImageFile):
 
@@ -76,7 +78,7 @@ class IcoImageFile(BmpImagePlugin.BmpImageFile):
         self.tile[0] = d, (0,0)+self.size, o, a
 
         return
-        
+
 
 #
 # --------------------------------------------------------------------

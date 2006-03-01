@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/FpxImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/FpxImagePlugin.py#4 $
 #
 # FlashPix support for PIL
 #
@@ -46,6 +46,8 @@ MODES = {
 def _accept(prefix):
     return prefix[:8] == MAGIC
 
+##
+# Image plugin for the FlashPix images.
 
 class FpxImageFile(ImageFile.ImageFile):
 
@@ -144,7 +146,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         if size != self.size:
             raise IOError, "subimage mismatch"
-            
+
         # get tile descriptors
         fp.seek(28 + offset)
         s = fp.read(i32(s, 12) * length)

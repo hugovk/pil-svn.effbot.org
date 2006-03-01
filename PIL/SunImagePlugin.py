@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/SunImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/SunImagePlugin.py#4 $
 #
 # Sun image file handling
 #
@@ -34,6 +34,8 @@ def i32(c):
 def _accept(prefix):
     return i32(prefix) == 0x59a66a95
 
+##
+# Image plugin for Sun raster files.
 
 class SunImageFile(ImageFile.ImageFile):
 

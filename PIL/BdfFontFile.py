@@ -1,18 +1,18 @@
 #
-# THIS IS WORK IN PROGRESS
-#
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/BdfFontFile.py#3 $
+# $Id: //modules/pil/PIL/BdfFontFile.py#7 $
 #
-# bitmap distribution font file parser
+# bitmap distribution font (bdf) file parser
 #
 # history:
 # 1996-05-16 fl   created (as bdf2pil)
 # 1997-08-25 fl   converted to FontFile driver
 # 2001-05-25 fl   removed bogus __init__ call
+# 2002-11-20 fl   robustification (from Kevin Cazabon, Dmitry Vasiliev)
+# 2003-04-22 fl   more robustification (from Graham Dumpleton)
 #
-# Copyright (c) Secret Labs AB 1997-2001.
-# Copyright (c) Fredrik Lundh 1997-2001.
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1997-2003 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -70,15 +70,21 @@ def bdf_char(f):
         bitmap.append(s[:-1])
     bitmap = string.join(bitmap, "")
 
-    [x, y, l, d] = map(string.atoi, string.split(props["BBX"]))
-    [dx, dy] = map(string.atoi, string.split(props["DWIDTH"]))
+    [x, y, l, d] = map(int, string.split(props["BBX"]))
+    [dx, dy] = map(int, string.split(props["DWIDTH"]))
 
     bbox = (dx, dy), (l, -d-y, x+l, -d), (0, 0, x, y)
 
-    im = Image.fromstring("1", (x, y), bitmap, "hex", "1")
+    try:
+        im = Image.fromstring("1", (x, y), bitmap, "hex", "1")
+    except ValueError:
+        # deal with zero-width characters
+        im = Image.new("1", (x, y))
 
-    return id, string.atoi(props["ENCODING"]), bbox, im
+    return id, int(props["ENCODING"]), bbox, im
 
+##
+# Font file plugin for the X11 BDF format.
 
 class BdfFontFile(FontFile.FontFile):
 
@@ -105,11 +111,11 @@ class BdfFontFile(FontFile.FontFile):
 
         font = string.split(props["FONT"], "-")
 
-        font[4] = bdf_slant[font[4]]
-        font[11] = bdf_spacing[font[11]]
+        font[4] = bdf_slant[string.upper(font[4])]
+        font[11] = bdf_spacing[string.upper(font[11])]
 
-        ascent = string.atoi(props["FONT_ASCENT"])
-        descent = string.atoi(props["FONT_DESCENT"])
+        ascent = int(props["FONT_ASCENT"])
+        descent = int(props["FONT_DESCENT"])
 
         fontname = string.join(font[1:], ";")
 
@@ -123,5 +129,5 @@ class BdfFontFile(FontFile.FontFile):
             if not c:
                 break
             id, ch, (xy, dst, src), im = c
-            if ch >= 0:
+            if ch >= 0 and ch < len(self.glyph):
                 self.glyph[ch] = xy, dst, src, im

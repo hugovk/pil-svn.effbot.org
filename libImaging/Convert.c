@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Convert.c#3 $
+ * $Id: //modules/pil/libImaging/Convert.c#4 $
  * 
  * convert images
  *
@@ -408,6 +408,16 @@ i2i16(UINT8* out, const UINT8* in_, int xsize)
 }
 
 static void
+l2i16(UINT8* out, const UINT8* in, int xsize)
+{
+  int x;
+    for (x = 0; x < xsize; x++, in++) {
+	*out++ = *in;
+	*out++ = 0;
+    }
+}
+
+static void
 i2i16b(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
@@ -426,6 +436,17 @@ i162i(UINT8* out_, const UINT8* in, int xsize)
     INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
 	*out++ = in[0] + ((int) in[1] << 8);
+}
+
+static void
+i162l(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in += 2)
+      if (in[1] != 0)
+	*out++ = 255;
+      else
+	*out++ = in[0];
 }
 
 static void
@@ -509,6 +530,9 @@ static struct {
     { "I;16", "I", i162i },
     { "I", "I;16B", i2i16b },
     { "I;16B", "I", i16b2i },
+
+    { "L", "I;16", l2i16 },
+    { "I;16", "L", i162l },
 
     { NULL }
 };
@@ -905,7 +929,15 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 	}
 
     if (!convert)
+#ifdef notdef
 	return (Imaging) ImagingError_ValueError("conversion not supported");
+#else
+    {
+      static char buf[256];
+      sprintf(buf, "conversion from %s to %s not supported", imIn->mode, mode);
+      return (Imaging) ImagingError_ValueError(buf);
+    }
+#endif
 
     imOut = ImagingNew2(mode, imOut, imIn);
     if (!imOut)

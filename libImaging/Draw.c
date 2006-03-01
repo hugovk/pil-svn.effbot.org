@@ -1,32 +1,33 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/Draw.c#3 $
+ * $Id: //modules/pil/libImaging/Draw.c#6 $
  *
  * a simple drawing package for the Imaging library
  *
  * history:
- * 96-04-13 fl	Created.
- * 96-04-30 fl	Added transforms and polygon support.
- * 96-08-12 fl	Added filled polygons.
- * 96-11-05 fl	Fixed float/int confusion in polygon filler
- * 97-07-04 fl	Support 32-bit images (C++ would have been nice)
- * 98-09-09 fl	Eliminated qsort casts; improved rectangle clipping
- * 98-09-10 fl	Fixed fill rectangle to include lower edge (!)
- * 98-12-29 fl	Added arc, chord, and pieslice primitives
- * 99-01-10 fl	Added some level 2 ("arrow") stuff (experimental)
- * 99-02-06 fl	Added bitmap primitive
- * 99-07-26 fl	Eliminated a compiler warning
- * 99-07-31 fl	Pass ink as void* instead of int
+ * 1996-04-13 fl  Created.
+ * 1996-04-30 fl  Added transforms and polygon support.
+ * 1996-08-12 fl  Added filled polygons.
+ * 1996-11-05 fl  Fixed float/int confusion in polygon filler
+ * 1997-07-04 fl  Support 32-bit images (C++ would have been nice)
+ * 1998-09-09 fl  Eliminated qsort casts; improved rectangle clipping
+ * 1998-09-10 fl  Fixed fill rectangle to include lower edge (!)
+ * 1998-12-29 fl  Added arc, chord, and pieslice primitives
+ * 1999-01-10 fl  Added some level 2 ("arrow") stuff (experimental)
+ * 1999-02-06 fl  Added bitmap primitive
+ * 1999-07-26 fl  Eliminated a compiler warning
+ * 1999-07-31 fl  Pass ink as void* instead of int
+ * 2002-12-10 fl  Added experimental RGBA-on-RGB drawing
  *
- * Copyright (c) Fredrik Lundh 1996-97.
- * Copyright (c) Secret Labs AB 1997-99.
+ * Copyright (c) 1996-2002 by Fredrik Lundh
+ * Copyright (c) 1997-2002 by Secret Labs AB.
  *
  * See the README file for information on usage and redistribution.
  */
 
 /* FIXME: support fill/outline attribute for all filled shapes */
 /* FIXME: support zero-winding fill */
-/* FIXME: support affine transform */
+/* FIXME: add drawing context, support affine transforms */
 /* FIXME: support clip window (and mask?) */
 
 #include <math.h>
@@ -37,6 +38,13 @@
 
 #define INK8(ink) (*(UINT8*)ink)
 #define INK32(ink) (*(INT32*)ink)
+
+/* like (a * b + 127) / 255), but much faster on most platforms */
+#define	MULDIV255(a, b, tmp)\
+     	(tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
+
+#define	BLEND(mask, in1, in2, tmp1, tmp2)\
+	(MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 
 /* -------------------------------------------------------------------- */
 /* Primitives								*/
@@ -65,6 +73,20 @@ point32(Imaging im, int x, int y, int ink)
 }
 
 static inline void
+point32rgba(Imaging im, int x, int y, int ink)
+{
+    unsigned int tmp1, tmp2;
+
+    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
+        UINT8* out = (UINT8*) im->image[y]+x*4;
+        UINT8* in = (UINT8*) &ink;
+        out[0] = BLEND(in[3], out[0], in[0], tmp1, tmp2);
+        out[1] = BLEND(in[3], out[1], in[1], tmp1, tmp2);
+        out[2] = BLEND(in[3], out[2], in[2], tmp1, tmp2);
+    }
+}
+
+static inline void
 hline8(Imaging im, int x0, int y0, int x1, int ink)
 {
     int tmp;
@@ -81,7 +103,7 @@ hline8(Imaging im, int x0, int y0, int x1, int ink)
 	else if (x1 >= im->xsize)
 	    x1 = im->xsize-1;
 	if (x0 <= x1)
-	    memset(im->image8[y0] + x0, (UINT8) ink, x1 - x0 + 1);
+            memset(im->image8[y0] + x0, (UINT8) ink, x1 - x0 + 1);
     }
 }
 
@@ -105,6 +127,36 @@ hline32(Imaging im, int x0, int y0, int x1, int ink)
         p = im->image32[y0];
 	while (x0 <= x1)
             p[x0++] = ink;
+    }
+}
+
+static inline void
+hline32rgba(Imaging im, int x0, int y0, int x1, int ink)
+{
+    int tmp;
+    unsigned int tmp1, tmp2;
+
+    if (y0 >= 0 && y0 < im->ysize) {
+	if (x0 > x1)
+	    tmp = x0, x0 = x1, x1 = tmp;
+	if (x0 < 0)
+	    x0 = 0;
+	else if (x0 >= im->xsize)
+	    return;
+	if (x1 < 0)
+	    return;
+	else if (x1 >= im->xsize)
+	    x1 = im->xsize-1;
+	if (x0 <= x1) {
+            UINT8* out = (UINT8*) im->image[y0]+x0*4;
+            UINT8* in = (UINT8*) &ink;
+            while (x0 <= x1) {
+                out[0] = BLEND(in[3], out[0], in[0], tmp1, tmp2);
+                out[1] = BLEND(in[3], out[1], in[1], tmp1, tmp2);
+                out[2] = BLEND(in[3], out[2], in[2], tmp1, tmp2);
+                x0++; out += 4;
+            }
+        }
     }
 }
 
@@ -254,6 +306,79 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink)
     }
 }
 
+static inline void
+line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink)
+{
+    int i, n, e;
+    int dx, dy;
+    int xs, ys;
+
+    /* normalize coordinates */
+    dx = x1-x0;
+    if (dx < 0)
+	dx = -dx, xs = -1;
+    else
+	xs = 1;
+    dy = y1-y0;
+    if (dy < 0)
+	dy = -dy, ys = -1;
+    else
+	ys = 1;
+
+    n = (dx > dy) ? dx : dy;
+
+    if (dx == 0)
+
+	/* vertical */
+	for (i = 0; i < dy; i++) {
+	    point32rgba(im, x0, y0, ink);
+	    y0 += ys;
+	}
+
+    else if (dy == 0)
+
+	/* horizontal */
+	hline32rgba(im, x0, y0, x1, ink);
+
+    else if (dx > dy) {
+
+	/* bresenham, horizontal slope */
+	n = dx;
+	dy += dy;
+	e = dy - dx;
+	dx += dx;
+
+	for (i = 0; i < n; i++) {
+	    point32rgba(im, x0, y0, ink);
+	    if (e >= 0) {
+		y0 += ys;
+		e -= dx;
+	    }
+	    e += dy;
+	    x0 += xs;
+	}
+
+    } else {
+
+	/* bresenham, vertical slope */
+	n = dy;
+	dx += dx;
+	e = dx - dy;
+	dy += dy;
+
+	for (i = 0; i < n; i++) {
+	    point32rgba(im, x0, y0, ink);
+	    if (e >= 0) {
+		x0 += xs;
+		e -= dy;
+	    }
+	    e += dx;
+	    y0 += ys;
+	}
+
+    }
+}
+
 static int
 x_cmp(const void *x0, const void *x1)
 {
@@ -373,6 +498,63 @@ polygon32(Imaging im, int n, Edge *e, int ink, int eofill)
     return 0;
 }
 
+static inline int
+polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill)
+{
+    int i, j;
+    float *xx;
+    int ymin, ymax;
+    float y;
+
+    if (n <= 0)
+	return 0;
+
+    /* Find upper and lower polygon boundary (within image) */
+
+    ymin = e[0].ymin;
+    ymax = e[0].ymax;
+    for (i = 1; i < n; i++) {
+	if (e[i].ymin < ymin) ymin = e[i].ymin;
+	if (e[i].ymax > ymax) ymax = e[i].ymax;
+    }
+
+    if (ymin < 0)
+	ymin = 0;
+    if (ymax >= im->ysize)
+	ymax = im->ysize-1;
+
+    /* Process polygon edges */
+
+    xx = malloc(n * sizeof(float));
+    if (!xx)
+	return -1;
+
+    for (;ymin <= ymax; ymin++) {
+	y = ymin+0.5;
+	for (i = j = 0; i < n; i++) {
+	    if (y >= e[i].ymin && y <= e[i].ymax)
+		if (e[i].d == 0)
+		    hline32rgba(im, e[i].xmin, ymin, e[i].xmax, ink);
+		else
+		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+        }
+	if (j == 2) {
+            if (xx[0] < xx[1])
+                hline32rgba(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
+            else
+                hline32rgba(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
+	} else {
+	    qsort(xx, j, sizeof(float), x_cmp);
+	    for (i = 0; i < j-1 ; i += 2)
+                hline32rgba(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
+	}
+    }
+
+    free(xx);
+
+    return 0;
+}
+
 static inline void
 add_edge(Edge *e, int x0, int y0, int x1, int y1)
 {
@@ -410,53 +592,61 @@ typedef struct {
     int (*polygon)(Imaging im, int n, Edge *e, int ink, int eofill);
 } DRAW;
 
-DRAW draw8  = { point8,  hline8,  line8,  polygon8 };
+DRAW draw8 = { point8,  hline8,  line8,  polygon8 };
 DRAW draw32 = { point32, hline32, line32, polygon32 };
-
+DRAW draw32rgba = { point32rgba, hline32rgba, line32rgba, polygon32rgba };
 
 /* -------------------------------------------------------------------- */
 /* Interface								*/
 /* -------------------------------------------------------------------- */
 
+#define DRAWINIT()\
+    if (im->image8) {\
+        draw = &draw8;\
+        ink = INK8(ink_);\
+    } else {\
+        draw = (op) ? &draw32rgba : &draw32;\
+        ink = INK32(ink_);\
+    }
+
 int
-ImagingDrawPoint(Imaging im, int x0, int y0, const void* ink)
+ImagingDrawPoint(Imaging im, int x0, int y0, const void* ink_, int op)
 {
-    if (im->image8)
-        draw8.point(im, x0, y0, INK8(ink));
-    else
-        draw32.point(im, x0, y0, INK32(ink));
+    DRAW* draw;
+    INT32 ink;
+
+    DRAWINIT();
+
+    draw->point(im, x0, y0, ink);
 
     return 0;
 }
 
 int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void* ink)
+ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void* ink_,
+                int op)
 {
-    if (im->image8)
-        draw8.line(im, x0, y0, x1, y1, INK8(ink));
-    else
-        draw32.line(im, x0, y0, x1, y1, INK32(ink));
+    DRAW* draw;
+    INT32 ink;
+
+    DRAWINIT();
+
+    draw->line(im, x0, y0, x1, y1, ink);
 
     return 0;
 }
 
 int
 ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-		     const void* ink_, int fill)
+		     const void* ink_, int fill, int op)
 {
     int y;
     int tmp;
     DRAW* draw;
     INT32 ink;
 
-    if (im->image8) {
-        draw = &draw8;
-        ink = INK8(ink_);
-    } else {
-        draw = &draw32;
-        ink = INK32(ink_);
-    }
- 
+    DRAWINIT();
+
     if (y0 > y1)
 	tmp = y0, y0 = y1, y1 = tmp;
 
@@ -489,7 +679,8 @@ ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
 }
 
 int
-ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_, int fill)
+ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_,
+                   int fill, int op)
 {
     int i, n;
     DRAW* draw;
@@ -498,13 +689,7 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_, int fill)
     if (count <= 0)
 	return 0;
 
-    if (im->image8) {
-        draw = &draw8;
-        ink = INK8(ink_);
-    } else {
-        draw = &draw32;
-        ink = INK32(ink_);
-    }
+    DRAWINIT();
 
     if (fill) {
 
@@ -534,7 +719,8 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_, int fill)
 }
 
 int
-ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink)
+ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink,
+                  int op)
 {
     return ImagingFill2(
         im, ink, bitmap,
@@ -552,7 +738,7 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void* ink)
 static int
 ellipse(Imaging im, int x0, int y0, int x1, int y1,
         int start, int end, const void* ink_, int fill,
-        int mode)
+        int mode, int op)
 {
     int i, n;
     int cx, cy;
@@ -568,13 +754,7 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     if (w < 0 || h < 0)
         return 0;
 
-    if (im->image8) {
-        draw = &draw8;
-        ink = INK8(ink_);
-    } else {
-        draw = &draw32;
-        ink = INK32(ink_);
-    }
+    DRAWINIT();
 
     cx = (x0 + x1) / 2;
     cy = (y0 + y1) / 2;
@@ -649,30 +829,30 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawArc(Imaging im, int x0, int y0, int x1, int y1,
-               int start, int end, const void* ink)
+               int start, int end, const void* ink, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, ARC);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, 0, ARC, op);
 }
 
 int
 ImagingDrawChord(Imaging im, int x0, int y0, int x1, int y1,
-               int start, int end, const void* ink, int fill)
+               int start, int end, const void* ink, int fill, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, CHORD);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, CHORD, op);
 }
 
 int
 ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
-                   const void* ink, int fill)
+                   const void* ink, int fill, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, 0, 360, ink, fill, CHORD);
+    return ellipse(im, x0, y0, x1, y1, 0, 360, ink, fill, CHORD, op);
 }
 
 int
 ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
-                    int start, int end, const void* ink, int fill)
+                    int start, int end, const void* ink, int fill, int op)
 {
-    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, PIESLICE);
+    return ellipse(im, x0, y0, x1, y1, start, end, ink, fill, PIESLICE, op);
 }
 
 /* -------------------------------------------------------------------- */
@@ -908,13 +1088,15 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6])
 }
 
 int
-ImagingDrawOutline(Imaging im, ImagingOutline outline, const void* ink,
-                   int fill)
+ImagingDrawOutline(Imaging im, ImagingOutline outline, const void* ink_,
+                   int fill, int op)
 {
-    if (im->image8)
-        draw8.polygon(im, outline->count, outline->edges, INK8(ink), 0);
-    else
-        draw32.polygon(im, outline->count, outline->edges, INK32(ink), 0);
+    DRAW* draw;
+    INT32 ink;
+
+    DRAWINIT();
+
+    draw->polygon(im, outline->count, outline->edges, ink, 0);
 
     return 0;
 }

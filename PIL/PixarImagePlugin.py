@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PixarImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/PixarImagePlugin.py#4 $
 #
 # PIXAR raster support for PIL
 #
@@ -32,8 +32,8 @@ def i16(c):
 def i32(c):
     return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
 
-#
-# --------------------------------------------------------------------
+##
+# Image plugin for PIXAR raster images.
 
 class PixarImageFile(ImageFile.ImageFile):
 

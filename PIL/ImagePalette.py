@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImagePalette.py#2 $
+# $Id: //modules/pil/PIL/ImagePalette.py#3 $
 #
 # image palette object
 #
@@ -24,14 +24,53 @@ class ImagePalette:
 
     def __init__(self, mode = "RGB", palette = None):
         self.mode = mode
+        self.rawmode = None # if set, palette contains raw data
         self.palette = palette or range(256)*len(self.mode)
+        self.colors = {}
+        self.dirty = None
         if len(self.mode)*256 != len(self.palette):
             raise ValueError, "wrong palette size"
 
+    def getdata(self):
+        # experimental: get palette contains in format suitable
+        # for the low-level im.putpalette primitive
+        if self.rawmode:
+            return self.rawmode, self.palette
+        return self.mode + ";L", self.tostring()
+
     def tostring(self):
-        return array.array("b", self.palette).tostring()
+        # experimental: convert palette to string
+        if self.rawmode:
+            raise ValueError("palette contains raw palette data")
+        return array.array("B", self.palette).tostring()
+
+    def getcolor(self, color):
+        # experimental: given an rgb tuple, allocate palette entry
+        if self.rawmode:
+            raise ValueError("palette contains raw palette data")
+        if Image.isTupleType(color):
+            try:
+                return self.colors[color]
+            except KeyError:
+                # allocate new color slut
+                if Image.isStringType(self.palette):
+                    self.palette = list(self.palette)
+                index = len(self.colors)
+                if index >= 256:
+                    raise ValueError("cannot allocate more than 256 colors")
+                self.colors[color] = index
+                self.palette[index] = color[0]
+                self.palette[index+256] = color[1]
+                self.palette[index+512] = color[2]
+                self.dirty = 1
+                return index
+        else:
+            raise ValueError("unknown color specifier: %r" % color)
 
     def save(self, fp):
+        # (experimental) save palette to text file
+        if self.rawmode:
+            raise ValueError("palette contains raw palette data")
         if type(fp) == type(""):
             fp = open(fp, "w")
         fp.write("# Palette\n")
@@ -46,10 +85,12 @@ class ImagePalette:
 # --------------------------------------------------------------------
 # Internal
 
-class raw:
-    def __init__(self, rawmode, data):
-        self.rawmode = rawmode
-        self.data = data
+def raw(rawmode, data):
+    palette = ImagePalette()
+    palette.rawmode = rawmode
+    palette.palette = data
+    palette.dirty = 1
+    return palette
 
 # --------------------------------------------------------------------
 # Factories

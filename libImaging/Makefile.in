@@ -50,12 +50,13 @@ OBJS=		Storage.o Access.o Except.o \
 		File.o Fill.o Filter.o \
 		Geometry.o GetBBox.o \
 		Histo.o \
-		Matrix.o Negative.o \
+		Matrix.o \
+		Negative.o  \
 		Offset.o \
 		Pack.o Palette.o Paste.o Point.o \
                 Quant.o QuantHash.o QuantHeap.o \
-		Unpack.o \
-		UnpackYCC.o \
+		RankFilter.o \
+		Unpack.o UnpackYCC.o \
 		BitDecode.o \
 		EpsEncode.o \
 		FliDecode.o \

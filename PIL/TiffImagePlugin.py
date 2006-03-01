@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TiffImagePlugin.py#5 $
+# $Id: //modules/pil/PIL/TiffImagePlugin.py#9 $
 #
 # TIFF file handling
 #
@@ -106,7 +106,8 @@ OPEN_INFO = {
     (0, 1, (8,), ()): ("L", "L;I"),
     (1, 1, (1,), ()): ("1", "1"),
     (1, 1, (8,), ()): ("L", "L"),
-    (1, 2, (16,), ()): ("I;16", "I;16"),
+    (1, 1, (16,), ()): ("I;16", "I;16"),
+    (1, 2, (16,), ()): ("I;16S", "I;16S"),
     (1, 2, (32,), ()): ("I", "I;32S"),
     (1, 3, (32,), ()): ("F", "F;32F"),
     (2, 1, (8,8,8), ()): ("RGB", "RGB"),
@@ -126,6 +127,8 @@ PREFIXES = ["MM\000\052", "II\052\000"]
 def _accept(prefix):
     return prefix[:4] in PREFIXES
 
+##
+# Wrapper for TIFF IFDs.
 
 class ImageFileDirectory:
 
@@ -133,14 +136,15 @@ class ImageFileDirectory:
     # we don't decode tags unless they're asked for.
 
     def __init__(self, prefix="II"):
-        assert prefix in ("MM", "II")
-        self.prefix = prefix
-        if prefix == "MM":
+        self.prefix = prefix[:2]
+        if self.prefix == "MM":
             self.i16, self.i32 = ib16, ib32
             # FIXME: save doesn't yet support big-endian mode...
-        else:
+        elif self.prefix == "II":
             self.i16, self.i32 = il16, il32
             self.o16, self.o32 = ol16, ol32
+        else:
+            raise SyntaxError("not a TIFF IFD")
         self.reset()
 
     def reset(self):
@@ -150,8 +154,17 @@ class ImageFileDirectory:
 
     # dictionary API (sort of)
 
+    def keys(self):
+        return self.tagdata.keys() + self.tags.keys()
+
+    def items(self):
+        items = self.tags.items()
+        for tag in self.tagdata.keys():
+            items.append((tag, self[tag]))
+        return items
+
     def __len__(self):
-        return max(len(self.tagdata), len(self.tags))
+        return len(self.tagdata) + len(self.tags)
 
     def __getitem__(self, tag):
         try:
@@ -331,6 +344,7 @@ class ImageFileDirectory:
                 elif tag in (X_RESOLUTION, Y_RESOLUTION):
                     # identify rational data fields
                     typ = 5
+                    continue
                 else:
                     typ = 3
                     for v in value:
@@ -376,6 +390,9 @@ class ImageFileDirectory:
                 fp.write("\0")
 
         return offset
+
+##
+# Image plugin for TIFF files.
 
 class TiffImageFile(ImageFile.ImageFile):
 
@@ -456,13 +473,11 @@ class TiffImageFile(ImageFile.ImageFile):
     def _setup(self):
         "Setup this image object based on current tags"
 
+        getscalar = self.tag.getscalar
+
         # extract relevant tags
-        self._compression = COMPRESSION_INFO[self.tag.getscalar(
-            COMPRESSION, 1
-            )]
-        self._planar_configuration = self.tag.getscalar(
-            PLANAR_CONFIGURATION, 1
-            )
+        self._compression = COMPRESSION_INFO[getscalar(COMPRESSION, 1)]
+        self._planar_configuration = getscalar(PLANAR_CONFIGURATION, 1)
 
         # photometric is a required tag, but not everyone is reading
         # the specification
@@ -475,14 +490,14 @@ class TiffImageFile(ImageFile.ImageFile):
             print "- planar_configuration:", self._planar_configuration
 
         # size
-        xsize = self.tag.getscalar(IMAGEWIDTH)
-        ysize = self.tag.getscalar(IMAGELENGTH)
+        xsize = getscalar(IMAGEWIDTH)
+        ysize = getscalar(IMAGELENGTH)
         self.size = xsize, ysize
 
         if Image.DEBUG:
             print "- size:", self.size
 
-        format = self.tag.getscalar(SAMPLEFORMAT, 1)
+        format = getscalar(SAMPLEFORMAT, 1)
 
         # mode: check photometric interpretation and bits per pixel
         key = (
@@ -510,7 +525,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tile = []
         if self.tag.has_key(STRIPOFFSETS):
             # striped image
-            h = self.tag.getscalar(ROWSPERSTRIP, ysize)
+            h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
             a = None
             for o in self.tag[STRIPOFFSETS]:
@@ -527,8 +542,8 @@ class TiffImageFile(ImageFile.ImageFile):
                     a = None
         elif self.tag.has_key(324):
             # tiled image
-            w = self.tag.getscalar(322)
-            h = self.tag.getscalar(323)
+            w = getscalar(322)
+            h = getscalar(323)
             a = None
             for o in self.tag[324]:
                 if not a:
@@ -549,7 +564,7 @@ class TiffImageFile(ImageFile.ImageFile):
         else:
             if Image.DEBUG:
                 print "- unsupported data organization"
-            raise SyntaxError, "unknown data organization"
+            raise SyntaxError("unknown data organization")
 
         # fixup palette descriptor
         if self.mode == "P":
@@ -568,7 +583,8 @@ SAVE_INFO = {
     "L": ("L", 1, 1, (8,), None),
     "P": ("P", 3, 1, (8,), None),
     "I": ("I;32S", 1, 2, (32,), None),
-    "I;16": ("I;16", 1, 2, (16,), None),
+    "I;16": ("I;16", 1, 1, (16,), None),
+    "I;16S": ("I;16S", 1, 2, (16,), None),
     "F": ("F;32F", 1, 3, (32,), None),
     "RGB": ("RGB", 2, 1, (8,8,8), None),
     "RGBX": ("RGBX", 2, 1, (8,8,8,8), 0),
@@ -656,6 +672,7 @@ def _save(im, fp, filename):
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0 # this is adjusted by IFD writer
+    ifd[COMPRESSION] = 1 # no compression
 
     offset = ifd.save(fp)
 

@@ -1,19 +1,19 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Point.c#2 $
+ * $Id: //modules/pil/libImaging/Point.c#4 $
  *
  * point (pixel) translation
  *
  * history:
- *	95-11-27 fl:	Created
- *	96-03-31 fl:	Fixed colour support
- *	96-08-13 fl:	Support 8-bit to "1" thresholding
- *	97-05-31 fl:	Added floating point transform
- *	98-07-02 fl:	Added integer point transform
- *	98-07-17 fl:	Support 8-bit to anything lookup
+ * 1995-11-27 fl   Created
+ * 1996-03-31 fl   Fixed colour support
+ * 1996-08-13 fl   Support 8-bit to "1" thresholding
+ * 1997-05-31 fl   Added floating point transform
+ * 1998-07-02 fl   Added integer point transform
+ * 1998-07-17 fl   Support 8-bit to anything lookup
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1995-2003 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -113,7 +113,9 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
     Imaging imOut;
     int x, y;
 
-    if (!imIn || strcmp(imIn->mode, "I") != 0 && strcmp(imIn->mode, "F") != 0)
+    if (!imIn || (strcmp(imIn->mode, "I") != 0) && 
+	(strcmp(imIn->mode, "I;16") != 0) && 
+	(strcmp(imIn->mode, "F") != 0))
 	return (Imaging) ImagingError_ModeError();
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
@@ -140,6 +142,18 @@ ImagingPointTransform(Imaging imIn, double scale, double offset)
                 out[x] = in[x] * scale + offset;
         }
         break;
+    case IMAGING_TYPE_SPECIAL:
+        if (strcmp(imIn->mode,"I;16") == 0) {
+            for (y = 0; y < imIn->ysize; y++) {
+                UINT16* in  = (UINT16 *)imIn->image[y];
+                UINT16* out = (UINT16 *)imOut->image[y];
+                /* FIXME: add clipping? */
+                for (x = 0; x < imIn->xsize; x++)
+                    out[x] = in[x] * scale + offset;
+            }
+            break;
+	}
+        /* FALL THROUGH */
     default:
         ImagingDelete(imOut);
         return (Imaging) ImagingError_ValueError("internal error");

@@ -1,20 +1,161 @@
 The Python Imaging Library
-$Id: //modules/pil/CHANGES-113#3 $
+$Id: //modules/pil/CHANGES-114#9 $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
-among others: David Ascher, Phil Austin, Anthony Baxter, Jan Blom,
-Duncan Booth, Roger Burnham, Gene Cash, Kevin Cazabon, Fred Clare,
-Greg Coats, Greg Couch, Bill Crutchfield, Tim Docker, Fred Drake,
-Robin Friedrich, Markus Gritsch, Mark Hammond, Bernhard Herzog, Rob
-Hooft, Jack Jansen, Bill Janssen, Edward Jones, Richard Jones, Robert
-Kern, Bob Klimek, Andrew MacIntyre, Gordon McMillan, Skip Montanaro,
-Fredrik Nehr, Håkan Karlsson, Robert Kern, Matthias Klose, Magnus
-Källström, Hamish Lawson, Eric Raymond, Bertil Reinhammar, Toby
-Sargeant, Barry Scott, Les Schaffer, Joel Shprentz, D. Alan Stewart,
-Perry Stoll, Paul Svensson, Ivan Tkatchev, Rune Uhlin, Sasha Voynow,
-and Charles Waldman.
+among others: David Ascher, Phil Austin, Larry Bates, Anthony Baxter,
+Denis Benoit, Jan Blom, Duncan Booth, Roger Burnham, Gene Cash, Kevin
+Cazabon, Fred Clare, Greg Coats, Greg Couch, Bill Crutchfield, Abel
+Deuring, Tim Docker, Fred Drake, Graham Dumpleton, Matthew Ellis,
+Robin Friedrich, Peier Paolo Glave, Markus Gritsch, Mark Hammond,
+Bernhard Herzog, Rob Hooft, Jack Jansen, Bill Janssen, Edward Jones,
+Richard Jones, Robert Kern, Bob Klimek, Andrew Kuchling, Andrew
+MacIntyre, Gordon McMillan, Skip Montanaro, Fredrik Nehr, Håkan
+Karlsson, Robert Kern, Matthias Klose, Magnus Källström, Hamish
+Lawson, Eric Raymond, Bertil Reinhammar, Toby Sargeant, Barry Scott,
+Les Schaffer, Joel Shprentz, Klamer Shutte, D. Alan Stewart, Perry
+Stoll, Paul Svensson, Ivan Tkatchev, Rune Uhlin, Dmitry Vasiliev,
+Sasha Voynow, Charles Waldman, and Dan Wolfe.
 
-*** Changes from release 1.1 to 1.1.3 ***
+*** Changes from release 1.1 to 1.1.4 ***
+
+(1.1.4 final released)
+
++ Fixed ImageTk build problem on Unix.
+
+(1.1.4b2 released)
+
++ Improved building on Mac OS X (from Jack Jansen).
+
++ Improved building on Windows with MinGW (from Klamer Shutte).
+
++ If no font is specified, ImageDraw now uses the embedded default
+  font.  Use the "load" or "truetype" methods to load a real font.
+
++ Added embedded default font to the ImageFont module (currently
+  an 8-pixel Courier font, taken from the X window distribution).
+
+(1.1.4b1 released)
+
++ Added experimental EXIF support for JPEG files.  To extract EXIF
+  information from a JPEG file, open the file as usual, and call the
+  "_getexif" method.  If successful, this method returns a dictionary
+  mapping EXIF TIFF tags to values.  If the file does not contain EXIF
+  data, the "_getexif" method returns None.
+
+  The "ExifTags" module contains a dictionary mapping tags to tag
+  names.
+
+  This interface will most likely change in future versions.
+
++ Fixed a bug when using the "transparency" option with the GIF
+  writer.
+
++ Added limited support for "bitfield compression" in BMP files
+  and DIB buffers, for 15-bit, 16-bit, and 32-bit images.  This
+  also fixes a problem with ImageGrab module when copying screen-
+  dumps from the clipboard on 15/16/32-bit displays.
+
++ Added experimental WAL (Quake 2 textures) loader.  To use this
+  loader, import WalImageFile and call the "open" method in that
+  module.
+
+(1.1.4a4 released)
+
++ Added updated SANE driver (Andrew Kuchling, Abel Deuring)
+
++ Use Python's "mmap" module on non-Windows platforms to read some
+  uncompressed formats using memory mapping.  Also added a "frombuffer"
+  function that allows you to access the contents of an existing string
+  or buffer object as if it were an image object.
+
++ Fixed a memory leak that could appear when processing mode "P"
+  images (from Pier Paolo Glave)
+
++ Ignore Unicode characters in the BDF loader (from Graham Dumpleton)
+
+(1.1.4a3 released; windows only)
+
++ Added experimental RGBA-on-RGB drawing support.  To use RGBA
+  colours on an RGB image, pass "RGBA" as the second string to
+  the ImageDraw.Draw constructor.
+
++ Added support for non-ASCII strings (Latin-1) and Unicode
+  to the truetype font renderer.
+
++ The ImageWin "Dib" object can now be constructed directly from
+  an image object.
+
++ The ImageWin module now allows you use window handles as well
+  as device contexts.  To use a window handle, wrap the handle in
+  an ImageWin.HWND object, and pass in this object instead of the
+  device context.
+
+(1.1.4a2 released)
+
++ Improved support for 16-bit unsigned integer images (mode "I;16").
+  This includes TIFF reader support, and support for "getextrema"
+  and "point" (from Klamer Shutte).
+
++ Made the BdfFontFile reader a bit more robust (from Kevin Cazabon
+  and Dmitry Vasiliev)
+
++ Changed TIFF writer to always write Compression tag, even when
+  using the default compression (from Greg Couch).
+
++ Added "show" support for Mac OS X (from Dan Wolfe).
+
++ Added clipboard support to the "ImageGrab" module (Windows only).
+  The "grabclipboard" function returns an Image object, a list of
+  filenames (not in 1.1.4), or None if neither was found.
+
+(1.1.4a1 released)
+
++ Improved support for drawing RGB data in palette images.  You can
+  now use RGB tuples or colour names (see below) when drawing in a
+  mode "P" image.  The drawing layer automatically assigns color
+  indexes, as long as you don't use more than 256 unique colours.
+
++ Moved self test from MiniTest/test.py to ./selftest.py.
+
++ Added support for CSS3-style color strings to most places that
+  accept colour codes/tuples.  This includes the "ImageDraw" module,
+  the Image "new" function, and the Image "paste" method.
+
+  Colour strings can use one of the following formats: "#f00",
+  "#ff0000", "rgb(255,0,0)", "rgb(100%,0%,0%)", "hsl(0, 100%, 50%)",
+  or "red" (most X11-style colour names are supported).  See the
+  documentation for the "ImageColor" module for more information.
+
++ Fixed DCX decoder (based on input from Larry Bates)
+
++ Added "IptcImagePlugin.getiptcinfo" helper to extract IPTC/NAA
+  newsphoto properties from JPEG, TIFF, or IPTC files.
+
++ Support for TrueType/OpenType fonts has been added to
+  the standard distribution.  You need the freetype 2.0
+  library.
+
++ Made the PCX reader a bit more robust when reading 2-bit
+  and 4-bit PCX images with odd image sizes.
+
++ Added "Kernel" class to the ImageFilter module.  This class
+  allows you to filter images with user-defined 3x3 and 5x5
+  convolution kernels.
+
++ Added "putdata" support for mode "I", "F" and "RGB".
+
++ The GIF writer now supports the transparency option (from
+  Denis Benoit).
+
++ A HTML version of the module documentation is now shipped
+  with the source code distribution.  You'll find the files in
+  the Doc subdirectory.
+
++ Added support for Palm pixmaps (from Bill Janssen).  This
+  change was listed for 1.1.3, but the "PalmImagePlugin" driver
+  didn't make it into the distribution.
+
++ Improved decoder error messages.
 
 (1.1.3 final released)
 
@@ -68,7 +209,7 @@ and Charles Waldman.
   right mode.  Older versions could leak memory for "P" images.
   (Bug reported by Markus Gritsch).
   
-(imToolkit 1.2a3 and 1.2b1 released)
+(1.2a3 and 1.2b1 released)
  
 + Renamed some internal functions to avoid potential build
   problem on Mac OS X.
@@ -83,8 +224,6 @@ and Charles Waldman.
 
 + Added support for XBM hotspots (based on code contributed by
   Bernhard Herzog).
-
-+ Added support for Palm pixmaps (from Bill Janssen)
 
 + Added write support for more TIFF tags, namely the Artist,
   Copyright, DateTime, ResolutionUnit, Software, XResolution and
@@ -102,7 +241,7 @@ and Charles Waldman.
 
 + Load grayscale GIF images as mode "L"
 
-(imToolkit 1.2a2 released)
+(1.2a2 released)
 
 + Added DPI read/write support to the JPEG codec.  The decoder
   sets the info["dpi"] attribute for JPEG files with JFIF dpi

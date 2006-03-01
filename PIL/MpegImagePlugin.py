@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/MpegImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/MpegImagePlugin.py#5 $
 #
 # MPEG file handling
 #
@@ -39,7 +39,7 @@ class BitStream:
                 continue
             self.bitbuffer = (self.bitbuffer << 8) + c
             self.bits = self.bits + 8
-        return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
+        return self.bitbuffer >> (self.bits - bits) & (1L << bits) - 1
 
     def skip(self, bits):
         while self.bits < bits:
@@ -52,6 +52,9 @@ class BitStream:
         self.bits = self.bits - bits
         return v
 
+##
+# Image plugin for MPEG streams.  This plugin can identify a stream,
+# but it cannot read it.
 
 class MpegImageFile(ImageFile.ImageFile):
 

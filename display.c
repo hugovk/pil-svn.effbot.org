@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/display.c#3 $
+ * $Id: //modules/pil/display.c#7 $
  *
  * display support
  *
@@ -10,23 +10,29 @@
  * 1996-05-28 fl  Added display_mode stuff
  * 1997-09-21 fl  Added draw primitive
  * 2001-09-17 fl  Added ImagingGrabScreen (from _grabscreen.c)
+ * 2002-05-12 fl  Added ImagingListWindows
+ * 2002-11-19 fl  Added clipboard support
+ * 2002-11-25 fl  Added GetDC/ReleaseDC helpers
  *
- * Copyright (c) Secret Labs AB 1997.
- * Copyright (c) Fredrik Lundh 1996-97.
+ * Copyright (c) 1997-2002 by Secret Labs AB.
+ * Copyright (c) 1996-1997 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
 
 
 #include "Python.h"
+
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
+
 #include "Imaging.h"
 
-
 /* -------------------------------------------------------------------- */
-/* Windows DIB support							*/
-/* -------------------------------------------------------------------- */
+/* Windows DIB support	*/
 
-#ifdef	WIN32
+#ifdef WIN32
 
 #include "ImDib.h"
 
@@ -60,7 +66,7 @@ _delete(ImagingDisplayObject* display)
 {
     if (display->dib)
 	ImagingDeleteDIB(display->dib);
-    PyMem_DEL(display);
+    PyObject_DEL(display);
 }
 
 static PyObject* 
@@ -134,11 +140,45 @@ _query_palette(ImagingDisplayObject* display, PyObject* args)
     return Py_BuildValue("i", status);
 }
 
+static PyObject*
+_getdc(ImagingDisplayObject* display, PyObject* args)
+{
+    int window;
+    HDC dc;
+
+    if (!PyArg_ParseTuple(args, "i", &window))
+	return NULL;
+
+    dc = GetDC((HWND) window);
+    if (!dc) {
+        PyErr_SetString(PyExc_IOError, "cannot create dc");
+        return NULL;
+    }
+
+    return Py_BuildValue("i", (int) dc);
+}
+
+static PyObject*
+_releasedc(ImagingDisplayObject* display, PyObject* args)
+{
+    int window, dc;
+
+    if (!PyArg_ParseTuple(args, "ii", &window, &dc))
+	return NULL;
+
+    ReleaseDC((HWND) window, (HDC) dc);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 static struct PyMethodDef methods[] = {
     {"draw", (PyCFunction)_draw, 1},
     {"expose", (PyCFunction)_expose, 1},
     {"paste", (PyCFunction)_paste, 1},
     {"query_palette", (PyCFunction)_query_palette, 1},
+    {"getdc", (PyCFunction)_getdc, 1},
+    {"releasedc", (PyCFunction)_releasedc, 1},
     {NULL, NULL} /* sentinel */
 };
 
@@ -203,6 +243,9 @@ PyImaging_DisplayModeWin32(PyObject* self, PyObject* args)
     return Py_BuildValue("s(ii)", mode, size[0], size[1]);
 }
 
+/* -------------------------------------------------------------------- */
+/* Windows screen grabber */
+
 PyObject*
 PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
 {
@@ -261,6 +304,182 @@ error:
     DeleteDC(screen);
 
     return NULL;
+}
+
+static BOOL CALLBACK list_windows_callback(HWND hwnd, LPARAM lParam)
+{
+    PyObject* window_list = (PyObject*) lParam;
+    PyObject* item;
+    PyObject* title;
+    RECT inner, outer;
+    int title_size;
+    int status;
+    
+    /* get window title */
+    title_size = GetWindowTextLength(hwnd);
+    if (title_size > 0) {
+        title = PyString_FromStringAndSize(NULL, title_size);
+        if (title)
+            GetWindowText(hwnd, PyString_AS_STRING(title), title_size+1);
+    } else
+        title = PyString_FromString("");
+    if (!title)
+        return 0;
+
+    /* get bounding boxes */
+    GetClientRect(hwnd, &inner);
+    GetWindowRect(hwnd, &outer);
+
+    item = Py_BuildValue(
+        "lN(iiii)(iiii)", (long) hwnd, title,
+        inner.left, inner.top, inner.right, inner.bottom,
+        outer.left, outer.top, outer.right, outer.bottom
+        );
+    if (!item)
+        return 0;
+
+    status = PyList_Append(window_list, item);
+
+    Py_DECREF(item);
+
+    if (status < 0)
+        return 0;
+    
+    return 1;
+}
+
+PyObject*
+PyImaging_ListWindowsWin32(PyObject* self, PyObject* args)
+{
+    PyObject* window_list;
+    
+    window_list = PyList_New(0);
+    if (!window_list)
+        return NULL;
+
+    EnumWindows(list_windows_callback, (LPARAM) window_list);
+
+    if (PyErr_Occurred()) {
+        Py_DECREF(window_list);
+        return NULL;
+    }
+
+    return window_list;
+}
+
+PyObject*
+PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
+{
+    int clip;
+    HANDLE handle;
+    int size;
+    void* data;
+    PyObject* result;
+    
+    int verbose = 0; /* debugging; will be removed in future versions */
+    if (!PyArg_ParseTuple(args, "|i", &verbose))
+	return NULL;
+
+
+    clip = OpenClipboard(NULL);
+    /* FIXME: check error status */
+    
+    if (verbose) {
+        UINT format = EnumClipboardFormats(0);
+        char buffer[200];
+        char* result;
+        while (format != 0) {
+            if (GetClipboardFormatName(format, buffer, sizeof buffer) > 0)
+                result = buffer;
+            else
+                switch (format) {
+                case CF_BITMAP:
+                    result = "CF_BITMAP";
+                    break;
+                case CF_DIB:
+                    result = "CF_DIB";
+                    break;
+                case CF_DIF:
+                    result = "CF_DIF";
+                    break;
+                case CF_ENHMETAFILE:
+                    result = "CF_ENHMETAFILE";
+                    break;
+                case CF_HDROP:
+                    result = "CF_HDROP";
+                    break;
+                case CF_LOCALE:
+                    result = "CF_LOCALE";
+                    break;
+                case CF_METAFILEPICT:
+                    result = "CF_METAFILEPICT";
+                    break;
+                case CF_OEMTEXT:
+                    result = "CF_OEMTEXT";
+                    break;
+                case CF_OWNERDISPLAY:
+                    result = "CF_OWNERDISPLAY";
+                    break;
+                case CF_PALETTE:
+                    result = "CF_PALETTE";
+                    break;
+                case CF_PENDATA:
+                    result = "CF_PENDATA";
+                    break;
+                case CF_RIFF:
+                    result = "CF_RIFF";
+                    break;
+                case CF_SYLK:
+                    result = "CF_SYLK";
+                    break;
+                case CF_TEXT:
+                    result = "CF_TEXT";
+                    break;
+                case CF_WAVE:
+                    result = "CF_WAVE";
+                    break;
+                case CF_TIFF:
+                    result = "CF_TIFF";
+                    break;
+                case CF_UNICODETEXT:
+                    result = "CF_UNICODETEXT";
+                    break;
+                default:
+                    sprintf(buffer, "[%d]", format);
+                    result = buffer;
+                    break;
+                }
+            printf("%s (%d)\n", result, format);
+            format = EnumClipboardFormats(format);
+        }
+    }
+
+    handle = GetClipboardData(CF_DIB);
+    if (!handle) {
+        /* FIXME: add CF_HDROP support to allow cut-and-paste from
+           the explorer */
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    size = GlobalSize(handle);
+    data = GlobalLock(handle);
+
+#if 0
+    /* calculate proper size for string formats */
+    if (format == CF_TEXT || format == CF_OEMTEXT)
+        size = strlen(data);
+    else if (format == CF_UNICODETEXT)
+        size = wcslen(data) * 2;
+#endif
+
+    result = PyString_FromStringAndSize(data, size);
+
+    GlobalUnlock(handle);
+
+    CloseClipboard();
+
+    return result;
 }
 
 #endif /* WIN32 */

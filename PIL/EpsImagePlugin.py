@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/EpsImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/EpsImagePlugin.py#4 $
 #
 # EPS file handling
 #
@@ -115,8 +115,11 @@ class PSFile:
 
 
 def _accept(prefix):
-    return prefix[:4] == "%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == "%!PS" or i32(prefix) == 0xC6D3D0C5L
 
+##
+# Image plugin for Encapsulated Postscript.  This plugin supports only
+# a few variants of this format.
 
 class EpsImageFile(ImageFile.ImageFile):
     """EPS File Parser for the Python Imaging Library"""
@@ -137,7 +140,7 @@ class EpsImageFile(ImageFile.ImageFile):
             offset = 0
             fp.seek(0, 2)
             length = fp.tell()
-        elif i32(s) == 0xC6D3D0C5:
+        elif i32(s) == 0xC6D3D0C5L:
             offset = i32(s[4:])
             length = i32(s[8:])
             fp.seek(offset)

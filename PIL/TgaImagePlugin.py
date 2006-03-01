@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TgaImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/TgaImagePlugin.py#4 $
 #
 # TGA file handling
 #
@@ -43,6 +43,8 @@ MODES = {
 def _accept(prefix):
     return prefix[0] == "\0"
 
+##
+# Image plugin for Targa files.
 
 class TgaImageFile(ImageFile.ImageFile):
 
@@ -50,8 +52,6 @@ class TgaImageFile(ImageFile.ImageFile):
     format_description = "Targa"
 
     def _open(self):
-
-
 
         # process header
         s = self.fp.read(18)

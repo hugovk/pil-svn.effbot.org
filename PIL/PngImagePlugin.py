@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PngImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/PngImagePlugin.py#3 $
 #
 # PNG support code
 #
@@ -216,6 +216,9 @@ class PngStream(ChunkStream):
 
 def _accept(prefix):
     return prefix[:8] == _MAGIC
+
+##
+# Image plugin for PNG images.
 
 class PngImageFile(ImageFile.ImageFile):
 

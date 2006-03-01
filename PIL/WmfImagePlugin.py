@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS.
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/WmfImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/WmfImagePlugin.py#4 $
 #
 # WMF support for PIL
 #
@@ -118,6 +118,11 @@ for k, v in vars().items():
 
 def _accept(prefix):
     return prefix[:6] == "\327\315\306\232\000\000"
+
+##
+# Image plugin for Windows metafiles.  This plugin can identify a
+# metafile, but the loader only supports a small number of primitives,
+# and isn't very usable.
 
 class WmfImageFile(ImageFile.ImageFile):
 

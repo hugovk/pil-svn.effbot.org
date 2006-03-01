@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/MicImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/MicImagePlugin.py#4 $
 #
 # Microsoft Image Composer support for PIL
 #
@@ -32,6 +32,8 @@ from OleFileIO import *
 def _accept(prefix):
     return prefix[:8] == MAGIC
 
+##
+# Image plugin for Microsoft's Image Composer file format.
 
 class MicImageFile(TiffImagePlugin.TiffImageFile):
 

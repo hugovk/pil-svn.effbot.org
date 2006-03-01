@@ -1,25 +1,32 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageSequence.py#3 $
+# $Id: //modules/pil/PIL/ImageSequence.py#4 $
 #
-# some sequence support stuff
+# sequence support classes
 #
 # history:
-#       97-02-20 fl     Created
+# 1997-02-20 fl     Created
 #
-# Copyright (c) Secret Labs AB 1997.
-# Copyright (c) Fredrik Lundh 1997.
+# Copyright (c) 1997 by Secret Labs AB.
+# Copyright (c) 1997 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
+##
+# This class implements an iterator object that can be used to loop
+# over an image sequence.
+
 class Iterator:
 
-    """Sequence iterator (use with the for-statement)"""
+    ##
+    # Create an iterator.
+    #
+    # @param im An image object.
 
     def __init__(self, im):
         if not hasattr(im, "seek"):
-            raise AttributeError, "im must have seek method"
+            raise AttributeError("im must have seek method")
         self.im = im
 
     def __getitem__(self, ix):
