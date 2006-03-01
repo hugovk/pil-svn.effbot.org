@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Antialias.c 2182 2004-11-15 19:59:59Z fredrik $
+ * $Id: Antialias.c 2408 2005-05-15 09:31:27Z Fredrik $
  *
  * pilopen antialiasing support 
  *
@@ -145,7 +145,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     if (imIn->xsize == imOut->xsize) {
         /* vertical stretch */
         for (yy = 0; yy < imOut->ysize; yy++) {
-            center = yy * scale;
+            center = (yy + 0.5) * scale;
             ww = 0.0;
             ss = 1.0 / filterscale;
             /* calculate filter weights */
@@ -170,8 +170,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     ss = 0.0;
                     for (y = (int) ymin; y < (int) ymax; y++)
                         ss = ss + imIn->image8[y][xx] * k[y - (int) ymin];
-                    ss = ss * ww;
-                    if (ss <= 0.0)
+                    ss = ss * ww + 0.5;
+                    if (ss < 0.5)
                         imOut->image8[yy][xx] = 0;
                     else if (ss >= 255.0)
                         imOut->image8[yy][xx] = 255;
@@ -187,8 +187,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                         ss = 0.0;
                         for (y = (int) ymin; y < (int) ymax; y++)
                             ss = ss + (UINT8) imIn->image[y][xx] * k[y-(int) ymin];
-                        ss = ss * ww;
-                        if (ss <= 0.0)
+                        ss = ss * ww + 0.5;
+                        if (ss < 0.5)
                             imOut->image[yy][xx] = (UINT8) 0;
                         else if (ss >= 255.0)
                             imOut->image[yy][xx] = (UINT8) 255;
@@ -222,7 +222,7 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
     } else {
         /* horizontal stretch */
         for (xx = 0; xx < imOut->xsize; xx++) {
-            center = xx * scale;
+            center = (xx + 0.5) * scale;
             ww = 0.0;
             ss = 1.0 / filterscale;
             xmin = floor(center - support);
@@ -246,8 +246,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     ss = 0.0;
                     for (x = (int) xmin; x < (int) xmax; x++)
                         ss = ss + imIn->image8[yy][x] * k[x - (int) xmin];
-                    ss = ss * ww;
-                    if (ss <= 0.0)
+                    ss = ss * ww + 0.5;
+                    if (ss < 0.5)
                         imOut->image8[yy][xx] = (UINT8) 0;
                     else if (ss >= 255.0)
                         imOut->image8[yy][xx] = (UINT8) 255;
@@ -265,8 +265,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                             ss = 0.0;
                             for (x = (int) xmin; x < (int) xmax; x++)
                                 ss = ss + (UINT8) imIn->image[yy][x*4+b] * k[x - (int) xmin];
-                            ss = ss * ww;
-                            if (ss <= 0.0)
+                            ss = ss * ww + 0.5;
+                            if (ss < 0.5)
                                 imOut->image[yy][xx*4+b] = (UINT8) 0;
                             else if (ss >= 255.0)
                                 imOut->image[yy][xx*4+b] = (UINT8) 255;

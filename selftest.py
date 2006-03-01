@@ -1,4 +1,4 @@
-# $Id: selftest.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: selftest.py 2387 2005-05-05 21:38:45Z Fredrik $
 # minimal sanity check
 
 import sys
@@ -8,6 +8,7 @@ sys.path.insert(1, "PIL")
 import Image
 import ImageDraw
 import ImageFilter
+import ImageMath
 
 try:
     Image.core.ping
@@ -134,6 +135,13 @@ def testimage():
     >>> d.rectangle(xy, "red")
     >>> im.getpixel((0, 0))
     (255, 0, 0)
+
+    In 1.1.6, you can use the ImageMath module to do image
+    calculations.
+
+    >>> im = ImageMath.eval("float(im + 20)", im=im.convert("L"))
+    >>> im.mode, im.size
+    ('F', (128, 128))
 
     PIL can do many other things, but I'll leave that for another
     day.  If you're curious, check the handbook, available from:

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: Image.py 2337 2005-03-25 07:50:30Z fredrik $
+# $Id: Image.py 2594 2005-12-11 08:06:51Z fredrik $
 #
 # the Image class wrapper
 #
@@ -15,6 +15,7 @@
 # 2002-03-15 fl   PIL release 1.1.3
 # 2003-05-10 fl   PIL release 1.1.4
 # 2005-03-28 fl   PIL release 1.1.5
+# 2005-12-11 fl   PIL release 1.1.6a1
 #
 # Copyright (c) 1997-2005 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-2005 by Fredrik Lundh.
@@ -22,7 +23,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-VERSION = "1.1.5"
+VERSION = "1.1.6a1-20051211"
 
 try:
     import warnings
@@ -256,11 +257,30 @@ def preinit():
     if _initialized >= 1:
         return
 
-    for m in ("Bmp", "Gif", "Jpeg", "Ppm", "Png", "Tiff"):
-        try:
-            __import__("%sImagePlugin" % m, globals(), locals(), [])
-        except ImportError:
-            pass # ignore missing driver for now
+    try:
+        import BmpImagePlugin
+    except ImportError:
+        pass
+    try:
+        import GifImagePlugin
+    except ImportError:
+        pass
+    try:
+        import JpegImagePlugin
+    except ImportError:
+        pass
+    try:
+        import PpmImagePlugin
+    except ImportError:
+        pass
+    try:
+        import PngImagePlugin
+    except ImportError:
+        pass
+#   try:
+#       import TiffImagePlugin
+#   except ImportError:
+#       pass
 
     _initialized = 1
 
@@ -458,9 +478,11 @@ class Image:
         e = _getencoder(self.mode, encoder_name, args)
         e.setimage(self.im)
 
+        bufsize = max(65536, self.size[0] * 4) # see RawEncode.c
+
         data = []
         while 1:
-            l, s, d = e.encode(65536)
+            l, s, d = e.encode(bufsize)
             data.append(d)
             if s:
                 break
@@ -521,6 +543,8 @@ class Image:
     # normal cases, you don't need to call this method, since the
     # Image class automatically loads an opened image when it is
     # accessed for the first time.
+    #
+    # @return An image access object.
 
     def load(self):
         "Explicitly load pixel data."
@@ -533,6 +557,8 @@ class Image:
             if self.info.has_key("transparency"):
                 self.im.putpalettealpha(self.info["transparency"], 0)
                 self.palette.mode = "RGBA"
+        if self.im:
+            return self.im.pixel_access(self.readonly)
 
     ##
     # Verifies the contents of a file. For data read from a file, this
@@ -1028,12 +1054,13 @@ class Image:
     def point(self, lut, mode=None):
         "Map image through lookup table"
 
+        self.load()
+
         if not isSequenceType(lut):
             # if it isn't a list, it should be a function
             if self.mode in ("I", "I;16", "F"):
                 # check if the function can be used with point_transform
                 scale, offset = _getscaleoffset(lut)
-                self.load()
                 return self._new(self.im.point_transform(scale, offset))
             # for other modes, convert the function to a table
             lut = map(lut, range(256)) * self.im.bands
@@ -1042,7 +1069,6 @@ class Image:
             # FIXME: _imaging returns a confusing error message for this case
             raise ValueError("point operation not supported for this mode")
 
-        self.load()
         return self._new(self.im.point(lut, mode))
 
     ##

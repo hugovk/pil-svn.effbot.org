@@ -1,16 +1,16 @@
 /*
  * The Python Imaging Library
- * $Id: File.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: File.c 2507 2005-09-10 14:53:47Z fredrik $
  *
  * built-in image file handling
  *
  * history:
- * 95-11-26 fl  Created, supports PGM/PPM
- * 96-08-07 fl  Write "1" images as PGM
- * 99-02-21 fl  Don't write non-standard modes
+ * 1995-11-26 fl  Created, supports PGM/PPM
+ * 1996-08-07 fl  Write "1" images as PGM
+ * 1999-02-21 fl  Don't write non-standard modes
  *
- * Copyright (c) Secret Labs AB 1997-99.
- * Copyright (c) Fredrik Lundh 1995-96.
+ * Copyright (c) 1997-99 by Secret Labs AB.
+ * Copyright (c) 1995-96 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -137,7 +137,9 @@ ImagingSaveRaw(Imaging im, FILE* fp)
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
 
-	/* PPM "L" */
+        /* @PIL227: FIXME: for mode "1", map != 0 to 255 */
+
+	/* PGM "L" */
 	for (y = 0; y < im->ysize; y++)
 	    fwrite(im->image[y], 1, im->xsize, fp);
 

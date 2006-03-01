@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: path.c 2079 2004-09-19 12:22:31Z fredrik $
+ * $Id: path.c 2505 2005-09-05 16:29:53Z fredrik $
  *
  * 2D path utilities
  *
@@ -15,12 +15,13 @@
  * 2000-10-12 fl   Added special cases for tuples and lists
  * 2002-10-27 fl   Added clipping boilerplate
  * 2004-09-19 fl   Added tolist(flat) variant
+ * 2005-05-06 fl   Added buffer interface support to path constructor
  *
  * notes:
  * FIXME: fill in remaining slots in the sequence api
  *
- * Copyright (c) 1997-2002 by Secret Labs AB
- * Copyright (c) 1997-2002 by Fredrik Lundh
+ * Copyright (c) 1997-2005 by Secret Labs AB
+ * Copyright (c) 1997-2005 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -31,7 +32,8 @@
 #include <math.h>
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 
@@ -48,6 +50,20 @@ typedef struct {
 
 staticforward PyTypeObject PyPathType;
 
+static double*
+alloc_array(int count)
+{
+    double* xy;
+    if (count < 0) {
+        PyErr_NoMemory();
+        return NULL;
+    }
+    xy = malloc(2 * count * sizeof(double) + 1);
+    if (!xy)
+        PyErr_NoMemory();
+    return xy;
+}
+
 static PyPathObject*
 path_new(int count, double* xy, int duplicate)
 {
@@ -55,17 +71,14 @@ path_new(int count, double* xy, int duplicate)
 
     if (duplicate) {
         /* duplicate path */
-        double* p;
-        p = malloc(count * 2 * sizeof(double));
-        if (!p) {
-            PyErr_NoMemory();
+        double* p = alloc_array(count);
+        if (!p)
             return NULL;
-        }
         memcpy(p, xy, count * 2 * sizeof(double));
         xy = p;
     }
 
-    path = PyObject_NEW(PyPathObject, &PyPathType);
+    path = PyObject_New(PyPathObject, &PyPathType);
     if (path == NULL)
 	return NULL;
 
@@ -79,7 +92,7 @@ static void
 path_dealloc(PyPathObject* path)
 {
     free(path->xy);
-    PyObject_DEL(path);
+    PyObject_Del(path);
 }
 
 /* -------------------------------------------------------------------- */
@@ -93,26 +106,35 @@ PyPath_Flatten(PyObject* data, double **pxy)
 {
     int i, j, n;
     double *xy;
+    PyBufferProcs *buffer;
 
     if (PyPath_Check(data)) {
-	/* This was a path object. */
-
+	/* This was another path object. */
 	PyPathObject *path = (PyPathObject*) data;
-
-	n = 2 * path->count * sizeof(double);
-
-	xy = malloc(n);
-	if (!xy) {
-	    PyErr_NoMemory();
+        xy = alloc_array(path->count);
+	if (!xy)
 	    return -1;
-	}
-
-	memcpy(xy, path->xy, n);
-
+	memcpy(xy, path->xy, 2 * path->count * sizeof(double));
 	*pxy = xy;
 	return path->count;
     }
 	
+    buffer = data->ob_type->tp_as_buffer;
+    if (buffer && buffer->bf_getreadbuffer && buffer->bf_getsegcount &&
+        buffer->bf_getsegcount(data, NULL) == 1) {
+        /* Assume the buffer contains floats */
+        float* ptr;
+        int n = buffer->bf_getreadbuffer(data, 0, (void**) &ptr);
+        n /= 2 * sizeof(float);
+        xy = alloc_array(n);
+        if (!xy)
+            return -1;
+        for (i = 0; i < n+n; i++)
+            xy[i] = ptr[i];
+        *pxy = xy;
+        return n;
+    }
+
     if (!PySequence_Check(data)) {
 	PyErr_SetString(PyExc_TypeError, "argument must be sequence");
 	return -1;
@@ -125,11 +147,9 @@ PyPath_Flatten(PyObject* data, double **pxy)
         return -1;
 
     /* Allocate for worst case */
-    xy = malloc(2 * n * sizeof(double));
-    if (!xy) {
-	PyErr_NoMemory();
+    xy = alloc_array(n);
+    if (!xy)
 	return -1;
-    }
 
     /* Copy table to path array */
     if (PyList_Check(data)) {
@@ -226,11 +246,9 @@ PyPath_Create(PyObject* self, PyObject* args)
     if (PyArg_ParseTuple(args, "i:Path", &count)) {
 
         /* number of vertices */
-        xy = malloc(2 * count * sizeof(double));
-        if (!xy) {
-            PyErr_NoMemory();
+        xy = alloc_array(count);
+        if (!xy)
             return NULL;
-        }
 
     } else {
 

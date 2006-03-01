@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Draw.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Draw.c 2435 2005-05-25 20:44:35Z Fredrik $
  *
  * a simple drawing package for the Imaging library
  *
@@ -19,9 +19,10 @@
  * 1999-07-31 fl  Pass ink as void* instead of int
  * 2002-12-10 fl  Added experimental RGBA-on-RGB drawing
  * 2004-09-04 fl  Support simple wide lines (no joins)
+ * 2005-05-25 fl  Fixed line width calculation
  *
- * Copyright (c) 1996-2004 by Fredrik Lundh
- * Copyright (c) 1997-2004 by Secret Labs AB.
+ * Copyright (c) 1996-2005 by Fredrik Lundh
+ * Copyright (c) 1997-2005 by Secret Labs AB.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -674,7 +675,7 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
         return 0;
     }
 
-    d = width / sqrt(dx*dx + dy*dy);
+    d = width / sqrt(dx*dx + dy*dy) / 2.0;
 
     dx = (int) (d * (y1-y0) + 0.5);
     dy = (int) (d * (x1-x0) + 0.5);

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageGL.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id: ImageGL.py 2438 2005-05-25 21:09:48Z Fredrik $
 #
 # OpenGL pixmap/texture interface (requires imToolkit OpenGL extensions)
 #
@@ -16,5 +16,13 @@
 # OpenGL pixmap/texture interface (requires imToolkit OpenGL
 # extensions.)
 ##
+
+import _imaginggl
+
+##
+# Texture factory.
+
+class TextureFactory:
+    pass # overwritten by the _imaginggl module
 
 from _imaginggl import *

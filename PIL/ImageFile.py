@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageFile.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: ImageFile.py 2541 2005-10-02 21:23:59Z Fredrik $
 #
 # base class for image file handlers
 #
@@ -213,6 +213,8 @@ class ImageFile(Image.Image):
             self.size = self.im.size
 
         self.load_end()
+
+        return Image.Image.load(self)
 
     def load_prepare(self):
         # create image memory if necessary

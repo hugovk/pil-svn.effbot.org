@@ -1,6 +1,6 @@
 Imaging/README
 
-Imaging/CHANGES-115
+Imaging/CHANGES
 Imaging/CONTENTS
 
 Imaging/BUILDME
@@ -94,8 +94,8 @@ Imaging/outline.c
 Imaging/path.c
 
 Imaging/_imagingtk.c
-
 Imaging/_imagingft.c
+Imaging/_imagingmath.c
 
 Imaging/PIL.pth
 Imaging/PIL/__init__.py
@@ -125,6 +125,7 @@ Imaging/PIL/Image.py
 Imaging/PIL/ImageChops.py
 Imaging/PIL/ImageColor.py
 Imaging/PIL/ImageDraw.py
+Imaging/PIL/ImageDraw2.py
 Imaging/PIL/ImageEnhance.py
 Imaging/PIL/ImageFile.py
 Imaging/PIL/ImageFileIO.py
@@ -132,6 +133,7 @@ Imaging/PIL/ImageFilter.py
 Imaging/PIL/ImageFont.py
 Imaging/PIL/ImageGL.py
 Imaging/PIL/ImageGrab.py
+Imaging/PIL/ImageMath.py
 Imaging/PIL/ImageOps.py
 Imaging/PIL/ImagePalette.py
 Imaging/PIL/ImagePath.py

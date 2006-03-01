@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: Convert.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Convert.c 2591 2005-12-08 21:25:29Z fredrik $
  * 
  * convert images
  *
@@ -23,8 +23,10 @@
  * 1998-12-29 fl   added basic "I;16" and "I;16B" conversions
  * 1999-02-03 fl   added "RGBa", and "BGR" conversions (experimental)
  * 2003-09-26 fl   added "LA" and "PA" conversions (experimental)
+ * 2005-05-05 fl   fixed "P" to "1" threshold
+ * 2005-12-08 fl   fixed palette memory leak in topalette
  *
- * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1997-2005 by Secret Labs AB.
  * Copyright (c) 1995-1997 by Fredrik Lundh.
  *
  * See the README file for details on usage and redistribution.
@@ -614,7 +616,7 @@ p2bit(UINT8* out, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++)
-	*out++ = (L(&palette[in[x]*4]) >= 1000) ? 255 : 0;
+	*out++ = (L(&palette[in[x]*4]) >= 128000) ? 255 : 0;
 }
 
 static void
@@ -788,13 +790,13 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
       return NULL;
     }
 
+    ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
     if (imIn->bands == 1) {
 	/* greyscale image */
 
 	/* Greyscale palette: copy data as is */
-
         ImagingSectionEnter(&cookie);
 	for (y = 0; y < imIn->ysize; y++)
 	    memcpy(imOut->image[y], imIn->image[y], imIn->linesize);

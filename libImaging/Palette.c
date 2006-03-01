@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Palette.c 2289 2005-02-09 21:29:01Z fredrik $
+ * $Id: Palette.c 2591 2005-12-08 21:25:29Z fredrik $
  *
  * imaging palette object
  *
@@ -30,12 +30,12 @@ ImagingPaletteNew(const char* mode)
     int i;
     ImagingPalette palette;
 
+    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA"))
+	return (ImagingPalette) ImagingError_ModeError();
+
     palette = calloc(1, sizeof(struct ImagingPaletteInstance));
     if (!palette)
 	return (ImagingPalette) ImagingError_MemoryError();
-
-    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA"))
-	return (ImagingPalette) ImagingError_ModeError();
 
     strcpy(palette->mode, mode);
 

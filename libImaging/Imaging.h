@@ -1,11 +1,11 @@
 /*
  * The Python Imaging Library
- * $Id: Imaging.h 2308 2005-03-02 12:00:55Z fredrik $
+ * $Id: Imaging.h 2542 2005-10-02 21:37:20Z Fredrik $
  * 
  * declarations for the imaging core library
  *
- * Copyright (c) 1997-2003 by Secret Labs AB
- * Copyright (c) 1995-2003 by Fredrik Lundh
+ * Copyright (c) 1997-2005 by Secret Labs AB
+ * Copyright (c) 1995-2005 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -159,6 +159,8 @@ struct ImagingPaletteInstance {
 
 /* Objects */
 /* ------- */
+
+extern int ImagingNewCount;
 
 extern Imaging ImagingNew(const char* mode, int xsize, int ysize);
 extern Imaging ImagingNew2(const char* mode, Imaging imOut, Imaging imIn);

@@ -1,28 +1,81 @@
 The Python Imaging Library
-$Id: CHANGES-115 2331 2005-03-23 20:16:42Z fredrik $
+$Id: CHANGES 2593 2005-12-11 08:01:55Z fredrik $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Douglas Bagnall, Larry Bates,
 Anthony Baxter, William Baxter, Denis Benoit, Jan Blom, Duncan Booth,
 Jeff Breidenbach, Roger Burnham, Gene Cash, Kevin Cazabon, Fred Clare,
 Greg Coats, Chris Cogdon, Greg Couch, Bill Crutchfield, Abel Deuring,
-Tim Docker, Fred Drake, Graham Dumpleton, Matthew Ellis, Robin
-Friedrich, Pier Paolo Glave, Federico Di Gregorio, Markus Gritsch,
-Daniel Haertle, Greg Hamilton, Mark Hammond, Bernhard Herzog, Rob
-Hooft, Bob Ippolito, Jack Jansen, Bill Janssen, Edward Jones, Richard
-Jones, Håkan Karlsson, Robert Kern, Bob Klimek, Matthias Klose, Andrew
-Kuchling, Magnus Källström, Victor Lacina, Ben Last, Hamish Lawson,
-Andrew MacIntyre, Gordon McMillan, Skip Montanaro, Fredrik Nehr,
-Luciano Nocera, Piet van Oostrum, Richard Oudkerk, Paul Pharr, Andres
-Polit, Eric Raymond, Bertil Reinhammar, Nicholas Riley, Toby Sargeant,
-Barry Scott, Les Schaffer, Joel Shprentz, Klamer Shutte, Gene
-Skonicki, Niki Spahiev, D. Alan Stewart, Perry Stoll, Paul Svensson,
-Ulrik Svensson, Ivan Tkatchev, Rune Uhlin, Dmitry Vasiliev, Sasha
-Voynow, Charles Waldman, and Dan Wolfe.
+Tim Docker, Fred Drake, Graham Dumpleton, Matthew Ellis, Eric
+Etheridge, Robin Friedrich, Pier Paolo Glave, Federico Di Gregorio,
+Markus Gritsch, Daniel Haertle, Greg Hamilton, Mark Hammond, Bernhard
+Herzog, Rob Hooft, Bob Ippolito, Jack Jansen, Bill Janssen, Edward
+Jones, Richard Jones, Håkan Karlsson, Robert Kern, David Kirtley, Bob
+Klimek, Matthias Klose, Andrew Kuchling, Magnus Källström, Victor
+Lacina, Ben Last, Hamish Lawson, Andrew MacIntyre, Gordon McMillan,
+Skip Montanaro, Fredrik Nehr, Luciano Nocera, Piet van Oostrum,
+Richard Oudkerk, Paul Pharr, Andres Polit, Eric Raymond, Victor Reijs,
+Bertil Reinhammar, Nicholas Riley, Don Rozenberg, Toby Sargeant, Barry
+Scott, Les Schaffer, Joel Shprentz, Klamer Shutte, Gene Skonicki, Niki
+Spahiev, D. Alan Stewart, Perry Stoll, Paul Svensson, Ulrik Svensson,
+Miki Tebeka, Ivan Tkatchev, Rune Uhlin, Dmitry Vasiliev, Sasha Voynow,
+Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
+
+*** Changes from release 1.1.5 to 1.1.6 ***
+
+(1.1.6a1 snapshot released)
+
++ Fixed a memory leak in "convert(mode)", when converting from
+  L to P.
+
++ Added pixel access object.  The "load" method now returns a
+  access object that can be used to directly get and set pixel
+  values, using ordinary [x, y] notation:
+
+	pixel = im.load()
+	v = pixel[x, y]	
+	pixel[x, y] = v	
+
+  If you're accessing more than a few pixels, this is a lot
+  faster than using getpixel/putpixel.
+
++ Fixed building on Cygwin (from Miki Tebeka).
+
++ Fixed "point(callable)" on unloaded images (reported by Håkan
+  Karlsson).
+
++ Fixed size bug in ImageWin.ImageWindow constructor (from Victor
+  Reijs)
+
++ Fixed ImageMath float() and int() operations for Python 2.4
+  (reported by Don Rozenberg).
+
++ Fixed "RuntimeError: encoder error -8 in tostring" problem for
+  wide "RGB", "I", and "F" images.
+
++ Fixed line width calculation.
+
+(1.1.6a0 snapshot released)
+
++ Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
+
++ Fixed off-by-0.5 errors in the ANTIALIAS code (based on input
+  from Douglas Bagnall).
+
++ Added buffer interface support to the Path constructor.  If
+  a buffer is provided, it is assumed to contain a flat array
+  of float coordinates (e.g. array.array('f', seq)).
+
++ Added new ImageMath module.
+
++ Fixed ImageOps.equalize when used with a small number of distinct
+  values (reported by David Kirtley).
+
++ Fixed potential integer division in PSDraw.image (from Eric Etheridge).
 
 *** Changes from release 1.1 to 1.1.5 ***
 
-(1.1.5c2 released)
+(1.1.5c2 and 1.1.5 final released)
 
 + Added experimental PERSPECTIVE transform method (from Jeff Breiden-
   bach).

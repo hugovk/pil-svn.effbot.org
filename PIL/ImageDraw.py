@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageDraw.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: ImageDraw.py 2437 2005-05-25 20:56:41Z Fredrik $
 #
 # drawing interface operations
 #
@@ -294,3 +294,27 @@ try:
 except:
     Outline = None
 
+##
+# (Experimental) A more advanced 2D drawing interface for PIL images,
+# based on the WCK interface.
+#
+# @param im The image to draw in.
+# @param hints An optional list of hints.
+# @return A (drawing context, drawing resource factory) tuple.
+
+def getdraw(im=None, hints=None):
+    # FIXME: this needs more work!
+    # FIXME: come up with a better 'hints' scheme.
+    handler = None
+    if not hints or "nicest" in hints:
+        try:
+            import _imagingagg
+            handler = _imagingagg
+        except ImportError:
+            pass
+    if handler is None:
+        import ImageDraw2
+        handler = ImageDraw2
+    if im:
+        im = handler.Draw(im)
+    return im, handler

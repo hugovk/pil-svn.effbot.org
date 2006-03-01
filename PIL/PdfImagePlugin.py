@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: PdfImagePlugin.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id: PdfImagePlugin.py 2438 2005-05-25 21:09:48Z Fredrik $
 #
 # PDF (Acrobat) file handling
 #
@@ -47,6 +47,9 @@ def _obj(fp, obj, **dict):
 
 def _endobj(fp):
     fp.write("endobj\n")
+
+##
+# (Internal) Image save plugin for the PDF format.
 
 def _save(im, fp, filename):
 

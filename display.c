@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: display.c 1756 2004-03-28 17:15:33Z fredrik $
+ * $Id: display.c 2576 2005-11-07 22:37:04Z fredrik $
  *
  * display support
  *
@@ -26,7 +26,8 @@
 #include "Python.h"
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 #include "Imaging.h"
@@ -632,7 +633,7 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_DESTROY:
-        /* redraw (part of) window */
+        /* destroy window */
         result = PyObject_CallFunction(callback, "s", "destroy");
         if (result)
             Py_DECREF(result);

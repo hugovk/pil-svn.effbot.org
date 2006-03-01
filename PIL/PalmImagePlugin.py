@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: PalmImagePlugin.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id: PalmImagePlugin.py 2438 2005-05-25 21:09:48Z Fredrik $
 #
 
 ##
@@ -113,6 +113,9 @@ def o16b(i):
 
 #
 # --------------------------------------------------------------------
+
+##
+# (Internal) Image save plugin for the Palm format.
 
 def _save(im, fp, filename, check=0):
 

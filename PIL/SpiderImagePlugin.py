@@ -84,6 +84,8 @@ def isSpiderImage(filename):
         hdrlen = isSpiderHeader(t)
     return hdrlen
 
+##
+# Image plugin for the SPIDER format.
 
 class SpiderImageFile(ImageFile.ImageFile):
 

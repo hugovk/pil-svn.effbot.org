@@ -1,6 +1,6 @@
 /*
  * PIL FreeType Driver
- * $Id: _imagingft.c 2025 2004-09-14 08:28:54Z fredrik $
+ * $Id: _imagingft.c 2505 2005-09-05 16:29:53Z fredrik $
  *
  * a FreeType 2.X driver for PIL
  *
@@ -34,7 +34,8 @@
 #endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x01060000

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: _imaging.c 2308 2005-03-02 12:00:55Z fredrik $
+ * $Id: _imaging.c 2546 2005-10-03 11:17:34Z fredrik $
  *
  * the imaging library bindings
  *
@@ -63,9 +63,10 @@
  * 2004-06-05 fl   Don't crash when fetching pixels from zero-wide images
  * 2004-09-17 fl   Added getcolors
  * 2004-10-04 fl   Added modefilter
+ * 2005-10-02 fl   Added access proxy
  *
- * Copyright (c) 1997-2004 by Secret Labs AB 
- * Copyright (c) 1995-2004 by Fredrik Lundh
+ * Copyright (c) 1997-2005 by Secret Labs AB 
+ * Copyright (c) 1995-2005 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -102,7 +103,8 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_Del(op) PyMem_Del((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 /* -------------------------------------------------------------------- */
@@ -148,6 +150,14 @@ typedef struct {
 staticforward PyTypeObject ImagingDraw_Type;
 
 #endif
+
+typedef struct {
+    PyObject_HEAD
+    ImagingObject* image;
+    int readonly;
+} PixelAccessObject;
+
+staticforward PyTypeObject PixelAccess_Type;
 
 PyObject* 
 PyImagingNew(Imaging imOut)
@@ -226,6 +236,7 @@ static const char* wrong_raw_mode = "unrecognized raw mode";
 static const char* outside_image = "image index out of range";
 static const char* outside_palette = "palette index out of range";
 static const char* no_palette = "image has no palette";
+static const char* readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
 
 void *
@@ -391,7 +402,7 @@ getlist(PyObject* arg, int* length, const char* wrong_length, int type)
     return list;
 }
 
-static PyObject*
+static inline PyObject*
 getpixel(Imaging im, int x, int y)
 {
     UINT8 *p;
@@ -406,16 +417,16 @@ getpixel(Imaging im, int x, int y)
         p = (UINT8*) &im->image8[y][x];
         switch (im->type) {
         case IMAGING_TYPE_UINT8:
-            return Py_BuildValue("i", p[0]);
+            return PyInt_FromLong(p[0]);
         case IMAGING_TYPE_SPECIAL:
             /* FIXME: are 16-bit images signed or unsigned??? */
             if (strcmp(im->mode, "I;16") == 0) {
                 p = (UINT8*) &im->image8[y][x+x];
-                return Py_BuildValue("i", L16(p, 0));
+                return PyInt_FromLong(L16(p, 0));
             }
             if (strcmp(im->mode, "I;16B") == 0) {
                 p = (UINT8*) &im->image8[y][x+x];
-                return Py_BuildValue("i", B16(p, 0));
+                return PyInt_FromLong(B16(p, 0));
             }
         }
     }
@@ -433,10 +444,10 @@ getpixel(Imaging im, int x, int y)
             return Py_BuildValue("iiii", p[0], p[1], p[2], p[3]);
         case IMAGING_TYPE_INT32:
             /* signed integer */
-            return Py_BuildValue("i", *(INT32*) p);
+            return PyInt_FromLong(*(INT32*) p);
         case IMAGING_TYPE_FLOAT32:
             /* floating point */
-            return Py_BuildValue("d", *(FLOAT32*) p);
+            return PyFloat_FromDouble(*(FLOAT32*) p);
         }
     }
         
@@ -468,7 +479,7 @@ getink(PyObject* color, Imaging im, char* ink)
             /* unsigned integer */
             a = 255;
             if (PyInt_Check(color)) {
-                r = PyInt_AsLong(color);
+                r = PyInt_AS_LONG(color);
                 /* compatibility: ABGR */
                 a = (UINT8) (r >> 24);
                 b = (UINT8) (r >> 16);
@@ -580,6 +591,15 @@ _new_block(PyObject* self, PyObject* args)
 	return NULL;
 
     return PyImagingNew(ImagingNewBlock(mode, xsize, ysize));
+}
+
+static PyObject* 
+_getcount(PyObject* self, PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ":getcount"))
+	return NULL;
+
+    return PyInt_FromLong(ImagingNewCount);
 }
 
 static PyObject* 
@@ -808,52 +828,67 @@ _getpalette(ImagingObject* self, PyObject* args)
     return palette;
 }
 
-static PyObject* 
-_getpixel(ImagingObject* self, PyObject* args)
+static inline int
+_getxy(PyObject* xy, int* x, int *y)
 {
-    PyObject* tuple;
     PyObject* value;
-    int x, y;
 
-    if (PyTuple_GET_SIZE(args) != 1)
-        goto badarg;
-
-    tuple = PyTuple_GET_ITEM(args, 0);
-
-    if (!PyTuple_Check(tuple) || PyTuple_GET_SIZE(tuple) != 2)
+    if (!PyTuple_Check(xy) || PyTuple_GET_SIZE(xy) != 2)
         goto badarg;
         
-    value = PyTuple_GET_ITEM(tuple, 0);
+    value = PyTuple_GET_ITEM(xy, 0);
     if (PyInt_Check(value))
-        x = PyInt_AsLong(value);
+        *x = PyInt_AS_LONG(value);
     else if (PyFloat_Check(value))
-        x = (int) PyFloat_AsDouble(value);
+        *x = (int) PyFloat_AS_DOUBLE(value);
     else
         goto badval;
 
-    value = PyTuple_GET_ITEM(tuple, 1);
+    value = PyTuple_GET_ITEM(xy, 1);
     if (PyInt_Check(value))
-        y = PyInt_AsLong(value);
+        *y = PyInt_AS_LONG(value);
     else if (PyFloat_Check(value))
-        y = (int) PyFloat_AsDouble(value);
+        *y = (int) PyFloat_AS_DOUBLE(value);
     else
         goto badval;
 
-    return getpixel(self->image, x, y);
+    return 0;
 
   badarg:
     PyErr_SetString(
         PyExc_TypeError,
-        "argument 1 must be sequence of length 2"
+        "argument must be sequence of length 2"
         );
-    return NULL;
+    return -1;
 
   badval:
     PyErr_SetString(
         PyExc_TypeError,
         "an integer is required"
         );
-    return NULL;
+    return -1;
+}
+
+static PyObject* 
+_getpixel(ImagingObject* self, PyObject* args)
+{
+    PyObject* xy;
+    int x, y;
+
+    if (PyTuple_GET_SIZE(args) != 1) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "argument 1 must be sequence of length 2"
+            );
+        return NULL;
+    }
+
+    xy = PyTuple_GET_ITEM(args, 0);
+
+    if (_getxy(xy, &x, &y))
+        return NULL;
+
+    return getpixel(self->image, x, y);
 }
 
 static PyObject*
@@ -1614,7 +1649,7 @@ _transpose(ImagingObject* self, PyObject* args)
 static PyObject* 
 _isblock(ImagingObject* self, PyObject* args)
 {
-    return Py_BuildValue("l", (long) self->image->block);
+    return PyInt_FromLong((long) self->image->block);
 }
 
 static PyObject* 
@@ -2074,6 +2109,8 @@ _font_getattr(ImagingFontObject* self, char* name)
     return Py_FindMethod(_font_methods, (PyObject*) self, name);
 }
 
+/* -------------------------------------------------------------------- */
+
 static PyObject*
 _draw_new(PyObject* self_, PyObject* args)
 {
@@ -2120,7 +2157,7 @@ _draw_ink(ImagingDrawObject* self, PyObject* args)
     if (!getink(color, self->image->image, (char*) &ink))
         return NULL;
 
-    return Py_BuildValue("i", (int) ink);
+    return PyInt_FromLong((int) ink);
 }
 
 static PyObject* 
@@ -2491,6 +2528,80 @@ _draw_getattr(ImagingDrawObject* self, char* name)
 
 #endif
 
+
+static PyObject*
+pixel_access_new(ImagingObject* imagep, PyObject* args)
+{
+    PixelAccessObject *self;
+
+    int readonly = 0;
+    if (!PyArg_ParseTuple(args, "|i", &readonly))
+        return NULL;
+
+    self = PyObject_New(PixelAccessObject, &PixelAccess_Type);
+    if (self == NULL)
+	return NULL;
+
+    /* keep a reference to the image object */
+    Py_INCREF(imagep);
+    self->image = imagep;
+
+    self->readonly = readonly;
+
+    return (PyObject*) self;
+}
+
+static void
+pixel_access_dealloc(PixelAccessObject* self)
+{
+    Py_XDECREF(self->image);
+    PyObject_Del(self);
+}
+
+static PyObject *
+pixel_access_getitem(PixelAccessObject *self, PyObject *xy)
+{
+    int x, y;
+    if (_getxy(xy, &x, &y))
+        return NULL;
+
+    return getpixel(self->image->image, x, y);
+}
+
+static int
+pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color)
+{
+    Imaging im = self->image->image;
+    char ink[4];
+    int x, y;
+
+    if (self->readonly) {
+        ImagingError_ValueError(readonly);
+        return -1;
+    }
+
+    if (_getxy(xy, &x, &y))
+        return -1;
+
+    if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
+	PyErr_SetString(PyExc_IndexError, outside_image);
+	return -1;
+    }
+
+    if (!color) /* FIXME: raise exception? */
+        return 0;
+
+    if (!getink(color, im, ink))
+        return -1;
+
+    if (im->image8)
+	im->image8[y][x] = ink[0];
+    else
+	im->image32[y][x] = *((INT32*) ink);
+
+    return 0;
+}
+
 /* -------------------------------------------------------------------- */
 /* EFFECTS (experimental)        					*/
 /* -------------------------------------------------------------------- */
@@ -2589,7 +2700,7 @@ _getcodecstatus(PyObject* self, PyObject* args)
 	return Py_None;
     }
 
-    return Py_BuildValue("s", msg);
+    return PyString_FromString(msg);
 }
 
 /* -------------------------------------------------------------------- */
@@ -2625,6 +2736,8 @@ static struct PyMethodDef methods[] = {
     /* Put commonly used methods first */
     {"getpixel", (PyCFunction)_getpixel, 1},
     {"putpixel", (PyCFunction)_putpixel, 1},
+
+    {"pixel_access", (PyCFunction)pixel_access_new, 1},
 
     /* Standard processing methods (Image) */
     {"convert", (PyCFunction)_convert, 1},
@@ -2722,13 +2835,13 @@ _getattr(ImagingObject* self, char* name)
 	return res;
     PyErr_Clear();
     if (strcmp(name, "mode") == 0)
-	return Py_BuildValue("s", self->image->mode);
+	return PyString_FromString(self->image->mode);
     if (strcmp(name, "size") == 0)
 	return Py_BuildValue("ii", self->image->xsize, self->image->ysize);
     if (strcmp(name, "bands") == 0)
-	return Py_BuildValue("i", self->image->bands);
+	return PyInt_FromLong(self->image->bands);
     if (strcmp(name, "id") == 0)
-	return Py_BuildValue("l", (long) self->image);
+	return PyInt_FromLong((long) self->image);
     if (strcmp(name, "ptr") == 0)
         return PyCObject_FromVoidPtrAndDesc(self->image, IMAGING_MAGIC, NULL);
     PyErr_SetString(PyExc_AttributeError, name);
@@ -2821,6 +2934,30 @@ statichere PyTypeObject ImagingDraw_Type = {
 
 #endif
 
+static PyMappingMethods pixel_access_as_mapping = {
+    (inquiry)0, /*mp_length*/
+    (binaryfunc)pixel_access_getitem, /*mp_subscript*/
+    (objobjargproc)pixel_access_setitem, /*mp_ass_subscript*/
+};
+
+/* type description */
+
+statichere PyTypeObject PixelAccess_Type = {
+    PyObject_HEAD_INIT(NULL)
+    0, "PixelAccess", sizeof(PixelAccessObject), 0,
+    /* methods */
+    (destructor)pixel_access_dealloc, /*tp_dealloc*/
+    0, /*tp_print*/
+    0, /*tp_getattr*/
+    0, /*tp_setattr*/
+    0, /*tp_compare*/
+    0, /*tp_repr*/
+    0, /*tp_as_number */
+    0, /*tp_as_sequence */
+    &pixel_access_as_mapping, /*tp_as_mapping */
+    0 /*tp_hash*/
+};
+
 /* -------------------------------------------------------------------- */
 
 /* FIXME: this is something of a mess.  Should replace this with
@@ -2878,6 +3015,8 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, 1},
     {"fill", (PyCFunction)_fill, 1},
     {"new", (PyCFunction)_new, 1},
+
+    {"getcount", (PyCFunction)_getcount, 1},
 
     /* Functions */
     {"convert", (PyCFunction)_convert2, 1},
@@ -2975,6 +3114,7 @@ init_imaging(void)
     ImagingFont_Type.ob_type = &PyType_Type;
     ImagingDraw_Type.ob_type = &PyType_Type;
 #endif
+    PixelAccess_Type.ob_type = &PyType_Type;
 
     Py_InitModule("_imaging", functions);
 }
