@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/MspDecode.c#2 $
+ * $Id: MspDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * decoder for MSP version 2 data.
  *

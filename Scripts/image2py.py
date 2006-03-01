@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/image2py.py#2 $
+# $Id: image2py.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # convert an image to a Python module
 #

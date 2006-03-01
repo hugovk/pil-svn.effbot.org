@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/enhancer.py#2 $
+# $Id: enhancer.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # this demo script creates four windows containing an image and a slider.
 # drag the slider to modify the image.

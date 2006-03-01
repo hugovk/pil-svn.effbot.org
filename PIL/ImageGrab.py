@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/ImageGrab.py#5 $
+# $Id: ImageGrab.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # screen grabber (windows only)
 #
@@ -23,6 +23,8 @@ import Image
 # <p>
 # The current version works on Windows only.</p>
 #
+# @since 1.1.3
+##
 
 try:
     # built-in driver (1.1.3 and later)
@@ -39,6 +41,7 @@ except AttributeError:
 #
 # @param bbox What region to copy.  Default is the entire screen.
 # @return An image
+# @since 1.1.3
 
 def grab(bbox=None):
     size, data = grabber()
@@ -57,6 +60,7 @@ def grab(bbox=None):
 # @return An image, a list of filenames, or None if the clipboard does
 #     not contain image data or filenames.  Note that if a list is
 #     returned, the filenames may not represent image files.
+# @since 1.1.4
 
 def grabclipboard():
     debug = 0 # temporary interface

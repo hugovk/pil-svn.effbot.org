@@ -1,16 +1,18 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ExifTags.py#1 $
+# $Id: ExifTags.py 2339 2005-03-25 08:02:17Z fredrik $
 #
 # EXIF tags
-#
-# This module provides constants and clear-text names for various
-# well-known EXIF tags.
 #
 # Copyright (c) 2003 by Secret Labs AB
 #
 # See the README file for information on usage and redistribution.
 #
+
+##
+# This module provides constants and clear-text names for various
+# well-known EXIF tags.
+##
 
 TAGS = {
 
@@ -116,4 +118,34 @@ TAGS = {
     0xa301: "SceneType",
     0xa302: "CFAPattern",
 
+}
+
+GPSTAGS = {
+    0: "GPSVersionID",
+    1: "GPSLatitudeRef",
+    2: "GPSLatitude",
+    3: "GPSLongitudeRef",
+    4: "GPSLongitude",
+    5: "GPSAltitudeRef",
+    6: "GPSAltitude",
+    7: "GPSTimeStamp",
+    8: "GPSSatellites",
+    9: "GPSStatus",
+    10: "GPSMeasureMode",
+    11: "GPSDOP",
+    12: "GPSSpeedRef",
+    13: "GPSSpeed",
+    14: "GPSTrackRef",
+    15: "GPSTrack",
+    16: "GPSImgDirectionRef",
+    17: "GPSImgDirection",
+    18: "GPSMapDatum",
+    19: "GPSDestLatitudeRef",
+    20: "GPSDestLatitude",
+    21: "GPSDestLongitudeRef",
+    22: "GPSDestLongitude",
+    23: "GPSDestBearingRef",
+    24: "GPSDestBearing",
+    25: "GPSDestDistanceRef",
+    26: "GPSDestDistance"
 }

@@ -2,14 +2,15 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ArgImagePlugin.py#3 $
+# $Id: ArgImagePlugin.py 2309 2005-03-02 15:06:34Z fredrik $
 #
 # ARG animation support code
 #
 # history:
-#       96-12-30 fl     Created
-#       96-01-06 fl     Added safe scripting environment
-#       96-01-10 fl     Added JHDR, UHDR and sYNC support
+# 1996-12-30 fl   Created
+# 1996-01-06 fl   Added safe scripting environment
+# 1996-01-10 fl   Added JHDR, UHDR and sYNC support
+# 2005-03-02 fl   Removed AAPP and ARUN support
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996-97.
@@ -17,17 +18,15 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.3"
+__version__ = "0.4"
 
-import marshal, rexec, string
+import marshal, string
 
 import Image, ImageFile, ImagePalette
 
 from PngImagePlugin import i16, i32, ChunkStream, _MODES
 
 MAGIC = "\212ARG\r\n\032\n"
-
-APPLET_HOOK = None # must be explicitly enabled to support embedded scripts
 
 # --------------------------------------------------------------------
 # ARG parser
@@ -56,8 +55,6 @@ class ArgStream(ChunkStream):
 
         self.images = {}
         self.names = {}
-
-        self.applets = {} # level 2
 
 
     def chunk_AHDR(self, offset, bytes):
@@ -397,89 +394,6 @@ class ArgStream(ChunkStream):
         self.__reset()
         return s
 
-    #
-    # LEVEL 2 STUFF
-
-    def chunk_aAPP(self, offset, bytes):
-        "aAPP -- store application"
-
-        s = self.fp.read(bytes)
-
-        # extract type, name and code chunk
-        j = string.find(s, "\0")
-        name = s[:j]
-
-        i = j + 1
-        j = string.find(s, "\0", i)
-        type = s[i:j]
-
-        code = s[j+1:]
-
-        if Image.DEBUG:
-            print "AAPP", repr(type), repr(name)
-
-        if not code:
-            # delete existing applet
-            if self.applets.has_key(name):
-                del self.applets[name]
-        else:
-            # store or execute applet
-            if type != "python":
-                raise IOError, "unsupported script type " + type
-            # convert to executable object
-            code = marshal.loads(code)
-            if not name:
-                # unnamed; execute immediately
-                self.__applet(code)
-            else:
-                try:
-                    # named applet; store in dictionary
-                    self.applets[name] = marshal.loads(code)
-                except:
-                    pass # applet loading error
-
-        return s
-
-    def chunk_aRUN(self, offset, bytes):
-        "aRUN -- execute application"
-
-        s = self.fp.read(bytes)
-
-        j = string.find(s, "\0")
-        name = s[:j]
-
-        # FIXME: should handle arguments
-        print "ARUN", name
-
-        self.__applet(self.applets[name])
-
-        return s
-
-    def __applet(self, code):
-
-        if not APPLET_HOOK:
-            return
-
-        # run script in safe environment
-        safe = rexec.RExec()
-        safe.r_exec(code)
-
-        # must convert images to Image object form
-        images = {}
-        for id, im in self.images.items():
-            # FIXME: this is crude: support for this operation
-            # should be moved to the Image module itself (or
-            # better; change this module to use Image objects
-            # instead of core objects)
-            i = Image.new(im.mode, im.size)
-            i.im = im
-            images[id] = i
-            if self.names.has_key(id):
-                # add named image
-                images[self.names[id]] = i
-
-        APPLET_HOOK(safe.modules["__main__"].Animation, images)
-
 
 # --------------------------------------------------------------------
 # ARG reader
@@ -488,7 +402,7 @@ def _accept(prefix):
     return prefix[:8] == MAGIC
 
 ##
-# Image plugin for the experimental Animate Raster Graphics format.
+# Image plugin for the experimental Animated Raster Graphics format.
 
 class ArgImageFile(ImageFile.ImageFile):
 

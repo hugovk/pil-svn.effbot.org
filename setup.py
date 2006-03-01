@@ -1,307 +1,439 @@
 #!/usr/bin/env python
 #
-# Setup script for PIL
-# $Id: //modules/pil/setup.py#14 $
+# Setup script for PIL 1.1.5 and later
+# $Id: setup.py 2318 2005-03-11 16:36:32Z fredrik $
 #
 # Usage: python setup.py install
 #
-# before running this script, build the libImaging directory
-# and all support libraries (the JPEG library, ZLIB, etc).
-#
 
-from distutils.core import setup, Extension
+import glob, os, re, struct, string, sys
 
-import os, sys, re
+def libinclude(root):
+    # map root to (root/lib, root/include)
+    return os.path.join(root, "lib"), os.path.join(root, "include")
 
 # --------------------------------------------------------------------
-# configuration
+# Library pointers.
+#
+# Use None to look for the libraries in well-known library locations.
+# Use a string to specify a single directory, for both the library and
+# the include files.  Use a tuple to specify separate directories:
+# (libpath, includepath).  Examples:
+#
+# JPEG_ROOT = "/home/libraries/jpeg-6b"
+# TIFF_ROOT = "/opt/tiff/lib", "/opt/tiff/include"
+#
+# If you have "lib" and "include" directories under a common parent,
+# you can use the "libinclude" helper:
+#
+# TIFF_ROOT = libinclude("/opt/tiff")
+
+FREETYPE_ROOT = None
+JPEG_ROOT = None
+TIFF_ROOT = None
+ZLIB_ROOT = None
+TCL_ROOT = None
+
+# FIXME: add mechanism to explicitly *disable* the use of a library
+
+# --------------------------------------------------------------------
+# Identification
 
 NAME = "PIL"
 DESCRIPTION = "Python Imaging Library"
-AUTHOR = "Secret Labs AB / PythonWare", "info@pythonware.com"
+AUTHOR = "Secret Labs AB (PythonWare)", "info@pythonware.com"
 HOMEPAGE = "http://www.pythonware.com/products/pil"
 
-# on windows, the build script expects to find both library files and
-# include files in the directories below.  tweak as necessary.
-JPEGDIR = "../../kits/jpeg-6b"
-ZLIBDIR = "../../kits/zlib-1.1.4"
-FREETYPEDIR = "../../kits/freetype-2.0"
+# --------------------------------------------------------------------
+# Core library
 
-# on Windows, the following is used to control how and where to search
-# for Tcl/Tk files.  None enables automatic searching; to override, set
-# this to a directory name.
-TCLROOT = None
+IMAGING = [
+    "decode", "encode", "map", "display", "outline", "path"
+    ]
 
-from PIL.Image import VERSION
-
-PY_VERSION = sys.version[0] + sys.version[2]
+LIBIMAGING = [
+    "Access", "Antialias", "Bands", "BitDecode", "Blend", "Chops",
+    "Convert", "ConvertYCbCr", "Copy", "Crc32", "Crop", "Dib", "Draw",
+    "Effects", "EpsEncode", "File", "Fill", "Filter", "FliDecode",
+    "Geometry", "GetBBox", "GifDecode", "GifEncode", "HexDecode",
+    "Histo", "JpegDecode", "JpegEncode", "LzwDecode", "Matrix",
+    "ModeFilter", "MspDecode", "Negative", "Offset", "Pack",
+    "PackDecode", "Palette", "Paste", "Quant", "QuantHash",
+    "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
+    "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
+    "TgaRleDecode", "Unpack", "UnpackYCC", "XbmDecode", "XbmEncode",
+    "ZipDecode", "ZipEncode"
+    ]
 
 # --------------------------------------------------------------------
-# configure imaging module
+# Override settings
 
-MODULES = []
-
-INCLUDE_DIRS = ["libImaging"]
-LIBRARY_DIRS = ["libImaging"]
-LIBRARIES = ["Imaging"]
-
-# Add some standard search spots for MacOSX/darwin
-if os.path.exists('/sw/include'):
-    INCLUDE_DIRS.append('/sw/include')
-if os.path.exists('/sw/lib'):
-    LIBRARY_DIRS.append('/sw/lib')
-
-HAVE_LIBJPEG = 0
-HAVE_LIBTIFF = 0
-HAVE_LIBZ = 0
-HAVE_TCLTK = 0
-
-# parse ImConfig.h to figure out what external libraries we're using
-for line in open(os.path.join("libImaging", "ImConfig.h")).readlines():
-    m = re.match("#define\s+HAVE_LIB([A-Z]+)", line)
-    if m:
-        lib = m.group(1)
-        if lib == "JPEG":
-            HAVE_LIBJPEG = 1
-            if sys.platform == "win32":
-                LIBRARIES.append("jpeg")
-                INCLUDE_DIRS.append(JPEGDIR)
-                LIBRARY_DIRS.append(JPEGDIR)
-            else:
-                LIBRARIES.append("jpeg")
-        elif lib == "TIFF":
-            HAVE_LIBTIFF = 1
-            LIBRARIES.append("tiff")
-        elif lib == "Z":
-            HAVE_LIBZ = 1
-            if sys.platform == "win32":
-                LIBRARIES.append("zlib")
-                INCLUDE_DIRS.append(ZLIBDIR)
-                LIBRARY_DIRS.append(ZLIBDIR)
-            else:
-                LIBRARIES.append("z")
-
-if sys.platform == "win32":
-    # standard windows libraries
-    LIBRARIES.extend(["kernel32", "user32", "gdi32"])
-
-MODULES.append(
-    Extension(
-        "_imaging",
-        ["_imaging.c", "decode.c", "encode.c", "map.c", "display.c",
-         "outline.c", "path.c"],
-        include_dirs=INCLUDE_DIRS,
-        library_dirs=LIBRARY_DIRS,
-        libraries=LIBRARIES
-        )
-    )
-
-# security check
-
-if HAVE_LIBZ:
-    # look for old, unsafe version of zlib
-    # note: this only finds zlib.h if ZLIBDIR is properly set
-    zlibfile = os.path.join(ZLIBDIR, "zlib.h")
-    if os.path.isfile(zlibfile):
-        for line in open(zlibfile).readlines():
-            m = re.match('#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
-            if m:
-                if m.group(1) < "1.1.4":
-                    print
-                    print "*** Warning: zlib", m.group(1),
-                    print "may contain a security vulnerability."
-                    print "*** Consider upgrading to zlib 1.1.4 or newer."
-                    print "*** See:",
-                    print "http://www.gzip.org/zlib/advisory-2002-03-11.txt"
-                    print
-                break
+try:
+    from setup_site import *
+except ImportError:
+    pass
 
 # --------------------------------------------------------------------
-# configure imagingtk module
+
+from distutils import sysconfig
+from distutils.core import Extension, setup
+from distutils.command.build_ext import build_ext
 
 try:
     import _tkinter
-    TCL_VERSION = _tkinter.TCL_VERSION[:3]
-except (ImportError, AttributeError):
-    pass
-else:
-    INCLUDE_DIRS = ["libImaging"]
-    LIBRARY_DIRS = ["libImaging"]
-    LIBRARIES = ["Imaging"]
-    EXTRA_COMPILE_ARGS = None
-    EXTRA_LINK_ARGS = None
-    if sys.platform == "win32":
-        # locate tcl/tk on windows
-        if TCLROOT:
-            path = [TCLROOT]
+except ImportError:
+    _tkinter = None
+
+def add_directory(path, dir, where=None):
+    if dir and os.path.isdir(dir) and dir not in path:
+        if where is None:
+            path.append(dir)
         else:
-            path = [
-                os.path.join("/py" + PY_VERSION, "Tcl"),
+            path.insert(where, dir)
+
+def find_library_file(self, library):
+    return self.compiler.find_library_file(self.compiler.library_dirs, library)
+
+def find_version(filename):
+    for line in open(filename).readlines():
+        m = re.search("VERSION\s*=\s*\"([^\"]+)\"", line)
+        if m:
+            return m.group(1)
+    return None
+
+VERSION = find_version("PIL/Image.py")
+
+class pil_build_ext(build_ext):
+
+    def build_extensions(self):
+
+        global TCL_ROOT
+
+        library_dirs = []
+        include_dirs = []
+
+        add_directory(include_dirs, "libImaging")
+
+        #
+        # add platform directories
+
+        if sys.platform == "darwin":
+            # attempt to make sure we pick freetype2 over other versions
+            add_directory(include_dirs, "/sw/include/freetype2")
+            add_directory(include_dirs, "/sw/lib/freetype2/include")
+            # fink installation directories
+            add_directory(library_dirs, "/sw/lib")
+            add_directory(include_dirs, "/sw/include")
+
+        # FIXME: check /opt/stuff directories here?
+
+        prefix = sysconfig.get_config_var("prefix")
+        if prefix:
+            add_directory(library_dirs, os.path.join(prefix, "lib"))
+            add_directory(include_dirs, os.path.join(prefix, "include"))
+
+        #
+        # locate tkinter libraries
+
+        if _tkinter:
+            TCL_VERSION = _tkinter.TCL_VERSION[:3]
+
+        if _tkinter and not TCL_ROOT:
+            # we have Tkinter but the TCL_ROOT variable was not set;
+            # try to locate appropriate Tcl/Tk libraries
+            PYVERSION = sys.version[0] + sys.version[2]
+            TCLVERSION = TCL_VERSION[0] + TCL_VERSION[2]
+            roots = [
+                # common installation directories, mostly for Windows
+                # (for Unix-style platforms, we'll check in well-known
+                # locations later)
+                os.path.join("/py" + PYVERSION, "Tcl"),
+                os.path.join("/python" + PYVERSION, "Tcl"),
+                "/Tcl", "/Tcl" + TCLVERSION, "/Tcl" + TCL_VERSION,
                 os.path.join(os.environ.get("ProgramFiles", ""), "Tcl"),
-                # FIXME: add more directories here?
                 ]
-        for root in path:
-            TCLROOT = os.path.abspath(root)
-            if os.path.isfile(os.path.join(TCLROOT, "include", "tk.h")):
-                break
-        else:
-            TCLROOT = None
-            print "*** Cannot find Tcl/Tk headers and library files."
-            print "*** To build the Tkinter interface, set the TCLROOT"
-            print "*** variable in the setup.py file."
+            for TCL_ROOT in roots:
+                TCL_ROOT = os.path.abspath(TCL_ROOT)
+                if os.path.isfile(os.path.join(TCL_ROOT, "include", "tk.h")):
+                    # FIXME: use distutils logging (?)
+                    print "--- using Tcl/Tk libraries at", TCL_ROOT
+                    print "--- using Tcl/Tk version", TCL_VERSION
+                    TCL_ROOT = libinclude(TCL_ROOT)
+                    break
+            else:
+                TCL_ROOT = None
 
-        # print "using Tcl/Tk libraries at", TCLROOT
-        # print "using Tcl/Tk version", TCL_VERSION
+        #
+        # add configured kits
 
-        if TCLROOT:
+        for root in [FREETYPE_ROOT, JPEG_ROOT, TCL_ROOT, TIFF_ROOT, ZLIB_ROOT]:
+            if isinstance(root, type(())):
+                lib_root, include_root = root
+            else:
+                lib_root = include_root = root
+            add_directory(library_dirs, lib_root)
+            add_directory(include_dirs, include_root)
+
+        #
+        # add standard directories
+
+        add_directory(library_dirs, "/usr/local/lib")
+        add_directory(include_dirs, "/usr/local/include")
+
+        add_directory(library_dirs, "/usr/lib")
+        add_directory(include_dirs, "/usr/include")
+
+        #
+        # insert new dirs *before* default libs, to avoid conflicts
+        # between Python PYD stub libs and real libraries
+
+        self.compiler.library_dirs = library_dirs + self.compiler.library_dirs
+        self.compiler.include_dirs = include_dirs + self.compiler.include_dirs
+
+        #
+        # look for available libraries
+
+        class feature:
+            zlib = jpeg = tiff = freetype = tcl = tk = None
+        feature = feature()
+
+        if find_library_file(self, "z"):
+            feature.zlib = "z"
+        elif sys.platform == "win32" and find_library_file(self, "zlib"):
+            feature.zlib = "zlib" # alternative name
+
+        if find_library_file(self, "jpeg"):
+            feature.jpeg = "jpeg"
+        elif sys.platform == "win32" and find_library_file(self, "libjpeg"):
+            feature.jpeg = "libjpeg" # alternative name
+
+        if find_library_file(self, "tiff"):
+            feature.tiff = "tiff"
+
+        if find_library_file(self, "freetype"):
+            # look for freetype2 include files
+            freetype_version = 0
+            for dir in include_dirs:
+                if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                    freetype_version = 21
+                    dir = os.path.join(dir, "freetype2")
+                    break
+                dir = os.path.join(dir, "freetype2")
+                if os.path.isfile(os.path.join(dir, "ft2build.h")):
+                    freetype_version = 21
+                    break
+                if os.path.isdir(os.path.join(dir, "freetype")):
+                    freetype_version = 20
+                    break
+            if freetype_version:
+                feature.freetype = "freetype"
+                feature.freetype_version = freetype_version
+                if dir:
+                    add_directory(self.compiler.include_dirs, dir, 0)
+
+        if _tkinter:
+            # the library names may vary somewhat (e.g. tcl84 or tcl8.4)
             version = TCL_VERSION[0] + TCL_VERSION[2]
-            INCLUDE_DIRS.append(os.path.join(TCLROOT, "include"))
-            LIBRARY_DIRS.append(os.path.join(TCLROOT, "lib"))
-            LIBRARIES.extend(["tk" + version, "tcl" + version])
-            HAVE_TCLTK = 1
-    else:
-        tk_framework_found = 0
-        if sys.platform == 'darwin':
-            # First test for a MacOSX/darwin framework install
-            from os.path import join, exists
-            framework_dirs = [
-                '/System/Library/Frameworks/',
-                '/Library/Frameworks',
-                join(os.getenv('HOME'), '/Library/Frameworks')
+            if find_library_file(self, "tcl" + version):
+                feature.tcl = "tcl" + version
+            elif find_library_file(self, "tcl" + TCL_VERSION):
+                feature.tcl = "tcl" + TCL_VERSION
+            if find_library_file(self, "tk" + version):
+                feature.tk = "tk" + version
+            elif find_library_file(self, "tk" + TCL_VERSION):
+                feature.tk = "tk" + TCL_VERSION
+
+        #
+        # core library
+
+        files = ["_imaging.c"]
+        for file in IMAGING:
+            files.append(file + ".c")
+        for file in LIBIMAGING:
+            files.append(os.path.join("libImaging", file + ".c"))
+
+        libs = []
+        defs = []
+        if feature.jpeg:
+            libs.append(feature.jpeg)
+            defs.append(("HAVE_LIBJPEG", None))
+        if feature.zlib:
+            libs.append(feature.zlib)
+            defs.append(("HAVE_LIBZ", None))
+        if sys.platform == "win32":
+            libs.extend(["kernel32", "user32", "gdi32"])
+        if struct.unpack("h", "\0\1")[0] == 1:
+            defs.append(("WORDS_BIGENDIAN", None))
+
+        exts = [(Extension(
+            "_imaging", files, libraries=libs, define_macros=defs
+            ))]
+
+        #
+        # additional libraries
+
+        if feature.freetype:
+            defs = []
+            if feature.freetype_version == 20:
+                defs.append(("USE_FREETYPE_2_0", None))
+            exts.append(Extension(
+                "_imagingft", ["_imagingft.c"], libraries=["freetype"],
+                define_macros=defs
+                ))
+
+        if os.path.isfile("_imagingtiff.c") and feature.tiff:
+            exts.append(Extension(
+                "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]
+                ))
+
+        if sys.platform == "darwin":
+            # locate Tcl/Tk frameworks
+            frameworks = []
+            framework_roots = [
+                "/Library/Frameworks",
+                "/System/Library/Frameworks"
+                ]
+            for root in framework_roots:
+                if (os.path.exists(os.path.join(root, "Tcl.framework")) and
+                    os.path.exists(os.path.join(root, "Tk.framework"))):
+                    print "--- using frameworks at", root
+                    frameworks = ["-framework", "Tcl", "-framework", "Tk"]
+                    dir = os.path.join(root, "Tcl.framework", "Headers")
+                    add_directory(self.compiler.include_dirs, dir, 0)
+                    dir = os.path.join(root, "Tk.framework", "Headers")
+                    add_directory(self.compiler.include_dirs, dir, 1)
+                    break
+            if frameworks:
+                exts.append(Extension(
+                    "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                    extra_compile_args=frameworks, extra_link_args=frameworks
+                    ))
+                feature.tcl = feature.tk = 1 # mark as present
+        elif feature.tcl and feature.tk:
+            exts.append(Extension(
+                "_imagingtk", ["_imagingtk.c", "Tk/tkImaging.c"],
+                libraries=[feature.tcl, feature.tk]
+                ))
+
+        if os.path.isfile("_pilmath.c"):
+            exts.append(Extension("_pilmath", ["_pilmath.c"]))
+
+        self.extensions[:] = exts
+
+        build_ext.build_extensions(self)
+
+        #
+        # sanity and security checks
+
+        unsafe_zlib = None
+
+        if feature.zlib:
+            unsafe_zlib = self.check_zlib_version(include_dirs)
+
+        self.summary_report(feature, unsafe_zlib)
+
+    def summary_report(self, feature, unsafe_zlib):
+
+        print "-" * 68
+        print "PIL", VERSION, "BUILD SUMMARY"
+        print "-" * 68
+        print "version      ", VERSION
+        v = string.split(sys.version, "[")
+        print "platform     ", sys.platform, string.strip(v[0])
+        for v in v[1:]:
+            print "             ", string.strip("[" + v)
+        print "-" * 68
+
+        options = [
+            (feature.tcl and feature.tk, "TKINTER"),
+            (feature.jpeg, "JPEG"),
+            (feature.zlib, "ZLIB (PNG/ZIP)"),
+            # (feature.tiff, "experimental TIFF G3/G4 read"),
+            (feature.freetype, "FREETYPE2"),
             ]
 
-            # Find the directory that contains the Tcl.framwork and Tk.framework
-            # bundles.
-            # XXX distutils should support -F!
-            for F in framework_dirs:
-                # both Tcl.framework and Tk.framework should be present
-                for fw in 'Tcl', 'Tk':
-                    if not exists(join(F, fw + '.framework')):
-                        break
-                else:
-                    # ok, F is now directory with both frameworks. Continure
-                    # building
-                    tk_framework_found = 1
-                    break
-            if tk_framework_found:
-                # For 8.4a2, we must add -I options that point inside the Tcl and Tk
-                # frameworks. In later release we should hopefully be able to pass
-                # the -F option to gcc, which specifies a framework lookup path.
-                #
-                tk_include_dirs = [
-                    join(F, fw + '.framework', H)
-                    for fw in 'Tcl', 'Tk'
-                    for H in 'Headers', 'Versions/Current/PrivateHeaders'
-                ]
+        all = 1
+        for option in options:
+            if option[0]:
+                print "---", option[1], "support ok"
+            else:
+                print "***", option[1], "support not available",
+                if option[1] == "TKINTER" and _tkinter:
+                    version = _tkinter.TCL_VERSION
+                    print "(Tcl/Tk %s libraries needed)" % version,
+                print
+                all = 0
 
-                # For 8.4a2, the X11 headers are not included. Rather than include a
-                # complicated search, this is a hard-coded path. It could bail out
-                # if X11 libs are not found...
-                # tk_include_dirs.append('/usr/X11R6/include')
-                INCLUDE_DIRS = INCLUDE_DIRS + tk_include_dirs
-                frameworks = ['-framework', 'Tcl', '-framework', 'Tk']
-                EXTRA_COMPILE_ARGS = frameworks
-                EXTRA_LINK_ARGS = frameworks
-                HAVE_TCLTK = 1
+        if feature.zlib and unsafe_zlib:
+            print
+            print "*** Warning: zlib", unsafe_zlib,
+            print "may contain a security vulnerability."
+            print "*** Consider upgrading to zlib 1.1.4 or newer."
+            print "*** See:",
+            print "http://www.gzip.org/zlib/advisory-2002-03-11.txt"
 
-        if not tk_framework_found:
-            # assume the libraries are installed in the default location
-            LIBRARIES.extend(["tk" + TCL_VERSION, "tcl" + TCL_VERSION])
-            HAVE_TCLTK = 1
+        print "-" * 68
 
-    if HAVE_TCLTK:
-        MODULES.append(
-            Extension(
-                "_imagingtk",
-                ["_imagingtk.c", "Tk/tkImaging.c"],
-                include_dirs=INCLUDE_DIRS,
-                library_dirs=LIBRARY_DIRS,
-                libraries=LIBRARIES
-                )
-            )
+        if not all:
+            print "To add a missing option, make sure you have the required"
+            print "library, and set the corresponding ROOT variable in the"
+            print "setup.py script."
+            print
 
-# --------------------------------------------------------------------
-# configure imagingft module
+        print "To check the build, run the selftest.py script."
 
-if os.path.isdir(FREETYPEDIR) or os.name == "posix":
-
-    FILES = []
-    INCLUDE_DIRS = ["libImaging"]
-    LIBRARY_DIRS = []
-    LIBRARIES = []
-    have_freetype = 1 # Assume we have it, unless proven otherwise
-
-    # use source distribution, if available
-    for file in [
-        "src/autohint/autohint.c",
-        "src/base/ftbase.c",
-        #"src/cache/ftcache.c",
-        "src/cff/cff.c",
-        "src/cid/type1cid.c",
-        "src/psaux/psaux.c",
-        "src/psnames/psnames.c",
-        "src/raster/raster.c",
-        "src/sfnt/sfnt.c",
-        "src/smooth/smooth.c",
-        "src/truetype/truetype.c",
-        "src/type1/type1.c",
-        "src/winfonts/winfnt.c",
-        "src/base/ftsystem.c",
-        "src/base/ftinit.c",
-        "src/base/ftglyph.c"
-        ]:
-        file = os.path.join(FREETYPEDIR, file)
-        if os.path.isfile(file):
-            FILES.append(file)
+    def check_zlib_version(self, include_dirs):
+        # look for unsafe versions of zlib
+        for dir in include_dirs:
+            zlibfile = os.path.join(dir, "zlib.h")
+            if os.path.isfile(zlibfile):
+                break
         else:
-            FILES = []
-            break
+            return
+        for line in open(zlibfile).readlines():
+            m = re.match('#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
+            if not m:
+                continue
+            if m.group(1) < "1.1.4":
+                return m.group(1)
 
-    if FILES:
-        INCLUDE_DIRS.append(os.path.join(FREETYPEDIR, "include"))
-        INCLUDE_DIRS.append(os.path.join(FREETYPEDIR, "src"))
-    elif os.path.isdir("/usr/include/freetype2"):
-        # assume that the freetype library is installed in a
-        # standard location
-        # FIXME: search for libraries
-        LIBRARIES.append("freetype")
-        INCLUDE_DIRS.append("/usr/include/freetype2")
-    elif os.path.isdir("/sw/include/freetype2"):
-        # assume that the freetype library is installed in a
-        # standard location
-        # FIXME: search for libraries
-        LIBRARIES.append("freetype")
-        INCLUDE_DIRS.append("/sw/include/freetype2")
-        LIBRARY_DIRS.append("/sw/lib")
-    else:
-        have_freetype = 0
-
-    if have_freetype:
-        MODULES.append(
-            Extension(
-                "_imagingft",
-                ["_imagingft.c"] + FILES,
-                include_dirs=INCLUDE_DIRS,
-                library_dirs=LIBRARY_DIRS,
-                libraries=LIBRARIES,
-                extra_compile_args=EXTRA_COMPILE_ARGS,
-                extra_link_args=EXTRA_LINK_ARGS
-                )
-            )
-
+#
 # build!
 
 if __name__ == "__main__":
 
+    try:
+        # add necessary to distutils (for backwards compatibility)
+        from distutils.dist import DistributionMetadata
+        DistributionMetadata.classifiers = None
+        DistributionMetadata.download_url = None
+        DistributionMetadata.platforms = None
+    except:
+        pass
+
     setup(
-        name=NAME,
-        version=VERSION,
-        author=AUTHOR[0],
-        author_email=AUTHOR[1],
+        author=AUTHOR[0], author_email=AUTHOR[1],
+        classifiers=[
+            "Development Status :: 6 - Mature",
+            "Topic :: Multimedia :: Graphics",
+            "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+            "Topic :: Multimedia :: Graphics :: Capture :: Scanners",
+            "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+            "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+            "Topic :: Multimedia :: Graphics :: Viewers",
+            ],
+        cmdclass = {"build_ext": pil_build_ext},
         description=DESCRIPTION,
-        url=HOMEPAGE,
-        packages=[""],
+        download_url="http://effbot.org/zone/pil-changes-115.htm",
+        ext_modules = [Extension("_imaging", ["_imaging.c"])], # dummy
         extra_path = "PIL",
+        license="Python (MIT style)",
+        long_description=DESCRIPTION,
+        name=NAME,
         package_dir={"": "PIL"},
-        ext_modules = MODULES,
+        packages=[""],
+        platforms="Python 1.5.2 and later.",
+        scripts = glob.glob("Scripts/pil*.py"),
+        url=HOMEPAGE,
+        version=VERSION,
         )

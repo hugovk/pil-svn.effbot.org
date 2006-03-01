@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PpmImagePlugin.py#3 $
+# $Id: PpmImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # PPM support for PIL
 #

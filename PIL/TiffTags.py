@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TiffTags.py#2 $
+# $Id: TiffTags.py 2340 2005-03-25 08:05:37Z fredrik $
 #
 # TIFF tags
 #
@@ -12,6 +12,14 @@
 # See the README file for information on usage and redistribution.
 #
 
+##
+# This module provides constants and clear-text names for various
+# well-known TIFF tags.
+##
+
+##
+# Map tag numbers (or tag number, tag value tuples) to tag names.
+
 TAGS = {
 
     254: "NewSubfileType",
@@ -21,23 +29,25 @@ TAGS = {
     258: "BitsPerSample",
 
     259: "Compression",
-    (259, 1): "uncompressed",
-    (259, 2): "ccitt 1d",
-    (259, 3): "group 3 fax",
-    (259, 4): "group 4 fax",
-    (259, 5): "lzw",
-    (259, 6): "jpeg",
-    (259, 32773): "packbits",
+    (259, 1): "Uncompressed",
+    (259, 2): "CCITT 1d",
+    (259, 3): "Group 3 Fax",
+    (259, 4): "Group 4 Fax",
+    (259, 5): "LZW",
+    (259, 6): "JPEG",
+    (259, 32773): "PackBits",
 
     262: "PhotometricInterpretation",
-    (262, 0): "whiteiszero",
-    (262, 1): "blackiszero",
-    (262, 2): "rgb",
-    (262, 3): "rgb palette",
-    (262, 4): "transparency mask",
-    (262, 5): "cmyk",
-    (262, 6): "ycbcr",
-    (262, 8): "cielab",
+    (262, 0): "WhiteIsZero",
+    (262, 1): "BlackIsZero",
+    (262, 2): "RGB",
+    (262, 3): "RGB Palette",
+    (262, 4): "Transparency Mask",
+    (262, 5): "CMYK",
+    (262, 6): "YCbCr",
+    (262, 8): "CieLAB",
+    (262, 32803): "CFA", # TIFF/EP, Adobe DNG
+    (262, 32892): "LinearRaw", # Adobe DNG
 
     263: "Thresholding",
     264: "CellWidth",
@@ -59,8 +69,8 @@ TAGS = {
     282: "XResolution",
     283: "YResolution",
     284: "PlanarConfiguration",
-    (284, 1): "contigous",
-    (284, 2): "separate",
+    (284, 1): "Contigous",
+    (284, 2): "Separate",
 
     285: "PageName",
     286: "XPosition",
@@ -128,7 +138,49 @@ TAGS = {
     33723: "IptcNaaInfo",
     34377: "PhotoshopInfo",
 
+    # Adobe DNG
+    50706: "DNGVersion",
+    50707: "DNGBackwardVersion",
+    50708: "UniqueCameraModel",
+    50709: "LocalizedCameraModel",
+    50710: "CFAPlaneColor",
+    50711: "CFALayout",
+    50712: "LinearizationTable",
+    50713: "BlackLevelRepeatDim",
+    50714: "BlackLevel",
+    50715: "BlackLevelDeltaH",
+    50716: "BlackLevelDeltaV",
+    50717: "WhiteLevel",
+    50718: "DefaultScale",
+    50741: "BestQualityScale",
+    50719: "DefaultCropOrigin",
+    50720: "DefaultCropSize",
+    50778: "CalibrationIlluminant1",
+    50779: "CalibrationIlluminant2",
+    50721: "ColorMatrix1",
+    50722: "ColorMatrix2",
+    50723: "CameraCalibration1",
+    50724: "CameraCalibration2",
+    50725: "ReductionMatrix1",
+    50726: "ReductionMatrix2",
+    50727: "AnalogBalance",
+    50728: "AsShotNeutral",
+    50729: "AsShotWhiteXY",
+    50730: "BaselineExposure",
+    50731: "BaselineNoise",
+    50732: "BaselineSharpness",
+    50733: "BayerGreenSplit",
+    50734: "LinearResponseLimit",
+    50735: "CameraSerialNumber",
+    50736: "LensInfo",
+    50737: "ChromaBlurRadius",
+    50738: "AntiAliasStrength",
+    50740: "DNGPrivateData",
+    50741: "MakerNoteSafety",
 }
+
+##
+# Map type numbers to type names.
 
 TYPES = {
 

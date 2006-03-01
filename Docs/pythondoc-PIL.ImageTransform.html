@@ -1,8 +1,66 @@
-<html><head><title>Module PIL.ImageTransform</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageTransform</h1><h4>Module Summary:</h4><pre><a href="#41">class AffineTransform</a>:
-    def __init__(self, matrix)</pre><blockquote>Define an affine image transform.</blockquote><pre><a href="#63">class ExtentTransform</a>:
-    def __init__(self, bbox)</pre><blockquote>Define a transform to extract a subregion from an image.</blockquote><pre><a href="#89">class MeshTransform</a>:
-    def __init__(self, data)</pre><blockquote>Define an mesh image transform.</blockquote><pre><a href="#78">class QuadTransform</a>:
-    def __init__(self, xy)</pre><blockquote>Define an quad image transform.</blockquote><h2>Classes</h2><div class="class" id="41"><h3>The AffineTransform Class</h3><pre>AffineTransform(matrix)</pre><p>Define an affine image transform.
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageTransform Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageTransform Module</h1>
+<dl>
+<dt><b>AffineTransform</b> (class)  [<a href='#PIL.ImageTransform.AffineTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an affine image transform.</p>
+<dl>
+<dt><i>matrix</i></dt>
+<dd>
+A 6-tuple (<i>a, b, c, d, e, f</i>) containing
+   the first two rows from an affine transform matrix.
+</dd>
+</dl><br />
+<p>For more information about this class, see <a href='#PIL.ImageTransform.AffineTransform-class'><i>The AffineTransform Class</i></a>.</p>
+</dd>
+<dt><b>ExtentTransform</b> (class)  [<a href='#PIL.ImageTransform.ExtentTransform-class'>#</a>]</dt>
+<dd>
+<p>Define a transform to extract a subregion from an image.</p>
+<dl>
+<dt><i>bbox</i></dt>
+<dd>
+A 4-tuple (<i>x0, y0, x1, y1</i>) which specifies
+   two points in the input image's coordinate system.
+</dd>
+</dl><br />
+<p>For more information about this class, see <a href='#PIL.ImageTransform.ExtentTransform-class'><i>The ExtentTransform Class</i></a>.</p>
+</dd>
+<dt><b>MeshTransform</b> (class)  [<a href='#PIL.ImageTransform.MeshTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an mesh image transform.</p>
+<dl>
+<dt><i>data</i></dt>
+<dd>
+A list of (bbox, quad) tuples.</dd>
+</dl><br />
+<p>For more information about this class, see <a href='#PIL.ImageTransform.MeshTransform-class'><i>The MeshTransform Class</i></a>.</p>
+</dd>
+<dt><b>QuadTransform</b> (class)  [<a href='#PIL.ImageTransform.QuadTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an quad image transform.</p>
+<dl>
+<dt><i>xy</i></dt>
+<dd>
+An 8-tuple (<i>x0, y0, x1, y1, x2, y2, y3, y3</i>) which
+  contain the upper left, lower left, lower right, and upper right
+  corner of the source quadrilateral.
+</dd>
+</dl><br />
+<p>For more information about this class, see <a href='#PIL.ImageTransform.QuadTransform-class'><i>The QuadTransform Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageTransform.AffineTransform-class' name='PIL.ImageTransform.AffineTransform-class'>The AffineTransform Class</a></h2>
+<dl>
+<dt><b>AffineTransform</b> (class)  [<a href='#PIL.ImageTransform.AffineTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an affine image transform.
 </p><p>
 This function takes a 6-tuple (<i>a, b, c, d, e, f</i>) which
 contain the first two rows from an affine transform matrix. For
@@ -14,9 +72,20 @@ nearest pixel.
 This function can be used to scale, translate, rotate, and shear the
 original image.
 
-</p><h4>Parameters:</h4><p><code>matrix</code> -- A 6-tuple (<i>a, b, c, d, e, f</i>) containing
+</p><dl>
+<dt><i>matrix</i></dt>
+<dd>
+A 6-tuple (<i>a, b, c, d, e, f</i>) containing
    the first two rows from an affine transform matrix.
-</p></div><div class="class" id="63"><h3>The ExtentTransform Class</h3><pre>ExtentTransform(bbox)</pre><p>Define a transform to extract a subregion from an image.
+</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageTransform.ExtentTransform-class' name='PIL.ImageTransform.ExtentTransform-class'>The ExtentTransform Class</a></h2>
+<dl>
+<dt><b>ExtentTransform</b> (class)  [<a href='#PIL.ImageTransform.ExtentTransform-class'>#</a>]</dt>
+<dd>
+<p>Define a transform to extract a subregion from an image.
 </p><p>
 Maps a rectangle (defined by two corners) from the image to a
 rectangle of the given size.  The resulting image will contain
@@ -29,18 +98,45 @@ arbitrary rectangle in the current image. It is slightly slower than
 <b>crop</b>, but about as fast as a corresponding <b>resize</b>
 operation.
 
-</p><h4>Parameters:</h4><p><code>bbox</code> -- A 4-tuple (<i>x0, y0, x1, y1</i>) which specifies
+</p><dl>
+<dt><i>bbox</i></dt>
+<dd>
+A 4-tuple (<i>x0, y0, x1, y1</i>) which specifies
    two points in the input image's coordinate system.
-</p></div><div class="class" id="89"><h3>The MeshTransform Class</h3><pre>MeshTransform(data)</pre><p>Define an mesh image transform.  A mesh transform consists of one
-or more individual quad transforms.
-
-</p><h4>Parameters:</h4><p><code>data</code> -- A list of (bbox, quad) tuples.
-</p></div><div class="class" id="78"><h3>The QuadTransform Class</h3><pre>QuadTransform(xy)</pre><p>Define an quad image transform.
+</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageTransform.MeshTransform-class' name='PIL.ImageTransform.MeshTransform-class'>The MeshTransform Class</a></h2>
+<dl>
+<dt><b>MeshTransform</b> (class)  [<a href='#PIL.ImageTransform.MeshTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an mesh image transform.  A mesh transform consists of one
+or more individual quad transforms.</p>
+<dl>
+<dt><i>data</i></dt>
+<dd>
+A list of (bbox, quad) tuples.</dd>
+</dl><br />
+</dd>
+</dl>
+<h2><a id='PIL.ImageTransform.QuadTransform-class' name='PIL.ImageTransform.QuadTransform-class'>The QuadTransform Class</a></h2>
+<dl>
+<dt><b>QuadTransform</b> (class)  [<a href='#PIL.ImageTransform.QuadTransform-class'>#</a>]</dt>
+<dd>
+<p>Define an quad image transform.
 </p><p>
 Maps a quadrilateral (a region defined by four corners) from the
 image to a rectangle of the given size.
 
-</p><h4>Parameters:</h4><p><code>xy</code> -- An 8-tuple (<i>x0, y0, x1, y1, x2, y2, y3, y3</i>) which
+</p><dl>
+<dt><i>xy</i></dt>
+<dd>
+An 8-tuple (<i>x0, y0, x1, y1, x2, y2, y3, y3</i>) which
   contain the upper left, lower left, lower right, and upper right
   corner of the source quadrilateral.
-</p></div></body></html>
+</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>

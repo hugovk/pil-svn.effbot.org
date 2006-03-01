@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/TgaRleDecode.c#2 $
+ * $Id: TgaRleDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * decoder for Targa RLE data.
  *

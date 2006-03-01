@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Negative.c#2 $
+ * $Id: Negative.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * negate image
  *

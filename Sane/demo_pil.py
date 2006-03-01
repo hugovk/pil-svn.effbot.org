@@ -1,30 +1,33 @@
+#!/usr/bin/env python
 
-# Get the path set up properly
-import sys ; sys.path.append('.')
+#
+# Shows how to scan a color image into a PIL rgb-image
+#
+
+# Get the path set up to find PIL modules if not installed yet:
+import sys ; sys.path.append('../PIL')
 
 import sane
 print 'SANE version:', sane.init()
 print 'Available devices=', sane.get_devices()
 
-scanner=sane.open('qcam:0x378')
-print 'SaneDev object=', scanner
-print 'Device parameters:', scanner.get_parameters()
+s = sane.open(sane.get_devices()[0][0])
 
-# Set scan parameters
-scanner.contrast=170 ; scanner.brightness=150 ; scanner.white_level=190
-scanner.depth=6
-scanner.br_x=320 ; scanner.br_y=240
+s.mode = 'color'
+s.br_x=320. ; s.br_y=240.
+
+print 'Device parameters:', s.get_parameters()
 
 # Initiate the scan
-scanner.start()
+s.start()
 
 # Get an Image object 
 # (For my B&W QuickCam, this is a grey-scale image.  Other scanning devices
 #  may return a 
-im=scanner.snap()
+im=s.snap()
 
 # Write the image out as a GIF file
-im.save('foo.gif')
+#im.save('foo.gif')
 
 # The show method() simply saves the image to a temporary file and calls "xv".
-#im.show()
+im.show()

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TiffImagePlugin.py#9 $
+# $Id: TiffImagePlugin.py 2277 2005-02-07 20:26:46Z fredrik $
 #
 # TIFF file handling
 #
@@ -27,14 +27,18 @@
 # 2001-05-12 fl   Added write support for more tags (from Greg Couch) (1.3)
 # 2001-12-18 fl   Added workaround for broken Matrox library
 # 2002-01-18 fl   Don't mess up if photometric tag is missing (D. Alan Stewart)
+# 2003-05-19 fl   Check FILLORDER tag
+# 2003-09-26 fl   Added RGBa support
+# 2004-02-24 fl   Added DPI support; fixed rational write support
+# 2005-02-07 fl   Added workaround for broken Corel Draw 10 files
 #
-# Copyright (c) 1997-2002 by Secret Labs AB
+# Copyright (c) 1997-2005 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "1.3.2"
+__version__ = "1.3.4"
 
 import Image, ImageFile
 import ImagePalette
@@ -65,6 +69,7 @@ IMAGELENGTH = 257
 BITSPERSAMPLE = 258
 COMPRESSION = 259
 PHOTOMETRIC_INTERPRETATION = 262
+FILLORDER = 266
 IMAGEDESCRIPTION = 270
 STRIPOFFSETS = 273
 SAMPLESPERPIXEL = 277
@@ -100,26 +105,39 @@ COMPRESSION_INFO = {
 }
 
 OPEN_INFO = {
-    # Photometric Interpretation, SampleFormat, BitsPerSample, ExtraSamples =>
-    # mode, rawmode
-    (0, 1, (1,), ()): ("1", "1;I"),
-    (0, 1, (8,), ()): ("L", "L;I"),
-    (1, 1, (1,), ()): ("1", "1"),
-    (1, 1, (8,), ()): ("L", "L"),
-    (1, 1, (16,), ()): ("I;16", "I;16"),
-    (1, 2, (16,), ()): ("I;16S", "I;16S"),
-    (1, 2, (32,), ()): ("I", "I;32S"),
-    (1, 3, (32,), ()): ("F", "F;32F"),
-    (2, 1, (8,8,8), ()): ("RGB", "RGB"),
-    (2, 1, (8,8,8,8), (0,)): ("RGBX", "RGBX"),
-    (2, 1, (8,8,8,8), (2,)): ("RGBA", "RGBA"),
-    (3, 1, (1,), ()): ("P", "P;1"),
-    (3, 1, (2,), ()): ("P", "P;2"),
-    (3, 1, (4,), ()): ("P", "P;4"),
-    (3, 1, (8,), ()): ("P", "P"),
-    (5, 1, (8,8,8,8), ()): ("CMYK", "CMYK"),
-    (6, 1, (8,8,8), ()): ("YCbCr", "YCbCr"),
-    (8, 1, (8,8,8), ()): ("LAB", "LAB"),
+    # (PhotoInterpretation, SampleFormat, FillOrder, BitsPerSample,
+    #  ExtraSamples) => mode, rawmode
+    (0, 1, 1, (1,), ()): ("1", "1;I"),
+    (0, 1, 2, (1,), ()): ("1", "1;IR"),
+    (0, 1, 1, (8,), ()): ("L", "L;I"),
+    (0, 1, 2, (8,), ()): ("L", "L;IR"),
+    (1, 1, 1, (1,), ()): ("1", "1"),
+    (1, 1, 2, (1,), ()): ("1", "1;R"),
+    (1, 1, 1, (8,), ()): ("L", "L"),
+    (1, 1, 1, (8,8), (2,)): ("LA", "LA"),
+    (1, 1, 2, (8,), ()): ("L", "L;R"),
+    (1, 1, 1, (16,), ()): ("I;16", "I;16"),
+    (1, 2, 1, (16,), ()): ("I;16S", "I;16S"),
+    (1, 2, 1, (32,), ()): ("I", "I;32S"),
+    (1, 3, 1, (32,), ()): ("F", "F;32F"),
+    (2, 1, 1, (8,8,8), ()): ("RGB", "RGB"),
+    (2, 1, 2, (8,8,8), ()): ("RGB", "RGB;R"),
+    (2, 1, 1, (8,8,8,8), (0,)): ("RGBX", "RGBX"),
+    (2, 1, 1, (8,8,8,8), (1,)): ("RGBA", "RGBa"),
+    (2, 1, 1, (8,8,8,8), (2,)): ("RGBA", "RGBA"),
+    (2, 1, 1, (8,8,8,8), (999,)): ("RGBA", "RGBA"), # corel draw 10
+    (3, 1, 1, (1,), ()): ("P", "P;1"),
+    (3, 1, 2, (1,), ()): ("P", "P;1R"),
+    (3, 1, 1, (2,), ()): ("P", "P;2"),
+    (3, 1, 2, (2,), ()): ("P", "P;2R"),
+    (3, 1, 1, (4,), ()): ("P", "P;4"),
+    (3, 1, 2, (4,), ()): ("P", "P;4R"),
+    (3, 1, 1, (8,), ()): ("P", "P"),
+    (3, 1, 1, (8,8), (2,)): ("PA", "PA"),
+    (3, 1, 2, (8,), ()): ("P", "P;R"),
+    (5, 1, 1, (8,8,8,8), ()): ("CMYK", "CMYK"),
+    (6, 1, 1, (8,8,8), ()): ("YCbCr", "YCbCr"),
+    (8, 1, 1, (8,8,8), ()): ("LAB", "LAB"),
 }
 
 PREFIXES = ["MM\000\052", "II\052\000"]
@@ -284,7 +302,7 @@ class ImageFileDirectory:
             if size > 4:
                 here = fp.tell()
                 fp.seek(i32(ifd, 8))
-                data = fp.read(size)
+                data = ImageFile._safe_read(fp, size)
                 fp.seek(here)
             else:
                 data = ifd[8:8+size]
@@ -344,7 +362,6 @@ class ImageFileDirectory:
                 elif tag in (X_RESOLUTION, Y_RESOLUTION):
                     # identify rational data fields
                     typ = 5
-                    continue
                 else:
                     typ = 3
                     for v in value:
@@ -457,14 +474,19 @@ class TiffImageFile(ImageFile.ImageFile):
         args = None
         if rawmode == "RGB" and self._planar_configuration == 2:
             rawmode = rawmode[layer]
-        if self._compression == "raw":
+        compression = self._compression
+        if compression == "raw":
             args = (rawmode, 0, 1)
-        if self._compression in ["packbits", "tiff_lzw", "jpeg"]:
-            args = rawmode
-            if self._compression == "jpeg" and self.tag.has_key(JPEGTABLES):
+        elif compression == "jpeg":
+            args = rawmode, ""
+            if self.tag.has_key(JPEGTABLES):
                 # Hack to handle abbreviated JPEG headers
                 self.tile_prefix = self.tag[JPEGTABLES]
-            elif self._compression == "tiff_lzw" and self.tag.has_key(317):
+        elif compression == "packbits":
+            args = rawmode
+        elif compression == "tiff_lzw":
+            args = rawmode
+            if self.tag.has_key(317):
                 # Section 14: Differencing Predictor
                 self.decoderconfig = (self.tag[PREDICTOR][0],)
 
@@ -481,13 +503,16 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # photometric is a required tag, but not everyone is reading
         # the specification
-        photo = self.tag.getscalar(PHOTOMETRIC_INTERPRETATION, 0)
+        photo = getscalar(PHOTOMETRIC_INTERPRETATION, 0)
+
+        fillorder = getscalar(FILLORDER, 1)
 
         if Image.DEBUG:
             print "*** Summary ***"
             print "- compression:", self._compression
             print "- photometric_interpretation:", photo
             print "- planar_configuration:", self._planar_configuration
+            print "- fill_order:", fillorder
 
         # size
         xsize = getscalar(IMAGEWIDTH)
@@ -501,7 +526,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # mode: check photometric interpretation and bits per pixel
         key = (
-            photo, format,
+            photo, format, fillorder,
             self.tag.get(BITSPERSAMPLE, (1,)),
             self.tag.get(EXTRASAMPLES, ())
             )
@@ -519,6 +544,14 @@ class TiffImageFile(ImageFile.ImageFile):
             print "- pil mode:", self.mode
 
         self.info["compression"] = self._compression
+
+        xdpi = getscalar(X_RESOLUTION, (1, 1))
+        ydpi = getscalar(Y_RESOLUTION, (1, 1))
+
+        if xdpi and ydpi and getscalar(RESOLUTION_UNIT, 1) == 1:
+            xdpi = xdpi[0] / (xdpi[1] or 1)
+            ydpi = ydpi[0] / (ydpi[1] or 1)
+            self.info["dpi"] = xdpi, ydpi
 
         # build tile descriptors
         x = y = l = 0
@@ -581,7 +614,9 @@ SAVE_INFO = {
     # mode => rawmode, photometrics, sampleformat, bitspersample, extra
     "1": ("1", 1, 1, (1,), None),
     "L": ("L", 1, 1, (8,), None),
+    "LA": ("LA", 1, 1, (8,8), 2),
     "P": ("P", 3, 1, (8,), None),
+    "PA": ("PA", 3, 1, (8,8), 2),
     "I": ("I;32S", 1, 2, (32,), None),
     "I;16": ("I;16", 1, 1, (16,), None),
     "I;16S": ("I;16S", 1, 2, (16,), None),
@@ -651,6 +686,12 @@ def _save(im, fp, filename):
         ifd[ARTIST] = im.encoderinfo["artist"]
     if im.encoderinfo.has_key("copyright"):
         ifd[COPYRIGHT] = im.encoderinfo["copyright"]
+
+    dpi = im.encoderinfo.get("dpi")
+    if dpi:
+        ifd[RESOLUTION_UNIT] = 1
+        ifd[X_RESOLUTION] = _cvt_res(dpi[0])
+        ifd[Y_RESOLUTION] = _cvt_res(dpi[1])
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits

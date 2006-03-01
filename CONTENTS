@@ -1,19 +1,14 @@
 Imaging/README
 
-Imaging/CHANGES-114
+Imaging/CHANGES-115
 Imaging/CONTENTS
 
 Imaging/BUILDME
 
 Imaging/setup.py
-Imaging/Setup.in
-Imaging/Makefile.pre.in
 
 Imaging/selftest.py
 Imaging/doctest.py
-
-Imaging/libImaging/Makefile.win
-Imaging/libImaging/ImConfig.h.win
 
 Imaging/libImaging/Imaging.h
 Imaging/libImaging/ImDib.h
@@ -46,6 +41,7 @@ Imaging/libImaging/Geometry.c
 Imaging/libImaging/GetBBox.c
 Imaging/libImaging/Histo.c
 Imaging/libImaging/Matrix.c
+Imaging/libImaging/ModeFilter.c
 Imaging/libImaging/Negative.c
 Imaging/libImaging/Offset.c
 Imaging/libImaging/Pack.c
@@ -89,12 +85,6 @@ Imaging/libImaging/XbmEncode.c
 Imaging/libImaging/ZipDecode.c
 Imaging/libImaging/ZipEncode.c
 
-Imaging/libImaging/coretest.c
-
-Imaging/libImaging/configure
-Imaging/libImaging/ImConfig.h.in
-Imaging/libImaging/Makefile.in
-
 Imaging/_imaging.c
 Imaging/decode.c
 Imaging/encode.c
@@ -112,11 +102,13 @@ Imaging/PIL/__init__.py
 Imaging/PIL/ArgImagePlugin.py
 Imaging/PIL/BdfFontFile.py
 Imaging/PIL/BmpImagePlugin.py
+Imaging/PIL/BufrStubImagePlugin.py
 Imaging/PIL/ContainerIO.py
 Imaging/PIL/CurImagePlugin.py
 Imaging/PIL/DcxImagePlugin.py
 Imaging/PIL/EpsImagePlugin.py
 Imaging/PIL/ExifTags.py
+Imaging/PIL/FitsStubImagePlugin.py
 Imaging/PIL/FliImagePlugin.py
 Imaging/PIL/FontFile.py
 Imaging/PIL/FpxImagePlugin.py
@@ -125,7 +117,10 @@ Imaging/PIL/GdImageFile.py
 Imaging/PIL/GifImagePlugin.py
 Imaging/PIL/GimpGradientFile.py
 Imaging/PIL/GimpPaletteFile.py
+Imaging/PIL/GribStubImagePlugin.py
+Imaging/PIL/Hdf5StubImagePlugin.py
 Imaging/PIL/IcoImagePlugin.py
+Imaging/PIL/IcnsImagePlugin.py
 Imaging/PIL/Image.py
 Imaging/PIL/ImageChops.py
 Imaging/PIL/ImageColor.py
@@ -135,6 +130,7 @@ Imaging/PIL/ImageFile.py
 Imaging/PIL/ImageFileIO.py
 Imaging/PIL/ImageFilter.py
 Imaging/PIL/ImageFont.py
+Imaging/PIL/ImageGL.py
 Imaging/PIL/ImageGrab.py
 Imaging/PIL/ImageOps.py
 Imaging/PIL/ImagePalette.py
@@ -165,6 +161,7 @@ Imaging/PIL/PpmImagePlugin.py
 Imaging/PIL/PsdImagePlugin.py
 Imaging/PIL/PSDraw.py
 Imaging/PIL/SgiImagePlugin.py
+Imaging/PIL/SpiderImagePlugin.py
 Imaging/PIL/SunImagePlugin.py
 Imaging/PIL/TarIO.py
 Imaging/PIL/TgaImagePlugin.py
@@ -176,8 +173,81 @@ Imaging/PIL/XbmImagePlugin.py
 Imaging/PIL/XpmImagePlugin.py
 Imaging/PIL/XVThumbImagePlugin.py
 
-Imaging/Doc/*.html
-Imaging/Doc/*.css
+Imaging/Docs/index.html
+Imaging/Docs/effbot.css
+Imaging/Docs/pythondoc-PIL.ArgImagePlugin.html
+Imaging/Docs/pythondoc-PIL.BdfFontFile.html
+Imaging/Docs/pythondoc-PIL.BmpImagePlugin.html
+Imaging/Docs/pythondoc-PIL.BufrStubImagePlugin.html
+Imaging/Docs/pythondoc-PIL.ContainerIO.html
+Imaging/Docs/pythondoc-PIL.CurImagePlugin.html
+Imaging/Docs/pythondoc-PIL.DcxImagePlugin.html
+Imaging/Docs/pythondoc-PIL.EpsImagePlugin.html
+Imaging/Docs/pythondoc-PIL.ExifTags.html
+Imaging/Docs/pythondoc-PIL.FitsStubImagePlugin.html
+Imaging/Docs/pythondoc-PIL.FliImagePlugin.html
+Imaging/Docs/pythondoc-PIL.FontFile.html
+Imaging/Docs/pythondoc-PIL.FpxImagePlugin.html
+Imaging/Docs/pythondoc-PIL.GbrImagePlugin.html
+Imaging/Docs/pythondoc-PIL.GdImageFile.html
+Imaging/Docs/pythondoc-PIL.GifImagePlugin.html
+Imaging/Docs/pythondoc-PIL.GimpGradientFile.html
+Imaging/Docs/pythondoc-PIL.GimpPaletteFile.html
+Imaging/Docs/pythondoc-PIL.GribStubImagePlugin.html
+Imaging/Docs/pythondoc-PIL.Hdf5StubImagePlugin.html
+Imaging/Docs/pythondoc-PIL.IcoImagePlugin.html
+Imaging/Docs/pythondoc-PIL.IcnsImagePlugin.html
+Imaging/Docs/pythondoc-PIL.Image.html
+Imaging/Docs/pythondoc-PIL.ImageChops.html
+Imaging/Docs/pythondoc-PIL.ImageColor.html
+Imaging/Docs/pythondoc-PIL.ImageDraw.html
+Imaging/Docs/pythondoc-PIL.ImageEnhance.html
+Imaging/Docs/pythondoc-PIL.ImageFile.html
+Imaging/Docs/pythondoc-PIL.ImageFileIO.html
+Imaging/Docs/pythondoc-PIL.ImageFilter.html
+Imaging/Docs/pythondoc-PIL.ImageFont.html
+Imaging/Docs/pythondoc-PIL.ImageGL.html
+Imaging/Docs/pythondoc-PIL.ImageGrab.html
+Imaging/Docs/pythondoc-PIL.ImageOps.html
+Imaging/Docs/pythondoc-PIL.ImagePalette.html
+Imaging/Docs/pythondoc-PIL.ImagePath.html
+Imaging/Docs/pythondoc-PIL.ImageSequence.html
+Imaging/Docs/pythondoc-PIL.ImageStat.html
+Imaging/Docs/pythondoc-PIL.ImageTk.html
+Imaging/Docs/pythondoc-PIL.ImageTransform.html
+Imaging/Docs/pythondoc-PIL.ImageWin.html
+Imaging/Docs/pythondoc-PIL.ImImagePlugin.html
+Imaging/Docs/pythondoc-PIL.ImtImagePlugin.html
+Imaging/Docs/pythondoc-PIL.IptcImagePlugin.html
+Imaging/Docs/pythondoc-PIL.JpegImagePlugin.html
+Imaging/Docs/pythondoc-PIL.McIdasImagePlugin.html
+Imaging/Docs/pythondoc-PIL.MicImagePlugin.html
+Imaging/Docs/pythondoc-PIL.MpegImagePlugin.html
+Imaging/Docs/pythondoc-PIL.MspImagePlugin.html
+Imaging/Docs/pythondoc-PIL.OleFileIO.html
+Imaging/Docs/pythondoc-PIL.PaletteFile.html
+Imaging/Docs/pythondoc-PIL.PalmImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PcdImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PcfFontFile.html
+Imaging/Docs/pythondoc-PIL.PcxImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PdfImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PixarImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PngImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PpmImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PsdImagePlugin.html
+Imaging/Docs/pythondoc-PIL.PSDraw.html
+Imaging/Docs/pythondoc-PIL.SgiImagePlugin.html
+Imaging/Docs/pythondoc-PIL.SpiderImagePlugin.html
+Imaging/Docs/pythondoc-PIL.SunImagePlugin.html
+Imaging/Docs/pythondoc-PIL.TarIO.html
+Imaging/Docs/pythondoc-PIL.TgaImagePlugin.html
+Imaging/Docs/pythondoc-PIL.TiffImagePlugin.html
+Imaging/Docs/pythondoc-PIL.TiffTags.html
+Imaging/Docs/pythondoc-PIL.WalImageFile.html
+Imaging/Docs/pythondoc-PIL.WmfImagePlugin.html
+Imaging/Docs/pythondoc-PIL.XbmImagePlugin.html
+Imaging/Docs/pythondoc-PIL.XpmImagePlugin.html
+Imaging/Docs/pythondoc-PIL.XVThumbImagePlugin.html
 
 Imaging/Scripts/pilconvert.py
 Imaging/Scripts/pildriver.py
@@ -194,13 +264,15 @@ Imaging/Images/courB08.pbm
 Imaging/Images/courB08.pil
 
 Imaging/Sane/README
+Imaging/Sane/CHANGES
+Imaging/Sane/setup.py
 Imaging/Sane/sanedoc.txt
-Imaging/Sane/_sanemodule.c
+Imaging/Sane/_sane.c
 Imaging/Sane/sane.py
-Imaging/Sane/demo.py
+Imaging/Sane/demo_numarray.py
+Imaging/Sane/demo_pil.py
 
 Imaging/Scripts/README
-Imaging/Scripts/bdf2pil.py
 Imaging/Scripts/enhancer.py
 Imaging/Scripts/explode.py
 Imaging/Scripts/gifmaker.py

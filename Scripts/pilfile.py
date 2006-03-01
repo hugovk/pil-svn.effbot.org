@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/Scripts/pilfile.py#2 $
+# $Id: pilfile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # a utility to identify image files
 #
@@ -14,14 +14,16 @@
 # 0.1 1996-05-18 fl   Modified options, added debugging mode
 # 0.2 1996-12-29 fl   Added verify mode
 # 0.3 1999-06-05 fl   Don't mess up on class exceptions (1.5.2 and later)
+# 0.4 2003-09-30 fl   Expand wildcards on Windows; robustness tweaks
 #
 
-import Image
+import site
+import getopt, glob, sys
 
-import getopt, sys
+from PIL import Image
 
 if len(sys.argv) == 1:
-    print "PIL File 0.3/99-06-05 -- identify image files"
+    print "PIL File 0.4/2003-09-30 -- identify image files"
     print "Usage: pilfile [option] files..."
     print "Options:"
     print "  -f  list supported file formats"
@@ -31,7 +33,7 @@ if len(sys.argv) == 1:
     sys.exit(1)
 
 try:
-    opt, argv = getopt.getopt(sys.argv[1:], "fqivD")
+    opt, args = getopt.getopt(sys.argv[1:], "fqivD")
 except getopt.error, v:
     print v
     sys.exit(1)
@@ -56,7 +58,19 @@ for o, a in opt:
     elif o == "-D":
         Image.DEBUG = Image.DEBUG + 1
 
-for file in argv:
+def globfix(files):
+    # expand wildcards where necessary
+    if sys.platform == "win32":
+        out = []
+        for file in files:
+            if glob.has_magic(file):
+                out.extend(glob.glob(file))
+            else:
+                out.append(file)
+        return out
+    return files
+
+for file in globfix(args):
     try:
         im = Image.open(file)
         print "%s:" % file, im.format, "%dx%d" % im.size, im.mode,
@@ -73,3 +87,9 @@ for file in argv:
     except IOError, v:
         if not quiet:
             print file, "failed:", v
+    except:
+        import traceback
+        if not quiet:
+            print file, "failed:", "unexpected error"
+            traceback.print_exc(file=sys.stdout)
+

@@ -1,24 +1,25 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Palette.c#2 $
+ * $Id: Palette.c 2289 2005-02-09 21:29:01Z fredrik $
  *
  * imaging palette object
  *
  * history:
- * 96-05-05 fl:	Added to library
- * 96-05-27 fl:	Added colour mapping stuff
- * 97-05-12 fl:	Support RGBA palettes
+ * 1996-05-05 fl   Added to library
+ * 1996-05-27 fl   Added colour mapping stuff
+ * 1997-05-12 fl   Support RGBA palettes
+ * 2005-02-09 fl   Removed grayscale entries from web palette
  *
- * Copyright (c) Fredrik Lundh 1995-97.
- * Copyright (c) Secret Labs AB 1997.
+ * Copyright (c) Secret Labs AB 1997-2005.  All rights reserved.
+ * Copyright (c) Fredrik Lundh 1995-1997.
  *
  * See the README file for information on usage and redistribution.
  */
 
 
-#include <math.h>
-
 #include "Imaging.h"
+
+#include <math.h>
 
 
 ImagingPalette
@@ -61,9 +62,17 @@ ImagingPaletteNewBrowser(void)
     if (!palette)
 	return NULL;
 
+    /* Blank out unused entries */
+    /* FIXME: Add 10-level windows palette here? */
+
+    for (i = 0; i < 10; i++) {
+	palette->palette[i*4+0] =
+	palette->palette[i*4+1] =
+	palette->palette[i*4+2] = 0;
+    }
+
     /* Simple 6x6x6 colour cube */
 
-    i = 10;
     for (b = 0; b < 256; b += 51)
 	for (g = 0; g < 256; g += 51)
 	    for (r = 0; r < 256; r += 51) {
@@ -72,6 +81,15 @@ ImagingPaletteNewBrowser(void)
 		palette->palette[i*4+2] = b;
 		i++;
 	    }
+
+    /* Blank out unused entries */
+    /* FIXME: add 30-level greyscale wedge here? */
+
+    for (; i < 256; i++) {
+	palette->palette[i*4+0] =
+	palette->palette[i*4+1] =
+	palette->palette[i*4+2] = 0;
+    }
 
     return palette;
 }

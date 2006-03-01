@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageChops.py#3 $
+# $Id: ImageChops.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # standard channel operations
 #
@@ -30,6 +30,7 @@ import Image
 # a new image.  Unless otherwise noted, the result of a channel
 # operation is always clipped to the range 0 to MAX (which is 255 for
 # all modes supported by the operations in this module).
+##
 
 ##
 # Return an image with the same size as the given image, but filled

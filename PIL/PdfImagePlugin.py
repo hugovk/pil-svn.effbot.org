@@ -1,21 +1,26 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PdfImagePlugin.py#3 $
+# $Id: PdfImagePlugin.py 2339 2005-03-25 08:02:17Z fredrik $
 #
 # PDF (Acrobat) file handling
 #
 # History:
-#       96-07-16 fl     Created
-#       97-01-18 fl     Fixed header
+# 1996-07-16 fl   Created
+# 1997-01-18 fl   Fixed header
+# 2004-02-21 fl   Fixes for 1/L/CMYK images, etc.
+# 2004-02-24 fl   Fixes for 1 and P images.
 #
-# Copyright (c) Secret Labs AB 1997.
-# Copyright (c) Fredrik Lundh 1996-97.
+# Copyright (c) 1997-2004 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1996-1997 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
+##
+# Image plugin for PDF images (output only).
+##
 
-__version__ = "0.2"
+__version__ = "0.4"
 
 import Image, ImageFile
 import StringIO
@@ -63,28 +68,40 @@ def _save(im, fp, filename):
     # or LZWDecode (tiff/lzw compression).  Note that PDF 1.2 also supports
     # Flatedecode (zip compression).
 
+    bits = 8
     params = None
 
     if im.mode == "1":
         filter = "/ASCIIHexDecode"
-        config = "/DeviceGray", "/ImageB", 1
+        colorspace = "/DeviceGray"
+        procset = "/ImageB" # grayscale
+        bits = 1
     elif im.mode == "L":
-        filter = "/DctDecode"
+        filter = "/DCTDecode"
         # params = "<< /Predictor 15 /Columns %d >>" % (width-2)
-        config = "/DeviceGray", "/ImageB", 8
+        colorspace = "/DeviceGray"
+        procset = "/ImageB" # grayscale
     elif im.mode == "P":
         filter = "/ASCIIHexDecode"
-        config = "/Indexed", "/ImageI", 8
+        colorspace = "[ /Indexed /DeviceRGB 255 <"
+        palette = im.im.getpalette("RGB")
+        for i in range(256):
+            r = ord(palette[i*3])
+            g = ord(palette[i*3+1])
+            b = ord(palette[i*3+2])
+            colorspace = colorspace + "%02x%02x%02x " % (r, g, b)
+        colorspace = colorspace + "> ]"
+        procset = "/ImageI" # indexed color
     elif im.mode == "RGB":
         filter = "/DCTDecode"
-        config = "/DeviceRGB", "/ImageC", 8
+        colorspace = "/DeviceRGB"
+        procset = "/ImageC" # color images
     elif im.mode == "CMYK":
-        filter = "/DCTDecode"   
-        config = "/DeviceRGB", "/ImageC", 8
+        filter = "/DCTDecode"
+        colorspace = "/DeviceCMYK"
+        procset = "/ImageC" # color images
     else:
-        raise ValueError, "illegal mode"
-
-    colorspace, proc, bits = config
+        raise ValueError("cannot save mode %s" % im.mode)
 
     #
     # catalogue
@@ -109,7 +126,13 @@ def _save(im, fp, filename):
     op = StringIO.StringIO()
 
     if filter == "/ASCIIHexDecode":
-        ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, None)])
+        if bits == 1:
+            # FIXME: the hex encoder doesn't support packed 1-bit
+            # images; do things the hard way...
+            data = im.tostring("raw", "1")
+            im = Image.new("L", (len(data), 1), None)
+            im.putdata(data)
+        ImageFile._save(im, op, [("hex", (0,0)+im.size, 0, im.mode)])
     elif filter == "/DCTDecode":
         ImageFile._save(im, op, [("jpeg", (0,0)+im.size, 0, im.mode)])
     elif filter == "/FlateDecode":
@@ -117,7 +140,7 @@ def _save(im, fp, filename):
     elif filter == "/RunLengthDecode":
         ImageFile._save(im, op, [("packbits", (0,0)+im.size, 0, im.mode)])
     else:
-        raise ValueError, "unsupported PDF filter"
+        raise ValueError("unsupported PDF filter (%s)" % filter)
 
     xref[3] = fp.tell()
     _obj(fp, 3, Type = "/XObject",
@@ -140,11 +163,13 @@ def _save(im, fp, filename):
     # page
 
     xref[4] = fp.tell()
-    fp.write("4 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n"\
+    _obj(fp, 4)
+    fp.write("<<\n/Type /Page\n/Parent 2 0 R\n"\
              "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
              "/XObject << /image 3 0 R >>\n>>\n"\
              "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-             (proc, width, height))
+             (procset, width, height))
+    _endobj(fp)
 
     #
     # page contents
@@ -158,6 +183,7 @@ def _save(im, fp, filename):
 
     fp.write("stream\n")
     fp.write(op.getvalue())
+    fp.write("\nendstream\n")
 
     _endobj(fp)
 

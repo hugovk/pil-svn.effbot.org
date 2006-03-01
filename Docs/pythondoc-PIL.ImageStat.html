@@ -1,13 +1,41 @@
-<html><head><title>Module PIL.ImageStat</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageStat</h1><h4>Module Summary:</h4><pre><a href="#35">class Global</a>:
-    def __init__(self)</pre><blockquote>Calculate statistics for the given image.</blockquote><pre><a href="#35">class Stat</a>:
-    def __init__(self, image, mask=None)</pre><blockquote>Calculate statistics for the given image.</blockquote><h2>Classes</h2><div class="class" id="35"><h3>The Global Class</h3><pre>Global()</pre><p>Calculate statistics for the given image.  If a mask is included,
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageStat Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageStat Module</h1>
+<p>The <b>ImageStat</b> module calculates global statistics for an
+image, or a region of an image.
+</p><h2>Module Contents</h2>
+<dl>
+<dt><b>Stat(image, mask=None)</b> (class) [<a href='#PIL.ImageStat.Stat-class'>#</a>]</dt>
+<dd>
+<p>Calculate statistics for the given image.</p>
+<p>For more information about this class, see <a href='#PIL.ImageStat.Stat-class'><i>The Stat Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageStat.Stat-class' name='PIL.ImageStat.Stat-class'>The Stat Class</a></h2>
+<dl>
+<dt><b>Stat(image, mask=None)</b> (class) [<a href='#PIL.ImageStat.Stat-class'>#</a>]</dt>
+<dd>
+<p>Calculate statistics for the given image.  If a mask is included,
 only the regions covered by that mask are included in the
-statistics.
-</p></div><div class="class" id="35"><h3>The Stat Class</h3><pre>Stat()</pre><p>Calculate statistics for the given image.  If a mask is included,
-only the regions covered by that mask are included in the
-statistics.
-</p></div><h4>Constructor:</h4><div class="constructor" id="45"><pre>Stat(image, mask=None)</pre><p>Create a statistics object.
-
-</p><h4>Parameters:</h4><p><code>image</code> -- A PIL image, or a precalculate histogram.
-</p><p><code>mask</code> -- An optional mask.
-</p></div><h4>Method Summary:</h4></body></html>
+statistics.</p>
+</dd>
+<dt><a id='PIL.ImageStat.Stat.__init__-method' name='PIL.ImageStat.Stat.__init__-method'><b>__init__(image, mask=None)</b></a> [<a href='#PIL.ImageStat.Stat.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a statistics object.</p>
+<dl>
+<dt><i>image</i></dt>
+<dd>
+A PIL image, or a precalculate histogram.</dd>
+<dt><i>mask</i></dt>
+<dd>
+An optional mask.</dd>
+</dl><br />
+</dd>
+</dl>
+</body></html>

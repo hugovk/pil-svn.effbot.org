@@ -1,17 +1,18 @@
 /***********************************************************
 (C) Copyright 2003 A.M. Kuchling.  All Rights Reserved
+(C) Copyright 2004 A.M. Kuchling, Ralph Heinkel  All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the name of A.M. Kuchling not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
+supporting documentation, and that the name of A.M. Kuchling and
+Ralph Heinkel not be used in advertising or publicity pertaining to 
+distribution of the software without specific, written prior permission.
 
-A.M. KUCHLING DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-EVENT SHALL A.M. KUCHLING BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+A.M. KUCHLING, R.H. HEINKEL DISCLAIM ALL WARRANTIES WITH REGARD TO THIS 
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
 CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
 USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -19,12 +20,10 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $Id: _sanemodule.c 20715 2003-02-11 17:46:51Z akuchlin $ */
-
 /* SaneDev objects */
 
 #include "Python.h"
-#include "PIL/Imaging.h"
+#include "Imaging.h"
 #include <sane/sane.h>
 
 static PyObject *ErrorObject;
@@ -100,15 +99,15 @@ SaneDev_get_parameters(SaneDevObject *self, PyObject *args)
   if (st) return PySane_Error(st);
   switch (p.format)
     {
-    case(SANE_FRAME_GRAY): format="L"; break;
-    case(SANE_FRAME_RGB): format="RGB"; break;
-    case(SANE_FRAME_RED): format="R"; break;
-    case(SANE_FRAME_GREEN): format="G"; break;
-    case(SANE_FRAME_BLUE): format="B"; break;
+    case(SANE_FRAME_GRAY):  format="gray"; break;
+    case(SANE_FRAME_RGB):   format="color"; break;
+    case(SANE_FRAME_RED):   format="red"; break;
+    case(SANE_FRAME_GREEN): format="green"; break;
+    case(SANE_FRAME_BLUE):  format="blue"; break;
     }
   
-  return Py_BuildValue("si(ii)ii", format, p.last_frame, p.pixels_per_line, p.lines, 
-		       p.depth, p.bytes_per_line);
+  return Py_BuildValue("si(ii)ii", format, p.last_frame, p.pixels_per_line, 
+		       p.lines, p.depth, p.bytes_per_line);
 }
 
 
@@ -185,7 +184,7 @@ SaneDev_get_options(SaneDevObject *self, PyObject *args)
       d=sane_get_option_descriptor(self->h, i);
       if (d!=NULL) 
 	{
-	  PyObject *constraint;
+	  PyObject *constraint=NULL;
 	  int j;
 	  
 	  switch (d->constraint_type)
@@ -193,21 +192,36 @@ SaneDev_get_options(SaneDevObject *self, PyObject *args)
 	    case(SANE_CONSTRAINT_NONE): 
 	      Py_INCREF(Py_None); constraint=Py_None; break;
 	    case(SANE_CONSTRAINT_RANGE): 
-	      constraint=Py_BuildValue("iii", d->constraint.range->min, d->constraint.range->max, d->constraint.range->quant);
+	      if (d->type == SANE_TYPE_INT)
+		constraint=Py_BuildValue("iii", d->constraint.range->min, 
+					 d->constraint.range->max, 
+					 d->constraint.range->quant);
+	      else
+		constraint=Py_BuildValue("ddd", 
+					 SANE_UNFIX(d->constraint.range->min), 
+					 SANE_UNFIX(d->constraint.range->max), 
+					 SANE_UNFIX(d->constraint.range->quant));
 	      break;
 	    case(SANE_CONSTRAINT_WORD_LIST): 
 	      constraint=PyList_New(d->constraint.word_list[0]);
-	      for (j=1; j<=d->constraint.word_list[0]; j++)
-		PyList_SetItem(constraint, j-1, PyInt_FromLong(d->constraint.word_list[j]));
+	      if (d->type == SANE_TYPE_INT)
+		for (j=1; j<=d->constraint.word_list[0]; j++)
+		  PyList_SetItem(constraint, j-1, 
+				 PyInt_FromLong(d->constraint.word_list[j]));
+	      else
+		for (j=1; j<=d->constraint.word_list[0]; j++)
+		  PyList_SetItem(constraint, j-1, 
+				 PyFloat_FromDouble(SANE_UNFIX(d->constraint.word_list[j])));
 	      break;
 	    case(SANE_CONSTRAINT_STRING_LIST): 
 	      constraint=PyList_New(0);
 	      for(j=0; d->constraint.string_list[j]!=NULL; j++)
-		PyList_Append(constraint, PyString_FromString(d->constraint.string_list[j]) );
+		PyList_Append(constraint, 
+			      PyString_FromString(d->constraint.string_list[j]));
 	      break;
 	    }
-	  value=Py_BuildValue("isssiiiiO", i, d->name, d->title, d->desc, d->type,
-			      d->unit, d->size, d->cap, constraint);
+	  value=Py_BuildValue("isssiiiiO", i, d->name, d->title, d->desc, 
+			      d->type, d->unit, d->size, d->cap, constraint);
 	  PyList_Append(list, value);
 	}
       i++;
@@ -220,8 +234,7 @@ SaneDev_get_option(SaneDevObject *self, PyObject *args)
 {
   SANE_Status st;
   const SANE_Option_Descriptor *d;
-  SANE_Int i;
-  PyObject *value;
+  PyObject *value=NULL;
   int n;
   void *v;
   
@@ -235,7 +248,7 @@ SaneDev_get_option(SaneDevObject *self, PyObject *args)
   d=sane_get_option_descriptor(self->h, n);
   v=malloc(d->size+1);
   st=sane_control_option(self->h, n, SANE_ACTION_GET_VALUE,
-			 v, &i);
+			 v, NULL);
 
   if (st) {free(v); return PySane_Error(st);}
   
@@ -243,17 +256,17 @@ SaneDev_get_option(SaneDevObject *self, PyObject *args)
     {
     case(SANE_TYPE_BOOL):
     case(SANE_TYPE_INT):
-      value=Py_BuildValue("ii", i, *( (SANE_Int*)v) );
+      value=Py_BuildValue("i", *( (SANE_Int*)v) );
       break;
     case(SANE_TYPE_FIXED):
-      value=Py_BuildValue("id", i, SANE_UNFIX((*((SANE_Fixed*)v))) );
+      value=Py_BuildValue("d", SANE_UNFIX((*((SANE_Fixed*)v))) );
       break;
     case(SANE_TYPE_STRING):
-      value=Py_BuildValue("is", i, v);
+      value=Py_BuildValue("s", v);
       break;
     case(SANE_TYPE_BUTTON):
     case(SANE_TYPE_GROUP):
-      value=Py_BuildValue("iO", i, Py_None);
+      value=Py_BuildValue("O", Py_None);
       break;
     }
   
@@ -844,6 +857,160 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
   return Py_None;
 }
 
+
+#ifdef WITH_NUMARRAY
+
+#include "numarray/libnumarray.h"
+
+/* this global variable is set to 1 in 'init_sane()' after successfully
+   importing the numarray module. */
+int NUMARRAY_IMPORTED = 0;
+
+static PyObject *
+SaneDev_arr_snap(SaneDevObject *self, PyObject *args)
+{
+  SANE_Status st; 
+  SANE_Byte buffer[READSIZE];
+  SANE_Int len;
+  SANE_Parameters p;
+
+  PyArrayObject *pyArr = NULL;
+  NumarrayType arrType;
+  int line, line_index, buffer_index, remain_bytes_line, num_pad_bytes;
+  int cp_num_bytes, total_remain, bpp, arr_bytes_per_line;
+  int pixels_per_line = -1;
+  char errmsg[80];
+
+  if (!NUMARRAY_IMPORTED)
+    {
+      PyErr_SetString(ErrorObject, "numarray package not available");
+      return NULL;
+    }
+
+  if (!PyArg_ParseTuple(args, "|i", &pixels_per_line))
+    return NULL;
+  if (self->h==NULL)
+    {
+      PyErr_SetString(ErrorObject, "SaneDev object is closed");
+      return NULL;
+    }
+
+  sane_get_parameters(self->h, &p);
+  if (p.format != SANE_FRAME_GRAY)
+    {
+      sane_cancel(self->h);
+      snprintf(errmsg, 80, "numarray only supports gray-scale images");
+      PyErr_SetString(ErrorObject, errmsg);
+      return NULL;
+    }
+
+  if (p.depth == 8)
+    {
+      bpp=1;   /* bytes-per-pixel */
+      arrType = tUInt8;
+    }
+  else if (p.depth == 16)
+    {
+      bpp=2;   /* bytes-per-pixel */
+      arrType = tUInt16;
+    }
+  else
+    {
+      sane_cancel(self->h);
+      snprintf(errmsg, 80, "arrsnap: unsupported pixel depth: %i", p.depth);
+      PyErr_SetString(ErrorObject, errmsg);
+      return NULL;
+    }
+
+  if (pixels_per_line < 1)
+    /* The user can choose a smaller result array than the actual scan */
+    pixels_per_line = p.pixels_per_line;
+  else
+    if (pixels_per_line > p.pixels_per_line)
+      {
+	PyErr_SetString(ErrorObject,"given pixels_per_line too big");
+	return NULL;
+      }
+  /* important: NumArray have indices like (y, x) !! */
+  if (!(pyArr = NA_NewArray(NULL, arrType, 2, p.lines, pixels_per_line)))
+    {
+      PyErr_SetString(ErrorObject, "failed to create NumArray object");
+      return NULL;
+    }
+    
+  arr_bytes_per_line = pixels_per_line * bpp;
+  st=SANE_STATUS_GOOD;
+#ifdef WRITE_PGM
+  FILE *fp;
+  fp = fopen("sane_p5.pgm", "w");
+  fprintf(fp, "P5\n%d %d\n%d\n", p.pixels_per_line, 
+	  p.lines, (int) pow(2.0, (double) p.depth)-1);
+#endif
+  line_index = line = 0;
+  remain_bytes_line = arr_bytes_per_line;
+  total_remain = p.bytes_per_line * p.lines;
+  num_pad_bytes = p.bytes_per_line - arr_bytes_per_line;
+  
+  while (st!=SANE_STATUS_EOF)
+    {
+      st = sane_read(self->h, buffer, 
+		     READSIZE < total_remain ? READSIZE : total_remain, &len);
+#ifdef WRITE_PGM
+      printf("p5_write: read %d of %d\n", len, READSIZE);
+      fwrite(buffer, 1, len, fp);
+#endif
+
+      buffer_index = 0;
+      total_remain -= len;
+
+      while (len > 0)
+	{
+	  /* copy at most the number of bytes that fit into (the rest of)
+	     one line: */
+	  cp_num_bytes = (len > remain_bytes_line ? remain_bytes_line : len);
+	  remain_bytes_line -= cp_num_bytes;
+	  len -= cp_num_bytes;
+#ifdef DEBUG
+	  printf("copying %d bytes from b_idx %d to d_idx %d\n",
+		 cp_num_bytes, buffer_index, 
+		 line * arr_bytes_per_line + line_index);
+	  printf("len is now %d\n", len);
+#endif
+	  memcpy(pyArr->data + line * arr_bytes_per_line + line_index,
+		 buffer + buffer_index, cp_num_bytes);
+
+	  buffer_index += cp_num_bytes;
+	  if (remain_bytes_line ==0)
+	    {
+	      /* The line has been completed, so reinitialize remain_bytes_line
+		 increase the line counter, and reset line_index */
+#ifdef DEBUG
+	      printf("line %d full, skipping %d bytes\n",line,num_pad_bytes);
+#endif
+	      remain_bytes_line = arr_bytes_per_line;
+	      line++;
+	      line_index = 0;
+	      /* Skip the number of bytes in the input stream which 
+		 are not used: */
+	      len -= num_pad_bytes;
+	      buffer_index += num_pad_bytes;
+	    }
+	  else
+	    line_index += cp_num_bytes;
+	}
+    }
+#ifdef WRITE_PGM
+  fclose(fp);
+  printf("p5_write finished\n");
+#endif
+  sane_cancel(self->h);
+  return (PyObject*) pyArr;
+}
+
+
+
+#endif /* WITH_NUMARRAY */
+
 static PyMethodDef SaneDev_methods[] = {
 	{"get_parameters",	(PyCFunction)SaneDev_get_parameters,	1},
 
@@ -855,6 +1022,9 @@ static PyMethodDef SaneDev_methods[] = {
 	{"start",	(PyCFunction)SaneDev_start,	1},
 	{"cancel",	(PyCFunction)SaneDev_cancel,	1},
 	{"snap",	(PyCFunction)SaneDev_snap,	1},
+#ifdef WITH_NUMARRAY
+	{"arr_snap",	(PyCFunction)SaneDev_arr_snap,	1},
+#endif /* WITH_NUMARRAY */
 	{"fileno",	(PyCFunction)SaneDev_fileno,	1},
  	{"close",	(PyCFunction)SaneDev_close,	1},
 	{NULL,		NULL}		/* sentinel */
@@ -935,7 +1105,8 @@ PySane_get_devices(PyObject *self, PyObject *args)
   for(i=0; devlist[i]!=NULL; i++)
     {
       dev=devlist[i];
-      PyList_Append(list, Py_BuildValue("ssss", dev->name, dev->vendor, dev->model, dev->type));
+      PyList_Append(list, Py_BuildValue("ssss", dev->name, dev->vendor, 
+					dev->model, dev->type));
     }
   
   return list;
@@ -1066,7 +1237,24 @@ init_sane(void)
 	/* handy for checking array lengths: */
 	insint(d, "SANE_WORD_SIZE", sizeof(SANE_Word));
 
+	/* possible return values of set_option() */
+	insint(d, "INFO_INEXACT", SANE_INFO_INEXACT);
+	insint(d, "INFO_RELOAD_OPTIONS", SANE_INFO_RELOAD_OPTIONS);
+	insint(d, "INFO_RELOAD_PARAMS", SANE_INFO_RELOAD_PARAMS);
+	
 	/* Check for errors */
 	if (PyErr_Occurred())
 		Py_FatalError("can't initialize module _sane");
+
+#ifdef WITH_NUMARRAY
+	import_libnumarray();
+	if (PyErr_Occurred())
+	  PyErr_Clear();
+	else
+	  /* this global variable is declared just in front of the 
+	     arr_snap() function and should be set to 1 after
+	     successfully importing the numarray module. */
+	  NUMARRAY_IMPORTED = 1;
+
+#endif /* WITH_NUMARRAY */
 }

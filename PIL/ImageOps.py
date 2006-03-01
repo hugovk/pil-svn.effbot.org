@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageOps.py#6 $
+# $Id: ImageOps.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # standard image operations
 #
@@ -8,9 +8,10 @@
 # 2001-10-20 fl   Created
 # 2001-10-23 fl   Added autocontrast operator
 # 2001-12-18 fl   Added Kevin's fit operator
+# 2004-03-14 fl   Fixed potential division by zero in equalize
 #
-# Copyright (c) 2001-2002 by Secret Labs AB
-# Copyright (c) 2001-2002 by Fredrik Lundh
+# Copyright (c) 2001-2004 by Secret Labs AB
+# Copyright (c) 2001-2004 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
@@ -19,9 +20,12 @@ import Image
 import operator
 
 ##
-#(New in 1.1.3) The <b>ImageOps</b> module contains a number of
+# (New in 1.1.3) The <b>ImageOps</b> module contains a number of
 # 'ready-made' image processing operations.  This module is somewhat
 # experimental, and most operators only work on L and RGB images.
+#
+# @since 1.1.3
+##
 
 #
 # helpers
@@ -192,17 +196,20 @@ def deform(image, deformer, resample=Image.BILINEAR):
 # distribution of grayscale values in the output image.
 #
 # @param image The image to equalize.
+# @param mask An optional mask.  If given, only the pixels selected by
+#     the mask are included in the analysis.
 # @return An image.
 
-def equalize(image):
+def equalize(image, mask=None):
     "Equalize image histogram"
     if image.mode == "P":
-        h = image.convert("RGB").histogram()
-    else:
-        h = image.histogram()
+        image = image.convert("RGB")
+    h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
         step = reduce(operator.add, h[b:b+256]) / 255
+        if step == 0:
+            step = 1
         n = 0
         for i in range(256):
             lut.append(n / step)

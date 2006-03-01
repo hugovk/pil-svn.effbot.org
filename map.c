@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/map.c#7 $
+ * $Id: map.c 2319 2005-03-11 16:41:26Z fredrik $
  *
  * standard memory mapping interface for the Imaging library
  *
@@ -31,6 +31,7 @@
 #define WIN32_LEAN_AND_MEAN
 #ifdef __GNUC__
 #undef INT32
+#undef INT64
 #undef UINT32
 #endif
 #include "windows.h"

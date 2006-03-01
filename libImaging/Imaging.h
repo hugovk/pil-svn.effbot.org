@@ -1,22 +1,15 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Imaging.h#10 $
+ * $Id: Imaging.h 2308 2005-03-02 12:00:55Z fredrik $
  * 
  * declarations for the imaging core library
  *
- * Copyright (c) 1997-2002 by Secret Labs AB
- * Copyright (c) 1995-2002 by Fredrik Lundh
+ * Copyright (c) 1997-2003 by Secret Labs AB
+ * Copyright (c) 1995-2003 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <math.h>
-
-#include <string.h>
 
 #include "ImPlatform.h"
 
@@ -48,11 +41,18 @@ extern "C" {
  * CMYK	    4		C, M, Y, K
  * YCbCr    4		Y, Cb, Cr, -
  *
+ * experimental modes (incomplete):
+ * LA       4           L, -, -, A
+ * PA       4           P, -, -, A
+ * I;16     2           I (16-bit integer, native byte order)
+ *
  * "P" is an 8-bit palette mode, which should be mapped through the
  * palette member to get an output image.  Check palette->mode to
  * find the corresponding "real" mode.
+ *
+ * For information on how to access Imaging objects from your own C
+ * extensions, see http://www.effbot.org/zone/pil-extending.htm
  */
-
 
 /* Handles */
 
@@ -62,19 +62,23 @@ typedef struct ImagingHistogramInstance* ImagingHistogram;
 typedef struct ImagingOutlineInstance* ImagingOutline;
 typedef struct ImagingPaletteInstance* ImagingPalette;
 
+/* handle magics (used with PyCObject). */
+#define IMAGING_MAGIC "PIL Imaging"
+#define IMAGING_ACCESS_MAGIC "PIL ImagingAccess"
+
 /* pixel types */
 #define IMAGING_TYPE_UINT8 0
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
-#define IMAGING_TYPE_SPECIAL 3
+#define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
 
 struct ImagingMemoryInstance {
 
     /* Format */
     char mode[4+1];	/* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK") */
-    int type;		/* Data type */
+    int type;		/* Data type (IMAGING_TYPE_*) */
     int depth;		/* Depth (ignored in this version) */
-    int bands;		/* Number of bands (1, 3, or 4) */
+    int bands;		/* Number of bands (1, 2, 3, or 4) */
     int xsize;		/* Image dimension. */
     int ysize;
 
@@ -82,8 +86,8 @@ struct ImagingMemoryInstance {
     ImagingPalette palette;
 
     /* Data pointers */
-    UINT8 **image8;	/* Set for 8-bit image (pixelsize=1). */
-    INT32 **image32;	/* Set for 32-bit image (pixelsize=4). */
+    UINT8 **image8;	/* Set for 8-bit images (pixelsize=1). */
+    INT32 **image32;	/* Set for 32-bit images (pixelsize=4). */
 
     /* Internals */
     char **image;	/* Actual raster data. */
@@ -100,13 +104,15 @@ struct ImagingMemoryInstance {
 
 #define IMAGING_PIXEL_1(im,x,y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_L(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_LA(im,x,y) ((im)->image[(y)][(x)*4])
 #define IMAGING_PIXEL_P(im,x,y) ((im)->image8[(y)][(x)])
+#define IMAGING_PIXEL_PA(im,x,y) ((im)->image[(y)][(x)*4])
 #define IMAGING_PIXEL_I(im,x,y) ((im)->image32[(y)][(x)])
 #define IMAGING_PIXEL_F(im,x,y) (((FLOAT32*)(im)->image32[y])[x])
-#define IMAGING_PIXEL_RGB(im,x,y) ((im)->image8[(y)][(x)*4])
-#define IMAGING_PIXEL_RGBA(im,x,y) ((im)->image8[(y)][(x)*4])
-#define IMAGING_PIXEL_CMYK(im,x,y) ((im)->image8[(y)][(x)*4])
-#define IMAGING_PIXEL_YCbCr(im,x,y) ((im)->image8[(y)][(x)*4])
+#define IMAGING_PIXEL_RGB(im,x,y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_RGBA(im,x,y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_CMYK(im,x,y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_YCbCr(im,x,y) ((im)->image[(y)][(x)*4])
 
 #define IMAGING_PIXEL_UINT8(im,x,y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_INT32(im,x,y) ((im)->image32[(y)][(x)])
@@ -192,6 +198,14 @@ extern void ImagingPaletteCacheDelete(ImagingPalette palette);
 
 extern Imaging ImagingQuantize(Imaging im, int colours, int mode, int kmeans);
 
+/* Threading */
+/* --------- */
+
+typedef void* ImagingSectionCookie;
+
+extern void ImagingSectionEnter(ImagingSectionCookie* cookie);
+extern void ImagingSectionLeave(ImagingSectionCookie* cookie);
+
 /* Exceptions */
 /* ---------- */
 
@@ -206,7 +220,9 @@ extern void* ImagingError_ValueError(const char* message);
 
 /* standard transforms */
 #define IMAGING_TRANSFORM_AFFINE 0
+#define IMAGING_TRANSFORM_PERSPECTIVE 2
 #define IMAGING_TRANSFORM_QUAD 3
+
 
 /* standard filters */
 #define IMAGING_TRANSFORM_NEAREST 0
@@ -229,10 +245,12 @@ extern Imaging ImagingConvert(
     Imaging im, const char* mode, ImagingPalette palette, int dither);
 extern Imaging ImagingConvertMatrix(Imaging im, const char *mode, float m[]);
 extern Imaging ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
+extern Imaging ImagingExpand(Imaging im, int x, int y, int mode);
 extern Imaging ImagingFill(Imaging im, const void* ink);
 extern int ImagingFill2(
     Imaging into, const void* ink, Imaging mask,
     int x0, int y0, int x1, int y1);
+extern Imaging ImagingFillBand(Imaging im, int band, int color);
 extern Imaging ImagingFillLinearGradient(const char* mode);
 extern Imaging ImagingFillRadialGradient(const char* mode);
 extern Imaging ImagingFilter(
@@ -242,6 +260,9 @@ extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging ImagingGetBand(Imaging im, int band);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
+typedef struct { int x, y; INT32 count; INT32 pixel; } ImagingColorItem;
+extern ImagingColorItem* ImagingGetColors(Imaging im, int maxcolors,
+    int *colors);
 extern int ImagingGetExtrema(Imaging im, void *extrema);
 extern int ImagingGetProjection(Imaging im, UINT8* xproj, UINT8* yproj);
 extern ImagingHistogram ImagingGetHistogram(
@@ -265,6 +286,9 @@ extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
 extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
+extern Imaging ImagingTransformPerspective(
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
+    double a[8], int filter, int fill);
 extern Imaging ImagingTransformAffine(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
     double a[6], int filter, int fill);
@@ -319,6 +343,8 @@ extern int ImagingDrawEllipse(Imaging im, int x0, int y0, int x1, int y1,
                               const void* ink, int fill, int op);
 extern int ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1,
 			   const void* ink, int op);
+extern int ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
+                               const void* ink, int width, int op);
 extern int ImagingDrawPieslice(Imaging im, int x0, int y0, int x1, int y1,
                                int start, int end, const void* ink, int fill,
                                int op);

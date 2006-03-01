@@ -1,17 +1,19 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Quant.c#3 $
+ * $Id: Quant.c 2284 2005-02-07 20:58:58Z fredrik $
  *
  * image quantizer
  *
  * history:
- * 98-09-10 tjs  Contributed
- * 98-12-29 fl   Added to PIL 1.0b1
+ * 1998-09-10 tjs  Contributed
+ * 1998-12-29 fl   Added to PIL 1.0b1
+ * 2004-02-21 fl   Fixed bogus free() on quantization error
+ * 2005-02-07 fl   Limit number of colors to 256
  *
  * Written by Toby J Sargeant <tjs@longford.cs.monash.edu.au>.
  * 
  * Copyright (c) 1998 by Toby J Sargeant
- * Copyright (c) 1998 by Secret Labs AB
+ * Copyright (c) 1998-2004 by Secret Labs AB.  All rights reserved.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -1468,7 +1470,7 @@ error_1:
 }
 
 Imaging
-ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
+ImagingQuantize(Imaging im, int colors, int mode, int kmeans)
 {
     int i, j;
     int x, y, v;
@@ -1482,6 +1484,11 @@ ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
 
     if (!im)
 	return ImagingError_ModeError();
+    if (colors < 1 || colors > 256)
+        /* FIXME: for colors > 256, consider returning an RGB image
+           instead (see @PIL205) */
+        return (Imaging) ImagingError_ValueError("bad number of colors");
+
     if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
         strcmp(im->mode, "RGB"))
         return ImagingError_ModeError();
@@ -1498,7 +1505,7 @@ ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
     if (!strcmp(im->mode, "L")) {
         /* greyscale */
 
-        /* FIXME: converting a "L" image to "P" with 256 colours
+        /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
 
         for (i = y = 0; y < im->ysize; y++)
@@ -1536,7 +1543,7 @@ ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
         result = quantize(
             p,
             im->xsize*im->ysize,
-            colours,
+            colors,
             &palette,
             &paletteLength,
             &newData,
@@ -1548,7 +1555,7 @@ ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
         result = quantize2(
             p,
             im->xsize*im->ysize,
-            colours,
+            colors,
             &palette,
             &paletteLength,
             &newData,
@@ -1593,7 +1600,6 @@ ImagingQuantize(Imaging im, int colours, int mode, int kmeans)
 
     } else {
 
-        free(p);
         return (Imaging) ImagingError_ValueError("quantization error");
 
     }

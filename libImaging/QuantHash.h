@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/QuantHash.h#2 $
+ * $Id: QuantHash.h 2134 2004-10-06 08:55:20Z fredrik $
  *
  * image quantizer
  *

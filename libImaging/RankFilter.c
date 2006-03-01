@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/RankFilter.c#4 $
+ * $Id: RankFilter.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * min, max, median filters
  *
@@ -22,7 +22,7 @@
 #define MakeRankFunction(type)\
 static type Rank##type(type a[], int n, int k)\
 {\
-    register i, j, l, m;\
+    register int i, j, l, m;\
     register type x;\
     l = 0; m = n-1;\
     while (l < m) {\

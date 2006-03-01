@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/PcxEncode.c#2 $
+ * $Id: PcxEncode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * encoder for PCX data
  *

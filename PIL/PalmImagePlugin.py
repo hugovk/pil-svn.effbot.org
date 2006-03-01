@@ -1,10 +1,11 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PalmImagePlugin.py#2 $
+# $Id: PalmImagePlugin.py 2339 2005-03-25 08:02:17Z fredrik $
 #
-# Palm pixmap image handling
-#
-#
+
+##
+# Image plugin for Palm pixmap images (output only).
+##
 
 __version__ = "1.0"
 

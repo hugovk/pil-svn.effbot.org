@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Crop.c#2 $
+ * $Id: Crop.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * cut region from image
  *

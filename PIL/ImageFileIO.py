@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageFileIO.py#4 $
+# $Id: ImageFileIO.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # kludge to get basic ImageFileIO functionality
 #

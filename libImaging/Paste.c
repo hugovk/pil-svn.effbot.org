@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Paste.c#2 $
+ * $Id: Paste.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * paste image on another image
  *
@@ -217,6 +217,7 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
     int xsize, ysize;
     int pixelsize;
     int sx0, sy0;
+    ImagingSectionCookie cookie;
 
     if (!imOut || !imIn) {
 	ImagingError_ModeError();
@@ -253,26 +254,36 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
     if (xsize <= 0 || ysize <= 0)
 	return 0;
 
-    if (!imMask)
+    if (!imMask) {
+        ImagingSectionEnter(&cookie);
         paste(imOut, imIn, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "1") == 0)
+    } else if (strcmp(imMask->mode, "1") == 0) {
+        ImagingSectionEnter(&cookie);
         paste_mask_1(imOut, imIn, imMask, dx0, dy0, sx0, sy0,
                      xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "L") == 0)
+    } else if (strcmp(imMask->mode, "L") == 0) {
+        ImagingSectionEnter(&cookie);
         paste_mask_L(imOut, imIn, imMask, dx0, dy0, sx0, sy0,
                      xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "RGBA") == 0)
+    } else if (strcmp(imMask->mode, "RGBA") == 0) {
+        ImagingSectionEnter(&cookie);
         paste_mask_RGBA(imOut, imIn, imMask, dx0, dy0, sx0, sy0,
                         xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "RGBa") == 0)
+    } else if (strcmp(imMask->mode, "RGBa") == 0) {
+        ImagingSectionEnter(&cookie);
         paste_mask_RGBa(imOut, imIn, imMask, dx0, dy0, sx0, sy0,
                         xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else {
+    } else {
 	ImagingError_ValueError("bad transparency mask");
 	return -1;
     }
@@ -466,6 +477,7 @@ int
 ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
              int dx0, int dy0, int dx1, int dy1)
 {
+    ImagingSectionCookie cookie;
     int xsize, ysize;
     int pixelsize;
     int sx0, sy0;
@@ -499,26 +511,36 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
     if (xsize <= 0 || ysize <= 0)
 	return 0;
 
-    if (!imMask)
+    if (!imMask) {
+        ImagingSectionEnter(&cookie);
         fill(imOut, ink, dx0, dy0, xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "1") == 0)
+    } else if (strcmp(imMask->mode, "1") == 0) {
+        ImagingSectionEnter(&cookie);
         fill_mask_1(imOut, ink, imMask, dx0, dy0, sx0, sy0,
                     xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "L") == 0)
+    } else if (strcmp(imMask->mode, "L") == 0) {
+        ImagingSectionEnter(&cookie);
         fill_mask_L(imOut, ink, imMask, dx0, dy0, sx0, sy0,
                     xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "RGBA") == 0)
+    } else if (strcmp(imMask->mode, "RGBA") == 0) {
+        ImagingSectionEnter(&cookie);
         fill_mask_RGBA(imOut, ink, imMask, dx0, dy0, sx0, sy0,
                        xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else if (strcmp(imMask->mode, "RGBa") == 0)
+    } else if (strcmp(imMask->mode, "RGBa") == 0) {
+        ImagingSectionEnter(&cookie);
         fill_mask_RGBa(imOut, ink, imMask, dx0, dy0, sx0, sy0,
                        xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
 
-    else {
+    } else {
 	ImagingError_ValueError("bad transparency mask");
 	return -1;
     }

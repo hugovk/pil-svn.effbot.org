@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/ImagePath.py#4 $
+# $Id: ImagePath.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # path interface
 #
@@ -22,42 +22,50 @@ import Image
 class Path:
 
     ##
-    # Create a path object.
+    # Creates a path object.
     #
-    # @param xy Sequence.
+    # @param xy Sequence.  The sequence can contain 2-tuples [(x, y), ...]
+    #     or a flat list of numbers [x, y, ...].
 
     def __init__(self, xy):
         pass
 
     ##
-    # Compact path contents.
+    # Compacts the path, by removing points that are close to each
+    # other.  This method modifies the path in place.
 
-    def compact(self, distance):
+    def compact(self, distance=2):
         pass
 
     ##
-    # Get bounding box.
+    # Gets the bounding box.
 
     def getbbox(self):
         pass
 
     ##
-    # Map path through function.
+    # Maps the path through a function.
 
     def map(self, function):
         pass
 
     ##
-    # Convert path to Python list.
+    # Converts the path to Python list.
+    #
+    # @param flat By default, this function returns a list of 2-tuples
+    #     [(x, y), ...].  If this argument is true, it returns a flat
+    #     list [x, y, ...] instead.
+    # @return A list of coordinates.
 
-    def tolist(self):
+    def tolist(self, flat=0):
         pass
 
     ##
-    # Transform path.
+    # Transforms the path.
 
     def transform(self, matrix):
         pass
 
 
+# override with C implementation
 Path = Image.core.path

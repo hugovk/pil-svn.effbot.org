@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/ZipEncode.c#2 $
+ * $Id: ZipEncode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * coder for ZIP (deflated) image data
  *

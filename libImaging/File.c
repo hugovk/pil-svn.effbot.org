@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/File.c#2 $
+ * $Id: File.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * built-in image file handling
  *
@@ -16,9 +16,9 @@
  */
 
 
-#include <ctype.h>		/* isspace(), isdigit() */
 #include "Imaging.h"
 
+#include <ctype.h>
 
 Imaging
 ImagingOpenPPM(const char* infile)

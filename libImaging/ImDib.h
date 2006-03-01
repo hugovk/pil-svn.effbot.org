@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/ImDib.h#4 $
+ * $Id: ImDib.h 2319 2005-03-11 16:41:26Z fredrik $
  *
  * Windows DIB specifics
  *
@@ -15,6 +15,7 @@
 #if (defined(_MSC_VER) && _MSC_VER >= 1200) || (defined __GNUC__)
 /* already defined in basetsd.h */
 #undef INT32
+#undef INT64
 #undef UINT32
 #endif
 

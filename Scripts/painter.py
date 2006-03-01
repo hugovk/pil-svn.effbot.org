@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/Scripts/painter.py#2 $
+# $Id: painter.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # this demo script illustrates pasting into an already displayed
 # photoimage.  note that the current version of Tk updates the whole

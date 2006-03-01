@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Histo.c#3 $
+ * $Id: Histo.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * histogram support
  *
@@ -51,6 +51,7 @@ ImagingHistogramNew(Imaging im)
 ImagingHistogram
 ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
 {
+    ImagingSectionCookie cookie;
     int x, y, i;
     ImagingHistogram h;
     INT32 imin, imax;
@@ -72,13 +73,16 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
     if (imMask) {
 	/* mask */
 	if (im->image8) {
+            ImagingSectionEnter(&cookie);
 	    for (y = 0; y < im->ysize; y++)
 		for (x = 0; x < im->xsize; x++)
 		    if (imMask->image8[y][x] != 0)
 			h->histogram[im->image8[y][x]]++;
+            ImagingSectionLeave(&cookie);
 	} else { /* yes, we need the braces. C isn't Python! */
             if (im->type != IMAGING_TYPE_UINT8)
                 return ImagingError_ModeError();
+            ImagingSectionEnter(&cookie);
 	    for (y = 0; y < im->ysize; y++) {
 		UINT8* in = (UINT8*) im->image32[y];
 		for (x = 0; x < im->xsize; x++)
@@ -90,16 +94,20 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
 		    } else
 			in += 4;
 	    }
+            ImagingSectionLeave(&cookie);
 	}
     } else {
 	/* mask not given; process pixels in image */
-	if (im->image8)
+	if (im->image8) {
+            ImagingSectionEnter(&cookie);
 	    for (y = 0; y < im->ysize; y++)
 		for (x = 0; x < im->xsize; x++)
 		    h->histogram[im->image8[y][x]]++;
-	else {
+            ImagingSectionLeave(&cookie);
+	} else {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
+                ImagingSectionEnter(&cookie);
                 for (y = 0; y < im->ysize; y++) {
                     UINT8* in = (UINT8*) im->image[y];
                     for (x = 0; x < im->xsize; x++) {
@@ -109,6 +117,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                         h->histogram[(*in++)+768]++;
                     }
                 }
+                ImagingSectionLeave(&cookie);
                 break;
             case IMAGING_TYPE_INT32:
                 if (!minmax)
@@ -119,7 +128,8 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                 imax = ((INT32*) minmax)[1];
                 if (imin >= imax)
                     break;
-                scale = 255.0 / (imax - imin);
+                ImagingSectionEnter(&cookie);
+                scale = 255.0F / (imax - imin);
                 for (y = 0; y < im->ysize; y++) {
                     INT32* in = im->image32[y];
                     for (x = 0; x < im->xsize; x++) {
@@ -128,6 +138,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                             h->histogram[i]++;
                     }
                 }
+                ImagingSectionLeave(&cookie);
                 break;
             case IMAGING_TYPE_FLOAT32:
                 if (!minmax)
@@ -138,7 +149,8 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                 fmax = ((FLOAT32*) minmax)[1];
                 if (fmin >= fmax)
                     break;
-                scale = 255.0 / (fmax - fmin);
+                ImagingSectionEnter(&cookie);
+                scale = 255.0F / (fmax - fmin);
                 for (y = 0; y < im->ysize; y++) {
                     FLOAT32* in = (FLOAT32*) im->image32[y];
                     for (x = 0; x < im->xsize; x++) {
@@ -147,6 +159,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void* minmax)
                             h->histogram[i]++;
                     }
                 }
+                ImagingSectionLeave(&cookie);
                 break;
             }
         }

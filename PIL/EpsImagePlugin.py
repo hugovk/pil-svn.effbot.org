@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/EpsImagePlugin.py#4 $
+# $Id: EpsImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # EPS file handling
 #
@@ -10,16 +10,15 @@
 # 1996-08-22 fl   Don't choke on floating point BoundingBox values
 # 1996-08-23 fl   Handle files from Macintosh (0.3)
 # 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.4)
+# 2003-09-07 fl   Check gs.close status (from Federico Di Gregorio) (0.5)
 #
-# Copyright (c) Secret Labs AB 1997-2001.
-# Copyright (c) Fredrik Lundh 1995-96-2001
+# Copyright (c) 1997-2003 by Secret Labs AB.
+# Copyright (c) 1995-2003 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-
-__version__ = "0.4"
-
+__version__ = "0.5"
 
 import re, string
 import Image, ImageFile
@@ -54,7 +53,7 @@ def Ghostscript(tile, size, fp):
                "-dNOPAUSE -dSAFER",     # don't pause between pages, safe mode
                "-sDEVICE=ppmraw",       # ppm driver
                "-sOutputFile=%s" % file,# output file
-               "- >/dev/tty 2>/dev/tty"]
+               "- >/dev/null 2>/dev/null"]
 
     command = string.join(command)
 
@@ -71,7 +70,9 @@ def Ghostscript(tile, size, fp):
                 break
             length = length - len(s)
             gs.write(s)
-        gs.close()
+        status = gs.close()
+        if status:
+            raise IOError("gs failed (status %d)" % status)
         im = Image.core.open_ppm(file)
     finally:
         try: os.unlink(file)
@@ -182,7 +183,7 @@ class EpsImageFile(ImageFile.ImageFile):
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = map(int, map(string.atof, string.split(v)))
+                        box = map(int, map(float, string.split(v)))
                         self.size = box[2] - box[0], box[3] - box[1]
                         self.tile = [("eps", (0,0) + self.size, offset,
                                       (length, box))]

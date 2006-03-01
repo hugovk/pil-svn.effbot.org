@@ -1,51 +1,123 @@
-<html><head><title>Module PIL.ImageDraw</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageDraw</h1><h4>Module Summary:</h4><pre><a href="#37">class Draw</a>:
-    def __init__(self)</pre><blockquote>A simple 2D drawing interface for PIL images.</blockquote><pre><a href="#37">class ImageDraw</a>:
-    def __init__(self, im, mode=None)</pre><blockquote>A simple 2D drawing interface for PIL images.</blockquote><h2>Classes</h2><div class="class" id="37"><h3>The Draw Class</h3><pre>Draw()</pre><p>A simple 2D drawing interface for PIL images.
-</p><p>
-Note that <b>Draw</b> and <b>ImageDraw</b> are two names for the
-same class.  New code should use <b>Draw</b>.
-</p></div><div class="class" id="37"><h3>The ImageDraw Class</h3><pre>ImageDraw()</pre><p>A simple 2D drawing interface for PIL images.
-</p><p>
-Note that <b>Draw</b> and <b>ImageDraw</b> are two names for the
-same class.  New code should use <b>Draw</b>.
-</p></div><h4>Constructor:</h4><div class="constructor" id="49"><pre>ImageDraw(im, mode=None)</pre><p>Create a drawing instance.
-
-</p><h4>Parameters:</h4><p><code>im</code> -- The image to draw in.
-</p><p><code>mode</code> -- Optional mode to use for color values.  For RGB
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=us-ascii' />
+<title>The PIL.ImageDraw Module</title>
+<link rel='stylesheet' href='effbot.css' type='text/css' />
+</head>
+<body>
+<h1>The PIL.ImageDraw Module</h1>
+<dl>
+<dt><a id='PIL.ImageDraw.Draw-function' name='PIL.ImageDraw.Draw-function'><b>Draw(im, mode=None)</b></a> [<a href='#PIL.ImageDraw.Draw-function'>#</a>]</dt>
+<dd>
+<p>A simple 2D drawing interface for PIL images.</p>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+The image to draw in.</dd>
+<dt><i>mode</i></dt>
+<dd>
+Optional mode to use for color values.  For RGB
    images, this argument can be RGB or RGBA (to blend the
    drawing into the image).  For all other modes, this argument
    must be the same as the image mode.  If omitted, the mode
-   defaults to the mode of the image.
-</p></div><h4>Method Summary:</h4><pre><a href="#142">arc(xy, start, end, fill=None)</a></pre><blockquote>Draw an arc.</blockquote><pre><a href="#142">arc(xy, start, end, fill=None)</a></pre><blockquote>Draw an arc.</blockquote><pre><a href="#150">bitmap(xy, bitmap, fill=None)</a></pre><blockquote>Draw a bitmap.</blockquote><pre><a href="#150">bitmap(xy, bitmap, fill=None)</a></pre><blockquote>Draw a bitmap.</blockquote><pre><a href="#161">chord(xy, start, end, fill=None, outline=None)</a></pre><blockquote>Draw a chord.</blockquote><pre><a href="#161">chord(xy, start, end, fill=None, outline=None)</a></pre><blockquote>Draw a chord.</blockquote><pre><a href="#171">ellipse(xy, fill=None, outline=None)</a></pre><blockquote>Draw an ellipse.</blockquote><pre><a href="#171">ellipse(xy, fill=None, outline=None)</a></pre><blockquote>Draw an ellipse.</blockquote><pre><a href="#103">getfont()</a></pre><blockquote>Get the current default font.</blockquote><pre><a href="#103">getfont()</a></pre><blockquote>Get the current default font.</blockquote><pre><a href="#181">line(xy, fill=None)</a></pre><blockquote>Draw a line, or a connected sequence of line segments.</blockquote><pre><a href="#181">line(xy, fill=None)</a></pre><blockquote>Draw a line, or a connected sequence of line segments.</blockquote><pre><a href="#201">pieslice(xy, start, end, fill=None, outline=None)</a></pre><blockquote>Draw a pieslice.</blockquote><pre><a href="#201">pieslice(xy, start, end, fill=None, outline=None)</a></pre><blockquote>Draw a pieslice.</blockquote><pre><a href="#211">point(xy, fill=None)</a></pre><blockquote>Draw one or more individual pixels.</blockquote><pre><a href="#211">point(xy, fill=None)</a></pre><blockquote>Draw one or more individual pixels.</blockquote><pre><a href="#219">polygon(xy, fill=None, outline=None)</a></pre><blockquote>Draw a polygon.</blockquote><pre><a href="#219">polygon(xy, fill=None, outline=None)</a></pre><blockquote>Draw a polygon.</blockquote><pre><a href="#229">rectangle(xy, fill=None, outline=None)</a></pre><blockquote>Draw a rectangle.</blockquote><pre><a href="#229">rectangle(xy, fill=None, outline=None)</a></pre><blockquote>Draw a rectangle.</blockquote><pre><a href="#89">setfill(onoff)</a></pre><blockquote>Set the default background color.</blockquote><pre><a href="#89">setfill(onoff)</a></pre><blockquote>Set the default background color.</blockquote><pre><a href="#96">setfont(font)</a></pre><blockquote>Set the default font.</blockquote><pre><a href="#96">setfont(font)</a></pre><blockquote>Set the default font.</blockquote><pre><a href="#78">setink(ink)</a></pre><blockquote>Set the default pen color.</blockquote><pre><a href="#78">setink(ink)</a></pre><blockquote>Set the default pen color.</blockquote><pre><a href="#189">shape(shape, fill=None, outline=None)</a></pre><blockquote>(Experimental) Draw a shape.</blockquote><pre><a href="#189">shape(shape, fill=None, outline=None)</a></pre><blockquote>(Experimental) Draw a shape.</blockquote><pre><a href="#239">text(xy, text, fill=None, font=None, anchor=None)</a></pre><blockquote>Draw text.</blockquote><pre><a href="#239">text(xy, text, fill=None, font=None, anchor=None)</a></pre><blockquote>Draw text.</blockquote><pre><a href="#113">textsize(text, font=None)</a></pre><blockquote>Get the size of a given string, in pixels.</blockquote><pre><a href="#113">textsize(text, font=None)</a></pre><blockquote>Get the size of a given string, in pixels.</blockquote><div class="method" id="142"><h3>arc</h3><pre>arc(xy, start, end, fill=None)</pre><p>Draw an arc.
-</p></div><div class="method" id="142"><h3>arc</h3><pre>arc(xy, start, end, fill=None)</pre><p>Draw an arc.
-</p></div><div class="method" id="150"><h3>bitmap</h3><pre>bitmap(xy, bitmap, fill=None)</pre><p>Draw a bitmap.
-</p></div><div class="method" id="150"><h3>bitmap</h3><pre>bitmap(xy, bitmap, fill=None)</pre><p>Draw a bitmap.
-</p></div><div class="method" id="161"><h3>chord</h3><pre>chord(xy, start, end, fill=None, outline=None)</pre><p>Draw a chord.
-</p></div><div class="method" id="161"><h3>chord</h3><pre>chord(xy, start, end, fill=None, outline=None)</pre><p>Draw a chord.
-</p></div><div class="method" id="171"><h3>ellipse</h3><pre>ellipse(xy, fill=None, outline=None)</pre><p>Draw an ellipse.
-</p></div><div class="method" id="171"><h3>ellipse</h3><pre>ellipse(xy, fill=None, outline=None)</pre><p>Draw an ellipse.
-</p></div><div class="method" id="103"><h3>getfont</h3><pre>getfont()</pre><p>Get the current default font.
-</p></div><div class="method" id="103"><h3>getfont</h3><pre>getfont()</pre><p>Get the current default font.
-</p></div><div class="method" id="181"><h3>line</h3><pre>line(xy, fill=None)</pre><p>Draw a line, or a connected sequence of line segments.
-</p></div><div class="method" id="181"><h3>line</h3><pre>line(xy, fill=None)</pre><p>Draw a line, or a connected sequence of line segments.
-</p></div><div class="method" id="201"><h3>pieslice</h3><pre>pieslice(xy, start, end, fill=None, outline=None)</pre><p>Draw a pieslice.
-</p></div><div class="method" id="201"><h3>pieslice</h3><pre>pieslice(xy, start, end, fill=None, outline=None)</pre><p>Draw a pieslice.
-</p></div><div class="method" id="211"><h3>point</h3><pre>point(xy, fill=None)</pre><p>Draw one or more individual pixels.
-</p></div><div class="method" id="211"><h3>point</h3><pre>point(xy, fill=None)</pre><p>Draw one or more individual pixels.
-</p></div><div class="method" id="219"><h3>polygon</h3><pre>polygon(xy, fill=None, outline=None)</pre><p>Draw a polygon.
-</p></div><div class="method" id="219"><h3>polygon</h3><pre>polygon(xy, fill=None, outline=None)</pre><p>Draw a polygon.
-</p></div><div class="method" id="229"><h3>rectangle</h3><pre>rectangle(xy, fill=None, outline=None)</pre><p>Draw a rectangle.
-</p></div><div class="method" id="229"><h3>rectangle</h3><pre>rectangle(xy, fill=None, outline=None)</pre><p>Draw a rectangle.
-</p></div><div class="method" id="89"><h3>setfill</h3><pre>setfill(onoff)</pre><p>Set the default background color.
-</p></div><div class="method" id="89"><h3>setfill</h3><pre>setfill(onoff)</pre><p>Set the default background color.
-</p></div><div class="method" id="96"><h3>setfont</h3><pre>setfont(font)</pre><p>Set the default font.
-</p></div><div class="method" id="96"><h3>setfont</h3><pre>setfont(font)</pre><p>Set the default font.
-</p></div><div class="method" id="78"><h3>setink</h3><pre>setink(ink)</pre><p>Set the default pen color.
-</p></div><div class="method" id="78"><h3>setink</h3><pre>setink(ink)</pre><p>Set the default pen color.
-</p></div><div class="method" id="189"><h3>shape</h3><pre>shape(shape, fill=None, outline=None)</pre><p>(Experimental) Draw a shape.
-</p></div><div class="method" id="189"><h3>shape</h3><pre>shape(shape, fill=None, outline=None)</pre><p>(Experimental) Draw a shape.
-</p></div><div class="method" id="239"><h3>text</h3><pre>text(xy, text, fill=None, font=None, anchor=None)</pre><p>Draw text.
-</p></div><div class="method" id="239"><h3>text</h3><pre>text(xy, text, fill=None, font=None, anchor=None)</pre><p>Draw text.
-</p></div><div class="method" id="113"><h3>textsize</h3><pre>textsize(text, font=None)</pre><p>Get the size of a given string, in pixels.
-</p></div><div class="method" id="113"><h3>textsize</h3><pre>textsize(text, font=None)</pre><p>Get the size of a given string, in pixels.
-</p></div></body></html>
+   defaults to the mode of the image.</dd>
+</dl><br />
+</dd>
+<dt><b>ImageDraw(im, mode=None)</b> (class) [<a href='#PIL.ImageDraw.ImageDraw-class'>#</a>]</dt>
+<dd>
+<p>A simple 2D drawing interface for PIL images.</p>
+<p>For more information about this class, see <a href='#PIL.ImageDraw.ImageDraw-class'><i>The ImageDraw Class</i></a>.</p>
+</dd>
+</dl>
+<h2><a id='PIL.ImageDraw.ImageDraw-class' name='PIL.ImageDraw.ImageDraw-class'>The ImageDraw Class</a></h2>
+<dl>
+<dt><b>ImageDraw(im, mode=None)</b> (class) [<a href='#PIL.ImageDraw.ImageDraw-class'>#</a>]</dt>
+<dd>
+<p>A simple 2D drawing interface for PIL images.
+</p><p>
+Application code should use the <b>Draw</b> factory, instead of
+directly.
+</p></dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.__init__-method' name='PIL.ImageDraw.ImageDraw.__init__-method'><b>__init__(im, mode=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.__init__-method'>#</a>]</dt>
+<dd>
+<p>Create a drawing instance.</p>
+<dl>
+<dt><i>im</i></dt>
+<dd>
+The image to draw in.</dd>
+<dt><i>mode</i></dt>
+<dd>
+Optional mode to use for color values.  For RGB
+   images, this argument can be RGB or RGBA (to blend the
+   drawing into the image).  For all other modes, this argument
+   must be the same as the image mode.  If omitted, the mode
+   defaults to the mode of the image.</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.arc-method' name='PIL.ImageDraw.ImageDraw.arc-method'><b>arc(xy, start, end, fill=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.arc-method'>#</a>]</dt>
+<dd>
+<p>Draw an arc.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.bitmap-method' name='PIL.ImageDraw.ImageDraw.bitmap-method'><b>bitmap(xy, bitmap, fill=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.bitmap-method'>#</a>]</dt>
+<dd>
+<p>Draw a bitmap.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.chord-method' name='PIL.ImageDraw.ImageDraw.chord-method'><b>chord(xy, start, end, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.chord-method'>#</a>]</dt>
+<dd>
+<p>Draw a chord.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.ellipse-method' name='PIL.ImageDraw.ImageDraw.ellipse-method'><b>ellipse(xy, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.ellipse-method'>#</a>]</dt>
+<dd>
+<p>Draw an ellipse.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.getfont-method' name='PIL.ImageDraw.ImageDraw.getfont-method'><b>getfont()</b></a> [<a href='#PIL.ImageDraw.ImageDraw.getfont-method'>#</a>]</dt>
+<dd>
+<p>Get the current default font.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.line-method' name='PIL.ImageDraw.ImageDraw.line-method'><b>line(xy, fill=None, width=0)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.line-method'>#</a>]</dt>
+<dd>
+<p>Draw a line, or a connected sequence of line segments.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.pieslice-method' name='PIL.ImageDraw.ImageDraw.pieslice-method'><b>pieslice(xy, start, end, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.pieslice-method'>#</a>]</dt>
+<dd>
+<p>Draw a pieslice.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.point-method' name='PIL.ImageDraw.ImageDraw.point-method'><b>point(xy, fill=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.point-method'>#</a>]</dt>
+<dd>
+<p>Draw one or more individual pixels.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.polygon-method' name='PIL.ImageDraw.ImageDraw.polygon-method'><b>polygon(xy, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.polygon-method'>#</a>]</dt>
+<dd>
+<p>Draw a polygon.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.rectangle-method' name='PIL.ImageDraw.ImageDraw.rectangle-method'><b>rectangle(xy, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.rectangle-method'>#</a>]</dt>
+<dd>
+<p>Draw a rectangle.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.setfill-method' name='PIL.ImageDraw.ImageDraw.setfill-method'><b>setfill(onoff)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.setfill-method'>#</a>]</dt>
+<dd>
+<p>Set the default background color.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.setfont-method' name='PIL.ImageDraw.ImageDraw.setfont-method'><b>setfont(font)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.setfont-method'>#</a>]</dt>
+<dd>
+<p>Set the default font.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.setink-method' name='PIL.ImageDraw.ImageDraw.setink-method'><b>setink(ink)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.setink-method'>#</a>]</dt>
+<dd>
+<p>Set the default pen color.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.shape-method' name='PIL.ImageDraw.ImageDraw.shape-method'><b>shape(shape, fill=None, outline=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.shape-method'>#</a>]</dt>
+<dd>
+<p>(Experimental) Draw a shape.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.text-method' name='PIL.ImageDraw.ImageDraw.text-method'><b>text(xy, text, fill=None, font=None, anchor=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.text-method'>#</a>]</dt>
+<dd>
+<p>Draw text.</p>
+</dd>
+<dt><a id='PIL.ImageDraw.ImageDraw.textsize-method' name='PIL.ImageDraw.ImageDraw.textsize-method'><b>textsize(text, font=None)</b></a> [<a href='#PIL.ImageDraw.ImageDraw.textsize-method'>#</a>]</dt>
+<dd>
+<p>Get the size of a given string, in pixels.</p>
+</dd>
+</dl>
+</body></html>

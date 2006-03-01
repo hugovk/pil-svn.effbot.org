@@ -31,24 +31,28 @@
  * 1997-05-09 fl  Use command instead of image type
  * 2001-03-18 fl  Initialize alpha layer pointer (struct changed in 8.3)
  * 2003-04-23 fl  Fixed building for Tk 8.4.1 and later (Jack Jansen)
+ * 2004-06-24 fl  Fixed building for Tk 8.4.6 and later.
  *
- * Copyright (c) 1997-2003 by Secret Labs AB
- * Copyright (c) 1995-2003 by Fredrik Lundh
+ * Copyright (c) 1997-2004 by Secret Labs AB
+ * Copyright (c) 1995-2004 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
-
-
-#include <stdlib.h>
 
 /* This is needed for (at least) Tk 8.4.1, otherwise the signature of
 ** Tk_PhotoPutBlock changes.
 */
 #define USE_COMPOSITELESS_PHOTO_PUT_BLOCK
 
+/* This is needed for (at least) Tk 8.4.6 and later, to avoid warnings
+   for the Tcl_CreateCommand command. */
+#define USE_COMPAT_CONST
+
 #include "tk.h"
 
 #include "Imaging.h"
+
+#include <stdlib.h>
 
 
 static Imaging
@@ -66,7 +70,7 @@ ImagingFind(const char* name)
 
 
 static int
-PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
+PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
                int argc, char **argv)
 {
     Imaging im;
@@ -82,7 +86,9 @@ PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
     /* get Tcl PhotoImage handle */
     photo = Tk_FindPhoto(interp, argv[1]);
     if (photo == NULL) {
-        Tcl_AppendResult(interp, "destination photo must exist", (char *) NULL);
+        Tcl_AppendResult(
+            interp, "destination photo must exist", (char *) NULL
+            );
         return TCL_ERROR;
     }
 
@@ -191,9 +197,51 @@ PyImagingPhoto(ClientData clientdata, Tcl_Interp* interp,
 }
 
 
+static int
+PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
+               int argc, char **argv)
+{
+    Tk_PhotoHandle photo;
+    Tk_PhotoImageBlock block;
+
+    if (argc != 2) {
+        Tcl_AppendResult(interp, "usage: ", argv[0],
+                         " srcPhoto", (char *) NULL);
+        return TCL_ERROR;
+    }
+
+    /* get Tcl PhotoImage handle */
+    photo = Tk_FindPhoto(interp, argv[1]);
+    if (photo == NULL) {
+        Tcl_AppendResult(
+            interp, "source photo must exist", (char *) NULL
+            );
+        return TCL_ERROR;
+    }
+
+    Tk_PhotoGetImage(photo, &block);
+
+    printf("pixelPtr = %p\n", block.pixelPtr);
+    printf("width = %d\n", block.width);
+    printf("height = %d\n", block.height);
+    printf("pitch = %d\n", block.pitch);
+    printf("pixelSize = %d\n", block.pixelSize);
+    printf("offset = %d %d %d %d\n", block.offset[0], block.offset[1],
+           block.offset[2], block.offset[3]);
+
+    Tcl_AppendResult(
+        interp, "this function is not yet support", (char *) NULL
+        );
+
+    return TCL_ERROR;
+}
+
+
 void
 TkImaging_Init(Tcl_Interp* interp)
 {
-    Tcl_CreateCommand(interp, "PyImagingPhoto", PyImagingPhoto,
+    Tcl_CreateCommand(interp, "PyImagingPhoto", PyImagingPhotoPut,
+                      (ClientData) 0, (Tcl_CmdDeleteProc*) NULL);
+    Tcl_CreateCommand(interp, "PyImagingPhotoGet", PyImagingPhotoGet,
                       (ClientData) 0, (Tcl_CmdDeleteProc*) NULL);
 }

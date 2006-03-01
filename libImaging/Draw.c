@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/Draw.c#6 $
+ * $Id: Draw.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * a simple drawing package for the Imaging library
  *
@@ -18,9 +18,10 @@
  * 1999-07-26 fl  Eliminated a compiler warning
  * 1999-07-31 fl  Pass ink as void* instead of int
  * 2002-12-10 fl  Added experimental RGBA-on-RGB drawing
+ * 2004-09-04 fl  Support simple wide lines (no joins)
  *
- * Copyright (c) 1996-2002 by Fredrik Lundh
- * Copyright (c) 1997-2002 by Secret Labs AB.
+ * Copyright (c) 1996-2004 by Fredrik Lundh
+ * Copyright (c) 1997-2004 by Secret Labs AB.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -30,8 +31,9 @@
 /* FIXME: add drawing context, support affine transforms */
 /* FIXME: support clip window (and mask?) */
 
-#include <math.h>
 #include "Imaging.h"
+
+#include <math.h>
 
 #define CEIL(v)  (int) ceil(v)
 #define FLOOR(v) ((v) >= 0.0 ? (int) (v) : (int) floor(v))
@@ -382,7 +384,13 @@ line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink)
 static int
 x_cmp(const void *x0, const void *x1)
 {
-    return *((float*)x0) - *((float*)x1);
+    float diff = *((float*)x0) - *((float*)x1);
+    if (diff < 0)
+        return -1;
+    else if (diff > 0)
+        return 1;
+    else
+        return 0;
 }
 
 static inline int
@@ -417,13 +425,14 @@ polygon8(Imaging im, int n, Edge *e, int ink, int eofill)
 	return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5;
+	y = ymin+0.5F;
 	for (i = j = 0; i < n; i++) 
-	    if (y >= e[i].ymin && y <= e[i].ymax)
+	    if (y >= e[i].ymin && y <= e[i].ymax) {
 		if (e[i].d == 0)
 		    hline8(im, e[i].xmin, ymin, e[i].xmax, ink);
 		else
 		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+            }
 	if (j == 2) {
             if (xx[0] < xx[1])
                 hline8(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
@@ -473,13 +482,14 @@ polygon32(Imaging im, int n, Edge *e, int ink, int eofill)
 	return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5;
+	y = ymin+0.5F;
 	for (i = j = 0; i < n; i++) {
-	    if (y >= e[i].ymin && y <= e[i].ymax)
+	    if (y >= e[i].ymin && y <= e[i].ymax) {
 		if (e[i].d == 0)
 		    hline32(im, e[i].xmin, ymin, e[i].xmax, ink);
 		else
 		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+            }
         }
 	if (j == 2) {
             if (xx[0] < xx[1])
@@ -530,13 +540,14 @@ polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill)
 	return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5;
+	y = ymin+0.5F;
 	for (i = j = 0; i < n; i++) {
-	    if (y >= e[i].ymin && y <= e[i].ymax)
+	    if (y >= e[i].ymin && y <= e[i].ymax) {
 		if (e[i].d == 0)
 		    hline32rgba(im, e[i].xmin, ymin, e[i].xmax, ink);
 		else
 		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+            }
         }
 	if (j == 2) {
             if (xx[0] < xx[1])
@@ -632,6 +643,48 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void* ink_,
     DRAWINIT();
 
     draw->line(im, x0, y0, x1, y1, ink);
+
+    return 0;
+}
+
+int
+ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
+                    const void* ink_, int width, int op)
+{
+    DRAW* draw;
+    INT32 ink;
+
+    Edge e[4];
+
+    int dx, dy;
+    double d;
+
+    DRAWINIT();
+
+    if (width <= 1) {
+        draw->line(im, x0, y0, x1, y1, ink);
+        return 0;
+    }
+
+    dx = x1-x0;
+    dy = y1-y0;
+
+    if (dx == 0 && dy == 0) {
+        draw->point(im, x0, y0, ink);
+        return 0;
+    }
+
+    d = width / sqrt(dx*dx + dy*dy);
+
+    dx = (int) (d * (y1-y0) + 0.5);
+    dy = (int) (d * (x1-x0) + 0.5);
+
+    add_edge(e+0, x0 - dx,  y0 + dy, x1 - dx,  y1 + dy);
+    add_edge(e+1, x1 - dx,  y1 + dy, x1 + dx,  y1 - dy);
+    add_edge(e+2, x1 + dx,  y1 - dy, x0 + dx,  y0 - dy);
+    add_edge(e+3, x0 + dx,  y0 - dy, x0 - dx,  y0 + dy);
+
+    draw->polygon(im, 4, e, ink, 0);
 
     return 0;
 }
@@ -743,9 +796,9 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     int i, n;
     int cx, cy;
     int w, h;
-    int x, y;
-    int lx, ly;
-    int sx, sy;
+    int x = 0, y = 0;
+    int lx = 0, ly = 0;
+    int sx = 0, sy = 0;
     DRAW* draw;
     INT32 ink;
 
@@ -983,14 +1036,14 @@ ImagingOutlineCurve(ImagingOutline outline, float x1, float y1,
         float t2 = t*t;
         float t3 = t2*t;
 
-        float u = 1.0 - t;
+        float u = 1.0F - t;
         float u2 = u*u;
         float u3 = u2*u;
 
-        float x = outline->x*u3 + 3*(x1*t*u2 + x2*t2*u) + x3*t3;
-        float y = outline->y*u3 + 3*(y1*t*u2 + y2*t2*u) + y3*t3;
+        float x = outline->x*u3 + 3*(x1*t*u2 + x2*t2*u) + x3*t3 + 0.5;
+        float y = outline->y*u3 + 3*(y1*t*u2 + y2*t2*u) + y3*t3 + 0.5;
 
-        add_edge(e++, xo, yo, x, y);
+        add_edge(e++, xo, yo, (int) x, (int) y);
 
         xo = x, yo = y;
 

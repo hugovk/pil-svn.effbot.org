@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageFile.py#8 $
+# $Id: ImageFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # base class for image file handlers
 #
@@ -18,17 +18,21 @@
 # 2000-10-12 fl   Set readonly flag on memory-mapped images
 # 2002-03-20 fl   Use better messages for common decoder errors
 # 2003-04-21 fl   Fall back on mmap/map_buffer if map is not available
+# 2003-10-30 fl   Added StubImageFile class
+# 2004-02-25 fl   Made incremental parser more robust
 #
-# Copyright (c) 1997-2002 by Secret Labs AB
-# Copyright (c) 1995-2002 by Fredrik Lundh
+# Copyright (c) 1997-2004 by Secret Labs AB
+# Copyright (c) 1995-2004 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 import Image
-import traceback, sys, os
+import traceback, sys, string, os
 
 MAXBLOCK = 65536
+
+SAFEBLOCK = 1024*1024
 
 ERRORS = {
     -1: "image buffer overrun error",
@@ -65,7 +69,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if type(fp) == type(""):
+        if Image.isStringType(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
@@ -150,6 +154,17 @@ class ImageFile(Image.Image):
 
         self.load_prepare()
 
+        # look for read/seek overrides
+        try:
+            read = self.load_read
+        except AttributeError:
+            read = self.fp.read
+
+        try:
+            seek = self.load_seek
+        except AttributeError:
+            seek = self.fp.seek
+
         if not self.map:
 
             # sort tiles in file order
@@ -163,7 +178,7 @@ class ImageFile(Image.Image):
 
             for d, e, o, a in self.tile:
                 d = Image._getdecoder(self.mode, d, a, self.decoderconfig)
-                self.load_seek(o)
+                seek(o)
                 try:
                     d.setimage(self.im, e)
                 except ValueError:
@@ -171,7 +186,7 @@ class ImageFile(Image.Image):
                 b = prefix
                 t = len(b)
                 while 1:
-                    s = self.load_read(self.decodermaxblock)
+                    s = read(self.decodermaxblock)
                     if not s:
                         self.tile = []
                         raise IOError("image file is truncated (%d bytes not processed)" % len(b))
@@ -212,14 +227,48 @@ class ImageFile(Image.Image):
         # may be overridden
         pass
 
-    def load_seek(self, pos):
-        # may be overridden for contained formats
-        self.fp.seek(pos)
+    # may be defined for contained formats
+    # def load_seek(self, pos):
+    #     pass
 
-    def load_read(self, bytes):
-        # may be overridden for blocked formats (e.g. PNG)
-        return self.fp.read(bytes)
+    # may be defined for blocked formats (e.g. PNG)
+    # def load_read(self, bytes):
+    #     pass
 
+##
+# Base class for stub image loaders.
+# <p>
+# A stub loader is an image loader that can identify files of a
+# certain format, but relies on external code to load the file.
+
+class StubImageFile(ImageFile):
+    "Base class for stub image loaders."
+
+    def _open(self):
+        raise NotImplementedError(
+            "StubImageFile subclass must implement _open"
+            )
+
+    def load(self):
+        loader = self._load()
+        if loader is None:
+            raise IOError("cannot find loader for this %s file" % self.format)
+        image = loader.load(self)
+        assert image is not None
+        # become the other object (!)
+        self.__class__ = image.__class__
+        self.__dict__ = image.__dict__
+
+    ##
+    # (Hook) Find actual image loader.
+
+    def _load(self):
+        raise NotImplementedError(
+            "StubImageFile subclass must implement _load"
+            )
+
+##
+# (Internal) Support class for the <b>Parser</b> file.
 
 class _ParserFile:
     # parser support class.
@@ -264,17 +313,31 @@ class _ParserFile:
                 break
         return s
 
-class Parser:
-    # incremental image parser.  implements the consumer
-    # interface.
+##
+# Incremental image parser.  This class implements the standard
+# feed/close consumer interface.
 
+class Parser:
+
+    incremental = None
     image = None
     data = None
     decoder = None
     finished = 0
 
+    ##
+    # (Consumer) Reset the parser.  Note that you can only call this
+    # method immediately after you've created a parser; parser
+    # instances cannot be reused.
+
     def reset(self):
         assert self.data is None, "cannot reuse parsers"
+
+    ##
+    # (Consumer) Feed data to the parser.
+    #
+    # @param data A string buffer.
+    # @exception IOError If the parser failed to parse the image file.
 
     def feed(self, data):
         # collect data
@@ -314,6 +377,13 @@ class Parser:
                     return
             self.data = self.data[n:]
 
+        elif self.image:
+
+            # if we end up here with no decoder, this file cannot
+            # be incrementally parsed.  wait until we've gotten all
+            # available data
+            pass
+
         else:
 
             # attempt to open this file
@@ -326,27 +396,33 @@ class Parser:
             except IOError:
                 pass # not enough data
             else:
+                flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
+                if flag or len(im.tile) != 1:
+                    # custom load code, or multiple tiles
+                    self.decode = None
+                else:
+                    # initialize decoder
+                    im.load_prepare()
+                    d, e, o, a = im.tile[0]
+                    im.tile = []
+                    self.decoder = Image._getdecoder(
+                        im.mode, d, a, im.decoderconfig
+                        )
+                    self.decoder.setimage(im.im, e)
 
-                # sanity check
-                if len(im.tile) != 1:
-                    raise IOError("cannot parse this image")
-
-                # initialize decoder
-                im.load_prepare()
-                d, e, o, a = im.tile[0]
-                im.tile = []
-                self.decoder = Image._getdecoder(
-                    im.mode, d, a, im.decoderconfig
-                    )
-                self.decoder.setimage(im.im, e)
-
-                # calculate decoder offset
-                self.offset = o
-                if self.offset <= len(self.data):
-                    self.data = self.data[self.offset:]
-                    self.offset = 0
+                    # calculate decoder offset
+                    self.offset = o
+                    if self.offset <= len(self.data):
+                        self.data = self.data[self.offset:]
+                        self.offset = 0
 
                 self.image = im
+
+    ##
+    # (Consumer) Close the stream.
+    #
+    # @return An image object.
+    # @exception IOError If the parser failed to parse the image file.
 
     def close(self):
         # finish decoding
@@ -358,11 +434,24 @@ class Parser:
                 raise IOError("image was incomplete")
         if not self.image:
             raise IOError("cannot parse this image")
+        if self.data:
+            # incremental parsing not possible; reopen the file
+            # not that we have all data
+            try:
+                fp = _ParserFile(self.data)
+                self.image = Image.open(fp)
+            finally:
+                fp.close() # explicitly close the virtual file
         return self.image
 
-#
 # --------------------------------------------------------------------
-# Save image body
+
+##
+# (Helper) Save image body to file.
+#
+# @param im Image object.
+# @param fp File object.
+# @param tile Tile list.
 
 def _save(im, fp, tile):
     "Helper to save image based on tile list"
@@ -371,6 +460,7 @@ def _save(im, fp, tile):
     if not hasattr(im, "encoderconfig"):
         im.encoderconfig = ()
     tile.sort(_tilesort)
+    # FIXME: make MAXBLOCK a configuration parameter
     bufsize = max(MAXBLOCK, im.size[0] * 4) # see RawEncode.c
     try:
         fh = fp.fileno()
@@ -402,3 +492,27 @@ def _save(im, fp, tile):
     try:
         fp.flush()
     except: pass
+
+
+##
+# Reads large blocks in a safe way.  Unlike fp.read(n), this function
+# doesn't trust the user.  If the requested size is larger than
+# SAFEBLOCK, the file is read block by block.
+#
+# @param fp File handle.  Must implement a <b>read</b> method.
+# @param size Number of bytes to read.
+# @return A string containing up to <i>size</i> bytes of data.
+
+def _safe_read(fp, size):
+    if size <= 0:
+        return ""
+    if size <= SAFEBLOCK:
+        return fp.read(size)
+    data = []
+    while size > 0:
+        block = fp.read(min(size, SAFEBLOCK))
+        if not block:
+            break
+        data.append(block)
+        size = size - len(block)
+    return string.join(data, "")

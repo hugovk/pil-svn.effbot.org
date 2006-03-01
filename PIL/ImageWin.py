@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageWin.py#6 $
+# $Id: ImageWin.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # a Windows DIB display interface
 #
@@ -8,9 +8,11 @@
 # 1996-05-20 fl   Created
 # 1996-09-20 fl   Fixed subregion exposure
 # 1997-09-21 fl   Added draw primitive (for tzPrint)
+# 2003-05-21 fl   Added experimental Window/ImageWindow classes
+# 2003-09-05 fl   Added fromstring/tostring methods
 #
-# Copyright (c) Secret Labs AB 1997-2002.
-# Copyright (c) Fredrik Lundh 1996-2002.
+# Copyright (c) Secret Labs AB 1997-2003.
+# Copyright (c) Fredrik Lundh 1996-2003.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -147,3 +149,66 @@ class Dib:
             self.image.paste(im.im, box)
         else:
             self.image.paste(im.im)
+
+    ##
+    # Load display memory contents from string buffer.
+    #
+    # @param buffer A string buffer containing display data (usually
+    #     data returned from <b>tostring</b>)
+
+    def fromstring(self, buffer):
+        return self.image.fromstring(buffer)
+
+    ##
+    # Copy display memory contents to string buffer.
+    #
+    # @return A string buffer containing display data.
+
+    def tostring(self):
+        return self.image.tostring()
+
+
+##
+# Create a Window with the given title size.
+
+class Window:
+
+    def __init__(self, title="PIL", width=None, height=None):
+        self.hwnd = Image.core.createwindow(
+            title, self.__dispatcher, width or 0, height or 0
+            )
+
+    def __dispatcher(self, action, *args):
+        return apply(getattr(self, "ui_handle_" + action), args)
+
+    def ui_handle_clear(self, dc, x0, y0, x1, y1):
+        pass
+
+    def ui_handle_damage(self, x0, y0, x1, y1):
+        pass
+
+    def ui_handle_destroy(self):
+        pass
+
+    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+        pass
+
+    def ui_handle_resize(self, width, height):
+        pass
+
+    def mainloop(self):
+        Image.core.eventloop()
+
+##
+# Create an image window which displays the given image.
+
+class ImageWindow(Window):
+
+    def __init__(self, image, title="PIL"):
+        if not isinstance(image, Dib):
+            image = Dib(image)
+        self.image = image
+        Window.__init__(self, title, width=image.size[0], height=image.size[0])
+
+    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+        self.image.draw(dc, (x0, y0, x1, y1))

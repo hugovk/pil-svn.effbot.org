@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Geometry.c#4 $
+ * $Id: Geometry.c 2308 2005-03-02 12:00:55Z fredrik $
  *
  * the imaging geometry methods
  *
@@ -17,6 +17,7 @@
  * 1999-02-16 fl  Added fixed-point version of affine transform
  * 2001-03-28 fl  Fixed transform(EXTENT) for xoffset < 0
  * 2003-03-10 fl  Compiler tweaks
+ * 2004-09-19 fl  Fixed bilinear/bicubic filtering of LA images
  *
  * Copyright (c) 1997-2003 by Secret Labs AB
  * Copyright (c) 1995-1997 by Fredrik Lundh
@@ -38,6 +39,7 @@
 Imaging
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -54,10 +56,14 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 	    imOut->image[y][x] = imIn->image[y][xr];\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
 	FLIP_HORIZ(image8)
     else
 	FLIP_HORIZ(image32)
+
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -66,6 +72,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
 Imaging
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int y, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -75,9 +82,13 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
 
     ImagingCopyInfo(imOut, imIn);
 
+    ImagingSectionEnter(&cookie);
+
     yr = imIn->ysize-1;
     for (y = 0; y < imIn->ysize; y++, yr--)
 	memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
+
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -86,6 +97,7 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
 Imaging
 ImagingRotate90(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -102,10 +114,14 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 	    imOut->image[xr][y] = imIn->image[y][x];\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
 	ROTATE_90(image8)
     else
 	ROTATE_90(image32)
+
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -114,6 +130,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn)
 Imaging
 ImagingRotate180(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int x, y, xr, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -132,10 +149,14 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 	    imOut->image[y][x] = imIn->image[yr][xr];\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
 	ROTATE_180(image8)
     else
 	ROTATE_180(image32)
+
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -144,6 +165,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn)
 Imaging
 ImagingRotate270(Imaging imOut, Imaging imIn)
 {
+    ImagingSectionCookie cookie;
     int x, y, yr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0)
@@ -160,10 +182,14 @@ ImagingRotate270(Imaging imOut, Imaging imIn)
 	for (x = 0; x < imIn->xsize; x++)\
 	    imOut->image[x][y] = imIn->image[yr][x];
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
 	ROTATE_270(image8)
     else
 	ROTATE_270(image32)
+
+    ImagingSectionLeave(&cookie);
 
     return imOut;
 }
@@ -187,6 +213,20 @@ affine_transform(double* xin, double* yin, int x, int y, void* data)
 
     xin[0] = a0 + a1*x + a2*y;
     yin[0] = a3 + a4*x + a5*y;
+
+    return 1;
+}
+
+static int
+perspective_transform(double* xin, double* yin, int x, int y, void* data)
+{
+    double* a = (double*) data;
+    double a0 = a[0]; double a1 = a[1]; double a2 = a[2];
+    double a3 = a[3]; double a4 = a[4]; double a5 = a[5];
+    double a6 = a[6]; double a7 = a[7];
+
+    xin[0] = (a0 + a1*x + a2*y) / (a6*x + a7*y + 1);
+    yin[0] = (a3 + a4*x + a5*y) / (a6*x + a7*y + 1);
 
     return 1;
 }
@@ -297,7 +337,7 @@ bilinear_filter8(void* out, Imaging im, double xin, double yin, void* data)
 {
     BILINEAR_HEAD(UINT8);
     BILINEAR_BODY(UINT8, im->image8, 1, 0);
-    ((UINT8*)out)[0] = v1;
+    ((UINT8*)out)[0] = (UINT8) v1;
     return 1;
 }
 
@@ -306,7 +346,7 @@ bilinear_filter32I(void* out, Imaging im, double xin, double yin, void* data)
 {
     BILINEAR_HEAD(INT32);
     BILINEAR_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = v1;
+    ((INT32*)out)[0] = (INT32) v1;
     return 1;
 }
 
@@ -315,7 +355,20 @@ bilinear_filter32F(void* out, Imaging im, double xin, double yin, void* data)
 {
     BILINEAR_HEAD(FLOAT32);
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = v1;
+    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    return 1;
+}
+
+static int
+bilinear_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
+{
+    BILINEAR_HEAD(UINT8);
+    BILINEAR_BODY(UINT8, im->image, 4, 0);
+    ((UINT8*)out)[0] = (UINT8) v1;
+    ((UINT8*)out)[1] = (UINT8) v1;
+    ((UINT8*)out)[2] = (UINT8) v1;
+    BILINEAR_BODY(UINT8, im->image, 4, 3);
+    ((UINT8*)out)[3] = (UINT8) v1;
     return 1;
 }
 
@@ -326,7 +379,7 @@ bilinear_filter32RGB(void* out, Imaging im, double xin, double yin, void* data)
     BILINEAR_HEAD(UINT8);
     for (b = 0; b < im->bands; b++) {
         BILINEAR_BODY(UINT8, im->image, 4, b);
-        ((UINT8*)out)[b] = v1;
+        ((UINT8*)out)[b] = (UINT8) v1;
     }
     return 1;
 }
@@ -401,7 +454,7 @@ bicubic_filter32I(void* out, Imaging im, double xin, double yin, void* data)
 {
     BICUBIC_HEAD(INT32);
     BICUBIC_BODY(INT32, im->image32, 1, 0);
-    ((INT32*)out)[0] = v1;
+    ((INT32*)out)[0] = (INT32) v1;
     return 1;
 }
 
@@ -410,7 +463,35 @@ bicubic_filter32F(void* out, Imaging im, double xin, double yin, void* data)
 {
     BICUBIC_HEAD(FLOAT32);
     BICUBIC_BODY(FLOAT32, im->image32, 1, 0);
-    ((FLOAT32*)out)[0] = v1;
+    ((FLOAT32*)out)[0] = (FLOAT32) v1;
+    return 1;
+}
+
+static int
+bicubic_filter32LA(void* out, Imaging im, double xin, double yin, void* data)
+{
+    BICUBIC_HEAD(UINT8);
+    BICUBIC_BODY(UINT8, im->image, 4, 0);
+    if (v1 <= 0.0) {
+        ((UINT8*)out)[0] = 0;
+        ((UINT8*)out)[1] = 0;
+        ((UINT8*)out)[2] = 0;
+    } else if (v1 >= 255.0) {
+        ((UINT8*)out)[0] = 255;
+        ((UINT8*)out)[1] = 255;
+        ((UINT8*)out)[2] = 255;
+    } else {
+        ((UINT8*)out)[0] = (UINT8) v1;
+        ((UINT8*)out)[1] = (UINT8) v1;
+        ((UINT8*)out)[2] = (UINT8) v1;
+    }
+    BICUBIC_BODY(UINT8, im->image, 4, 3);
+    if (v1 <= 0.0)
+        ((UINT8*)out)[3] = 0;
+    else if (v1 >= 255.0)
+        ((UINT8*)out)[3] = 255;
+    else
+        ((UINT8*)out)[3] = (UINT8) v1;
     return 1;
 }
 
@@ -459,7 +540,10 @@ getfilter(Imaging im, int filterid)
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return (ImagingTransformFilter) bilinear_filter32RGB;
+                if (im->bands == 2)
+                    return (ImagingTransformFilter) bilinear_filter32LA;
+                else
+                    return (ImagingTransformFilter) bilinear_filter32RGB;
             case IMAGING_TYPE_INT32:
                 return (ImagingTransformFilter) bilinear_filter32I;
             case IMAGING_TYPE_FLOAT32:
@@ -473,7 +557,10 @@ getfilter(Imaging im, int filterid)
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return (ImagingTransformFilter) bicubic_filter32RGB;
+                if (im->bands == 2)
+                    return (ImagingTransformFilter) bicubic_filter32LA;
+                else
+                    return (ImagingTransformFilter) bicubic_filter32RGB;
             case IMAGING_TYPE_INT32:
                 return (ImagingTransformFilter) bicubic_filter32I;
             case IMAGING_TYPE_FLOAT32:
@@ -502,6 +589,7 @@ ImagingTransform(
     /* slow generic transformation.  use ImagingTransformAffine or
        ImagingScaleAffine where possible. */
 
+    ImagingSectionCookie cookie;
     int x, y;
     char *out;
     double xx, yy;
@@ -510,6 +598,8 @@ ImagingTransform(
 	return (Imaging) ImagingError_ModeError();
 
     ImagingCopyInfo(imOut, imIn);
+
+    ImagingSectionEnter(&cookie);
 
     if (x0 < 0)
         x0 = 0;
@@ -532,6 +622,8 @@ ImagingTransform(
 	}
     }
 
+    ImagingSectionLeave(&cookie);
+
     return imOut;
 }
 
@@ -542,6 +634,7 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 {
     /* scale, nearest neighbour resampling */
 
+    ImagingSectionCookie cookie;
     int x, y;
     int xin;
     double xo, yo;
@@ -601,11 +694,15 @@ ImagingScaleAffine(Imaging imOut, Imaging imIn,
 	yo += a[5];\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8) {
         AFFINE_SCALE(UINT8, image8);
     } else {
         AFFINE_SCALE(INT32, image32);
     }
+
+    ImagingSectionLeave(&cookie);
 
     free(xintab);
 
@@ -682,6 +779,7 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
     /* affine transform, nearest neighbour resampling, floating point
        arithmetics*/
 
+    ImagingSectionCookie cookie;
     int x, y;
     int xin, yin;
     int xsize, ysize;
@@ -757,12 +855,33 @@ ImagingTransformAffine(Imaging imOut, Imaging imIn,
 	yo += a[5];\
     }
 
+    ImagingSectionEnter(&cookie);
+
     if (imIn->image8)
 	AFFINE_TRANSFORM(UINT8, image8)
     else
 	AFFINE_TRANSFORM(INT32, image32)
 
+    ImagingSectionLeave(&cookie);
+
     return imOut;
+}
+
+Imaging
+ImagingTransformPerspective(Imaging imOut, Imaging imIn,
+                            int x0, int y0, int x1, int y1,
+                            double a[8], int filterid, int fill)
+{
+    ImagingTransformFilter filter = getfilter(imIn, filterid);
+    if (!filter)
+        return (Imaging) ImagingError_ValueError("bad filter number");
+
+    return ImagingTransform(
+        imOut, imIn,
+        x0, y0, x1, y1,
+        perspective_transform, a,
+        filter, NULL,
+        fill);
 }
 
 Imaging

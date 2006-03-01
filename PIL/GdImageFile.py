@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/GdImageFile.py#5 $
+# $Id: GdImageFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # GD file handling
 #
@@ -66,7 +66,7 @@ class GdImageFile(ImageFile.ImageFile):
 # @param mode Optional mode.  In this version, if the mode argument
 #     is given, it must be "r".
 # @return An image instance.
-# @exception IOError Indicates that the image could not be read.
+# @exception IOError If the image could not be read.
 
 def open(fp, mode = "r"):
 

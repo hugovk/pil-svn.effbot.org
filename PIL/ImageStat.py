@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageStat.py#4 $
+# $Id: ImageStat.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # global image statistics
 #
@@ -27,6 +27,7 @@ import operator, math
 ##
 # The <b>ImageStat</b> module calculates global statistics for an
 # image, or a region of an image.
+##
 
 ##
 # Calculate statistics for the given image.  If a mask is included,

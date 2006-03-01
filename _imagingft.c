@@ -1,25 +1,69 @@
 /*
  * PIL FreeType Driver
- * $Id: //modules/pil/_imagingft.c#7 $
+ * $Id: _imagingft.c 2025 2004-09-14 08:28:54Z fredrik $
  *
- * a FreeType 2.0 driver for PIL
+ * a FreeType 2.X driver for PIL
  *
  * history:
  * 2001-02-17 fl  Created (based on old experimental freetype 1.0 code)
  * 2001-04-18 fl  Fixed some egcs compiler nits
  * 2002-11-08 fl  Added unicode support; more font metrics, etc
+ * 2003-05-20 fl  Fixed compilation under 1.5.2 and newer non-unicode builds
+ * 2003-09-27 fl  Added charmap encoding support
+ * 2004-05-15 fl  Fixed compilation for FreeType 2.1.8
+ * 2004-09-10 fl  Added support for monochrome bitmaps
  *
- * Copyright (c) 1998-2001 by Secret Labs AB
+ * Copyright (c) 1998-2004 by Secret Labs AB
  */
 
 #include "Python.h"
 #include "Imaging.h"
 
-#include <freetype/freetype.h>
+#ifndef USE_FREETYPE_2_0
+/* undef/comment out to use freetype 2.0 */
+#define USE_FREETYPE_2_1
+#endif
 
-#if PY_VERSION_HEX < 0x01060000
+#if defined(USE_FREETYPE_2_1)
+/* freetype 2.1 and newer */
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#else
+/* freetype 2.0 */
+#include <freetype/freetype.h>
+#endif
+
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX < 0x01060000
 #define PyObject_DEL(op) PyMem_DEL((op))
 #endif
+
+#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x01060000
+#if PY_VERSION_HEX  < 0x02020000 || defined(Py_USING_UNICODE)
+/* defining this enables unicode support (default under 1.6a1 and later) */
+#define HAVE_UNICODE
+#endif
+#endif
+
+#ifndef FT_LOAD_TARGET_MONO
+#define FT_LOAD_TARGET_MONO  FT_LOAD_MONOCHROME
+#endif
+
+/* -------------------------------------------------------------------- */
+/* error table */
+
+#undef FTERRORS_H
+#undef __FTERRORS_H__
+
+#define FT_ERRORDEF( e, v, s )  { e, s },
+#define FT_ERROR_START_LIST  {
+#define FT_ERROR_END_LIST    { 0, 0 } };
+
+struct {
+    int code;
+    const char* message;
+} ft_errors[] =
+
+#include <freetype/fterrors.h>
 
 /* -------------------------------------------------------------------- */
 /* font objects */
@@ -36,7 +80,22 @@ staticforward PyTypeObject Font_Type;
 /* round a 26.6 pixel coordinate to the nearest larger integer */
 #define PIXEL(x) ((((x)+63) & -64)>>6)
 
-static PyObject *
+static PyObject*
+geterror(int code)
+{
+    int i;
+
+    for (i = 0; ft_errors[i].message; i++)
+        if (ft_errors[i].code == code) {
+            PyErr_SetString(PyExc_IOError, ft_errors[i].message);
+            return NULL;
+        }
+
+    PyErr_SetString(PyExc_IOError, "unknown freetype error");
+    return NULL;
+}
+
+static PyObject*
 getfont(PyObject* self_, PyObject* args, PyObject* kw)
 {
     /* create a font object from a file name and a size (in pixels) */
@@ -47,20 +106,20 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     char* filename;
     int size;
     int index = 0;
-    static char* kwlist[] = { "filename", "size", "index", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "si|i", kwlist,
-                                     &filename, &size, &index))
+    unsigned char* encoding = NULL;
+    static char* kwlist[] = {
+        "filename", "size", "index", "encoding", NULL
+    };
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "si|is", kwlist,
+                                     &filename, &size, &index, &encoding))
         return NULL;
 
-    if (!library) {
-        error = FT_Init_FreeType(&library);
-        if (error) {
-            PyErr_SetString(
-                PyExc_IOError,
-                "cannot initialize FreeType library"
-                );
-            return NULL;
-        }
+    if (!library && FT_Init_FreeType(&library)) {
+        PyErr_SetString(
+            PyExc_IOError,
+            "cannot initialize FreeType library"
+            );
+        return NULL;
     }
 
     self = PyObject_NEW(FontObject, &Font_Type);
@@ -72,10 +131,16 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     if (!error)
         error = FT_Set_Pixel_Sizes(self->face, 0, size);
 
+    if (!error && encoding && strlen((char*) encoding) == 4) {
+        FT_Encoding encoding_tag = FT_MAKE_TAG(
+            encoding[0], encoding[1], encoding[2], encoding[3]
+            );
+        error = FT_Select_Charmap(self->face, encoding_tag);
+    }
+
     if (error) {
         PyObject_DEL(self);
-        PyErr_SetString(PyExc_IOError, "cannot load font");
-        return NULL;
+        return geterror(error);
     }
 
     return (PyObject*) self;
@@ -84,7 +149,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if PY_VERSION_HEX >= 0x01060000
+#if defined(HAVE_UNICODE)
     if (PyUnicode_Check(string)) {
         Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
         int size = PyUnicode_GET_SIZE(string);
@@ -92,10 +157,10 @@ font_getchar(PyObject* string, int index, FT_ULong* char_out)
             return 0;
         *char_out = p[index];
         return 1;
-    } else
+    }
 #endif
     if (PyString_Check(string)) {
-        unsigned char* p = PyString_AS_STRING(string);
+        unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
         int size = PyString_GET_SIZE(string);
         if (index >= size)
             return 0;
@@ -117,7 +182,7 @@ font_getsize(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O:getsize", &string))
         return NULL;
 
-#if PY_VERSION_HEX >= 0x01060000
+#if defined(HAVE_UNICODE)
     if (!PyUnicode_Check(string) && !PyString_Check(string)) {
 #else
     if (!PyString_Check(string)) {
@@ -131,7 +196,7 @@ font_getsize(FontObject* self, PyObject* args)
         index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, index, FT_LOAD_DEFAULT);
         if (error)
-            goto failure;
+            return geterror(error);
         x += self->face->glyph->metrics.horiAdvance;
     }
 
@@ -139,10 +204,6 @@ font_getsize(FontObject* self, PyObject* args)
         "ii", PIXEL(x),
         PIXEL(self->face->size->metrics.height)
         );
-
-  failure:
-    PyErr_SetString(PyExc_IOError, "cannot load character");
-    return NULL;
 }
 
 static PyObject*
@@ -151,7 +212,9 @@ font_render(FontObject* self, PyObject* args)
     int i, x, y;
     Imaging im;
     int index, error, ascender;
+    int load_flags;
     unsigned char *source;
+    
     FT_ULong ch;
     FT_GlyphSlot glyph;
 
@@ -159,10 +222,11 @@ font_render(FontObject* self, PyObject* args)
        the right size, or this will crash) */
     PyObject* string;
     long id;
-    if (!PyArg_ParseTuple(args, "Ol:render", &string, &id))
+    int mask = 0;
+    if (!PyArg_ParseTuple(args, "Ol|i:render", &string, &id, &mask))
         return NULL;
 
-#if PY_VERSION_HEX >= 0x01060000
+#if defined(HAVE_UNICODE)
     if (!PyUnicode_Check(string) && !PyString_Check(string)) {
 #else
     if (!PyString_Check(string)) {
@@ -173,36 +237,62 @@ font_render(FontObject* self, PyObject* args)
 
     im = (Imaging) id;
 
+    load_flags = FT_LOAD_RENDER;
+    if (mask)
+        load_flags |= FT_LOAD_TARGET_MONO;
+
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
         index = FT_Get_Char_Index(self->face, ch);
-        error = FT_Load_Glyph(self->face, index, FT_LOAD_RENDER);
+        error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
-            goto failure;
+            return geterror(error);
         glyph = self->face->glyph;
-        source = (unsigned char*) glyph->bitmap.buffer;
-        ascender = PIXEL(self->face->size->metrics.ascender);
-        for (y = 0; y < glyph->bitmap.rows; y++) {
-            int xx = PIXEL(x) + glyph->bitmap_left;
-            int yy = y + ascender - glyph->bitmap_top;
-            if (yy >= 0 && yy < im->ysize) {
-                /* blend this glyph into the buffer */
-                int i;
-                unsigned char *target = im->image8[yy] + xx;
-                for (i = 0; i < glyph->bitmap.width; i++)
-                    if (target[i] < source[i])
-                        target[i] = source[i];
+        if (mask) {
+            /* use monochrome mask (on palette images, etc) */
+            source = (unsigned char*) glyph->bitmap.buffer;
+            ascender = PIXEL(self->face->size->metrics.ascender);
+            for (y = 0; y < glyph->bitmap.rows; y++) {
+                int xx = PIXEL(x) + glyph->bitmap_left;
+                int yy = y + ascender - glyph->bitmap_top;
+                if (yy >= 0 && yy < im->ysize) {
+                    /* blend this glyph into the buffer */
+                    int i, j, m;
+                    unsigned char *target = im->image8[yy] + xx;
+                    m = 128;
+                    for (i = j = 0; j < glyph->bitmap.width; j++) {
+                        if (source[i] & m)
+                            target[j] = 255;
+                        if (!(m >>= 1)) {
+                            m = 128;
+                            i++;
+                        }
+                    }
+                }
+                source += glyph->bitmap.pitch;
             }
-            source += glyph->bitmap.pitch;
+        } else {
+            /* use antialiased rendering */
+            source = (unsigned char*) glyph->bitmap.buffer;
+            ascender = PIXEL(self->face->size->metrics.ascender);
+            for (y = 0; y < glyph->bitmap.rows; y++) {
+                int xx = PIXEL(x) + glyph->bitmap_left;
+                int yy = y + ascender - glyph->bitmap_top;
+                if (yy >= 0 && yy < im->ysize) {
+                    /* blend this glyph into the buffer */
+                    int i;
+                    unsigned char *target = im->image8[yy] + xx;
+                    for (i = 0; i < glyph->bitmap.width; i++)
+                        if (target[i] < source[i])
+                            target[i] = source[i];
+                }
+                source += glyph->bitmap.pitch;
+            }
         }
         x += glyph->metrics.horiAdvance;
     }
 
     Py_INCREF(Py_None);
     return Py_None;
-
-  failure:
-    PyErr_SetString(PyExc_IOError, "cannot render character");
-    return NULL;
 }
 
 static void

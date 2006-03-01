@@ -1,24 +1,25 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/Pack.c#2 $
+ * $Id: Pack.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * code to pack raw data
  *
  * history:
- * 96-04-30 fl	Created
- * 96-05-12 fl	Published a few RGB packers
- * 96-11-01 fl	More RGB packers (Tk booster stuff)
- * 96-12-30 fl	Added P;1, P;2 and P;4 packers
- * 97-06-02 fl	Added F (F;32NF) packer
- * 97-08-28 fl	Added 1 as L packer
- * 98-02-08 fl	Added I packer
- * 98-03-09 fl	Added mode field, RGBA/RGBX as RGB packers
- * 98-07-01 fl	Added YCbCr support
- * 98-07-12 fl	Added I 16 packer
- * 99-02-03 fl	Added BGR packers
+ * 1996-04-30 fl   Created
+ * 1996-05-12 fl   Published a few RGB packers
+ * 1996-11-01 fl   More RGB packers (Tk booster stuff)
+ * 1996-12-30 fl   Added P;1, P;2 and P;4 packers
+ * 1997-06-02 fl   Added F (F;32NF) packer
+ * 1997-08-28 fl   Added 1 as L packer
+ * 1998-02-08 fl   Added I packer
+ * 1998-03-09 fl   Added mode field, RGBA/RGBX as RGB packers
+ * 1998-07-01 fl   Added YCbCr support
+ * 1998-07-12 fl   Added I 16 packer
+ * 1999-02-03 fl   Added BGR packers
+ * 2003-09-26 fl   Added LA/PA packers
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1996-97.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1996-1997 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -32,6 +33,7 @@
 #define	B 2
 #define	X 3
 
+#define	A 3
 
 /* byte swapping macros */
 
@@ -186,6 +188,30 @@ packP2(UINT8* out, const UINT8* in, int pixels)
 		 ((in[1] & 3) << 4);
     case 1:
 	out[0] = (in[0] << 6);
+    }
+}
+
+static void
+packLA(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LA, pixel interleaved */
+    for (i = 0; i < pixels; i++) {
+	out[0] = in[R];
+	out[1] = in[A];
+	out += 2; in += 4;
+    }
+}
+
+static void
+packLAL(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* LA, line interleaved */
+    for (i = 0; i < pixels; i++) {
+	out[i] = in[R];
+	out[i+pixels] = in[A];
+	in += 4;
     }
 }
 
@@ -391,11 +417,19 @@ static struct {
     /* greyscale */
     {"L",	"L",   		8,	copy1},
 
+    /* greyscale w. alpha */
+    {"LA",	"LA",  		16,	packLA},
+    {"LA",	"LA;L",		16,	packLAL},
+
     /* palette */
     {"P",	"P;1",		1,	pack1},
     {"P",	"P;2",		2,	packP2},
     {"P",	"P;4",		4,	packP4},
     {"P",	"P",		8,	copy1},
+
+    /* palette w. alpha */
+    {"PA",	"PA",  		16,	packLA},
+    {"PA",	"PA;L",		16,	packLAL},
 
     /* true colour */
     {"RGB",	"RGB",		24,	ImagingPackRGB},
@@ -409,7 +443,7 @@ static struct {
     {"RGB",   	"G",            8,      band1},
     {"RGB",   	"B",            8,      band2},
 
-    /* true colour w. transparency */
+    /* true colour w. alpha */
     {"RGBA",	"RGBA",		32,	copy4},
     {"RGBA",	"RGBA;L",	32,	packRGBXL},
     {"RGBA",	"RGB",		24,	ImagingPackRGB},

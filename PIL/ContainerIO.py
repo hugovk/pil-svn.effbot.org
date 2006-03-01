@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ContainerIO.py#3 $
+# $Id: ContainerIO.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 # a class to read from a container file
 #

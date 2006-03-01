@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Storage.c#4 $
+ * $Id: Storage.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * imaging storage object
  *
@@ -25,6 +25,7 @@
  * 1998-12-29 fl   Fixed allocation bug caused by previous fix
  * 1999-02-03 fl   Added "RGBa" and "BGR" modes (experimental)
  * 2001-04-22 fl   Fixed potential memory leak in ImagingCopyInfo
+ * 2003-09-26 fl   Added "LA" and "PA" modes (experimental)
  *
  * Copyright (c) 1998-2003 by Secret Labs AB 
  * Copyright (c) 1995-2003 by Fredrik Lundh
@@ -45,6 +46,7 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
                           int size)
 {
     Imaging im;
+    ImagingSectionCookie cookie;
 
     im = (Imaging) calloc(1, size);
     if (!im)
@@ -67,10 +69,23 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->linesize = xsize;
         im->palette = ImagingPaletteNew("RGB");
 
+    } else if (strcmp(mode, "PA") == 0) {
+        /* 8-bit palette with alpha */
+        im->bands = 2;
+        im->pixelsize = 4; /* store in image32 memory */
+        im->linesize = xsize * 4;
+        im->palette = ImagingPaletteNew("RGB");
+
     } else if (strcmp(mode, "L") == 0) {
         /* 8-bit greyscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
+
+    } else if (strcmp(mode, "LA") == 0) {
+        /* 8-bit greyscale (luminance) with alpha */
+        im->bands = 2;
+        im->pixelsize = 4; /* store in image32 memory */
+        im->linesize = xsize * 4;
 
     } else if (strcmp(mode, "F") == 0) {
         /* 32-bit floating point images */
@@ -167,9 +182,14 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
     /* Setup image descriptor */
     strcpy(im->mode, mode);
 
+    ImagingSectionEnter(&cookie);
+
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
     im->image = (char **) calloc((ysize > 0) ? ysize : 1, sizeof(void *));
+
+    ImagingSectionLeave(&cookie);
+
     if (!im->image) {
 	free(im);
 	return (Imaging) ImagingError_MemoryError();
@@ -246,12 +266,16 @@ Imaging
 ImagingNewArray(const char *mode, int xsize, int ysize)
 {
     Imaging im;
+    ImagingSectionCookie cookie;
+
     int y;
     char* p;
 
     im = ImagingNewPrologue(mode, xsize, ysize);
     if (!im)
 	return NULL;
+
+    ImagingSectionEnter(&cookie);
 
     /* Allocate image as an array of lines */
     for (y = 0; y < im->ysize; y++) {
@@ -262,6 +286,8 @@ ImagingNewArray(const char *mode, int xsize, int ysize)
 	}
         im->image[y] = p;
     }
+
+    ImagingSectionLeave(&cookie);
 
     if (y == im->ysize)
 	im->destroy = ImagingDestroyArray;

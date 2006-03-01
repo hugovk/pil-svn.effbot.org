@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Blend.c#2 $
+ * $Id: Blend.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * interpolate between two existing images
  *

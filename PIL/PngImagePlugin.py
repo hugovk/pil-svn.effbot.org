@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PngImagePlugin.py#3 $
+# $Id: PngImagePlugin.py 2203 2004-12-19 14:32:32Z fredrik $
 #
 # PNG support code
 #
@@ -16,16 +16,20 @@
 # 1998-07-12 fl   Read/write 16-bit images as mode I (0.4)
 # 2001-02-08 fl   Added transparency support (from Zircon) (0.5)
 # 2001-04-16 fl   Don't close data source in "open" method (0.6)
+# 2004-02-24 fl   Don't even pretend to support interlaced files (0.7)
+# 2004-08-31 fl   Do basic sanity check on chunk identifiers (0.8)
+# 2004-09-20 fl   Added PngInfo chunk container
+# 2004-12-18 fl   Added DPI read support (based on code by Niki Spahiev)
 #
-# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1997-2004 by Secret Labs AB
 # Copyright (c) 1996 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.6"
+__version__ = "0.8.2"
 
-import string
+import re, string
 
 import Image, ImageFile, ImagePalette
 
@@ -34,6 +38,8 @@ def i16(c):
     return ord(c[1]) + (ord(c[0])<<8)
 def i32(c):
     return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+
+is_cid = re.compile("\w\w\w\w").match
 
 
 _MAGIC = "\211PNG\r\n\032\n"
@@ -52,8 +58,8 @@ _MODES = {
     (2, 3): ("P", "P;2"),
     (4, 3): ("P", "P;4"),
     (8, 3): ("P", "P"),
-    (8, 4): ("RGBA", "LA"),
-    (16,4): ("RGBA", "LA;16B"),
+    (8, 4): ("LA", "LA"),
+    (16,4): ("RGBA", "LA;16B"), # LA;16B->LA not yet available
     (8, 6): ("RGBA", "RGBA"),
     (16,6): ("RGBA", "RGBA;16B"),
 }
@@ -84,6 +90,9 @@ class ChunkStream:
             cid = s[4:]
             pos = self.fp.tell()
             len = i32(s)
+
+        if not is_cid(cid):
+            raise SyntaxError, "broken PNG file (chunk %s)" % repr(cid)
 
         return cid, pos, len
 
@@ -126,11 +135,29 @@ class ChunkStream:
             cid, pos, len = self.read()
             if cid == endchunk:
                 break
-            self.crc(cid, self.fp.read(len))
+            self.crc(cid, ImageFile._safe_read(self.fp, len))
             cids.append(cid)
 
         return cids
 
+
+# --------------------------------------------------------------------
+# PNG chunk container (for use with save(pnginfo=))
+
+class PngInfo:
+
+    def __init__(self):
+        self.chunks = []
+
+    def add(self, cid, data):
+        self.chunks.append((cid, data))
+
+    def add_text(self, key, value, zip=0):
+        if zip:
+            import zlib
+            self.add("zTXt", key + "\0\0" + zlib.compress(value))
+        else:
+            self.add("tEXt", key + "\0" + value)
 
 # --------------------------------------------------------------------
 # PNG image stream (IHDR/IEND)
@@ -151,7 +178,7 @@ class PngStream(ChunkStream):
     def chunk_IHDR(self, pos, len):
 
         # image header
-        s = self.fp.read(len)
+        s = ImageFile._safe_read(self.fp, len)
         self.im_size = i32(s), i32(s[4:])
         try:
             self.im_mode, self.im_rawmode = _MODES[(ord(s[8]), ord(s[9]))]
@@ -178,7 +205,7 @@ class PngStream(ChunkStream):
     def chunk_PLTE(self, pos, len):
 
         # palette
-        s = self.fp.read(len)
+        s = ImageFile._safe_read(self.fp, len)
         if self.im_mode == "P":
             self.im_palette = "RGB", s
         return s
@@ -186,7 +213,7 @@ class PngStream(ChunkStream):
     def chunk_tRNS(self, pos, len):
 
         # transparency
-        s = self.fp.read(len)
+        s = ImageFile._safe_read(self.fp, len)
         if self.im_mode == "P":
             i = string.find(s, chr(0))
             if i >= 0:
@@ -198,16 +225,33 @@ class PngStream(ChunkStream):
     def chunk_gAMA(self, pos, len):
 
         # gamma setting
-        s = self.fp.read(len)
+        s = ImageFile._safe_read(self.fp, len)
         self.im_info["gamma"] = i32(s) / 100000.0
+        return s
+
+    def chunk_pHYs(self, pos, len):
+
+        # pixels per unit
+        s = ImageFile._safe_read(self.fp, len)
+        px, py = i32(s), i32(s[4:])
+        unit = ord(s[8])
+        if unit == 1: # meter
+            dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
+            self.im_info["dpi"] = dpi
+        elif unit == 0:
+            self.im_info["aspect"] = px, py
         return s
 
     def chunk_tEXt(self, pos, len):
 
         # text
-        s = self.fp.read(len)
-        [k, v] = string.split(s, "\0")
-        self.im_info[k] = v
+        s = ImageFile._safe_read(self.fp, len)
+        try:
+            k, v = string.split(s, "\0", 1)
+        except ValueError:
+            k = s; v = "" # fallback for broken tEXt tags
+        if k:
+            self.im_info[k] = v
         return s
 
 
@@ -246,11 +290,10 @@ class PngImageFile(ImageFile.ImageFile):
                 s = self.png.call(cid, pos, len)
             except EOFError:
                 break
-
             except AttributeError:
                 if Image.DEBUG:
                     print cid, pos, len, "(unknown)"
-                s = self.fp.read(len)
+                s = ImageFile._safe_read(self.fp, len)
 
             self.png.crc(cid, s)
 
@@ -276,6 +319,9 @@ class PngImageFile(ImageFile.ImageFile):
     def verify(self):
         "Verify PNG file"
 
+        if self.fp is None:
+            raise RuntimeError("verify must be called directly after open")
+
         # back up to beginning of IDAT block
         self.fp.seek(self.tile[0][2] - 8)
 
@@ -284,6 +330,13 @@ class PngImageFile(ImageFile.ImageFile):
 
         self.fp = None
 
+    def load_prepare(self):
+        "internal: prepare to read PNG file"
+
+        if self.info.get("interlace"):
+            raise IOError("cannot read interlaced PNG files")
+
+        ImageFile.ImageFile.load_prepare(self)
 
     def load_read(self, bytes):
         "internal: read more image data"
@@ -329,12 +382,13 @@ def o32(i):
     return chr(i>>24&255) + chr(i>>16&255) + chr(i>>8&255) + chr(i&255)
 
 _OUTMODES = {
-    # supported bits/color combinations, and corresponding modes/rawmodes
+    # supported PIL modes, and corresponding rawmodes/bits/color combinations
     "1":   ("1", chr(1)+chr(0)),
     "L;1": ("L;1", chr(1)+chr(0)),
     "L;2": ("L;2", chr(2)+chr(0)),
     "L;4": ("L;4", chr(4)+chr(0)),
     "L":   ("L", chr(8)+chr(0)),
+    "LA":  ("LA", chr(8)+chr(4)),
     "I":   ("I;16B", chr(16)+chr(0)),
     "P;1": ("P;1", chr(1)+chr(3)),
     "P;2": ("P;2", chr(2)+chr(3)),
@@ -441,13 +495,26 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
         # FIXME: to be supported some day
         chunk(fp, "gAMA", o32(int(gamma * 100000.0)))
 
+    dpi = im.encoderinfo.get("dpi")
+    if dpi:
+        chunk(fp, "pHYs",
+              o32(int(dpi[0] / 0.0254 + 0.5)),
+              o32(int(dpi[1] / 0.0254 + 0.5)),
+              chr(1))
+
+    info = im.encoderinfo.get("pnginfo")
+    if info:
+        for cid, data in info.chunks:
+            chunk(fp, cid, data)
+
     ImageFile._save(im, _idat(fp, chunk), [("zip", (0,0)+im.size, 0, rawmode)])
 
     chunk(fp, "IEND", "")
 
     try:
         fp.flush()
-    except: pass
+    except:
+        pass
 
 
 # --------------------------------------------------------------------

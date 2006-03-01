@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/libImaging/JpegDecode.c#2 $
+ * $Id: JpegDecode.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * decoder for JPEG image data.
  *
@@ -28,6 +28,7 @@
 
 #undef HAVE_PROTOTYPES 
 #undef HAVE_STDLIB_H 
+#undef HAVE_STDDEF_H 
 #undef UINT8
 #undef UINT16
 #undef UINT32

@@ -1,11 +1,11 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Matrix.c#2 $
+ * $Id: Matrix.c 2134 2004-10-06 08:55:20Z fredrik $
  *
  * colour and luminance matrix transforms
  *
  * history:
- *	96-05-18 fl:	created (brute force implementation)
+ * 1996-05-18 fl:   created (brute force implementation)
  *
  * Copyright (c) Fredrik Lundh 1996.
  * Copyright (c) Secret Labs AB 1997.
@@ -17,7 +17,7 @@
 #include "Imaging.h"
 
 
-#define	CLIP(v)	    ((v <= 0) ? 0 : (v >= 255) ? 255 : v)
+#define	CLIPF(v) ((v <= 0.0) ? 0 : (v >= 255.0F) ? 255 : (UINT8) v)
 
 
 Imaging
@@ -41,8 +41,8 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[])
 	    UINT8* out = (UINT8*) imOut->image[y];
 
 	    for (x = 0; x < im->xsize; x++) {
-		int v = m[0]*in[0] + m[1]*in[1] + m[2]*in[2] + m[3];
-		out[x] = CLIP(v);
+		float v = m[0]*in[0] + m[1]*in[1] + m[2]*in[2] + m[3] + 0.5;
+		out[x] = CLIPF(v);
 		in += 4;
 	    }
 	}
@@ -58,12 +58,12 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[])
 	    UINT8* out = (UINT8*) imOut->image[y];
 
 	    for (x = 0; x < im->xsize; x++) {
-		int v0 = m[0]*in[0] + m[1]*in[1] +  m[2]*in[2] +  m[3];
-		int v1 = m[4]*in[0] + m[5]*in[1] +  m[6]*in[2] +  m[7];
-		int v2 = m[8]*in[0] + m[9]*in[1] + m[10]*in[2] + m[11];
-		out[0] = CLIP(v0);
-		out[1] = CLIP(v1);
-		out[2] = CLIP(v2);
+		float v0 = m[0]*in[0] + m[1]*in[1] +  m[2]*in[2] +  m[3] + 0.5;
+		float v1 = m[4]*in[0] + m[5]*in[1] +  m[6]*in[2] +  m[7] + 0.5;
+		float v2 = m[8]*in[0] + m[9]*in[1] + m[10]*in[2] + m[11] + 0.5;
+		out[0] = CLIPF(v0);
+		out[1] = CLIPF(v1);
+		out[2] = CLIPF(v2);
 		in += 4; out += 4;
 	    }
 	}

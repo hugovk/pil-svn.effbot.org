@@ -40,7 +40,7 @@ of its upper-left-hand corner and displays the cropped portion.
 30 degrees, and saves the result as rotated.png (in PNG format).
 """
 # by Eric S. Raymond <esr@thyrsus.com>
-# $Id: //modules/pil/Scripts/pildriver.py#3 $
+# $Id: pildriver.py 2134 2004-10-06 08:55:20Z fredrik $
 
 # TO DO:
 # 1. Add PILFont capabilities, once that's documented.
