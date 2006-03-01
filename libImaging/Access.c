@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Access.c#2 $
  *
  * imaging access objects
  *

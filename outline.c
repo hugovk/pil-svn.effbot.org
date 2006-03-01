@@ -2,7 +2,7 @@
  * THIS IS WORK IN PROGRESS.
  *
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/outline.c#2 $
  *
  * "arrow" outline stuff.  the contents of this module
  * will be merged with the path module and the rest of

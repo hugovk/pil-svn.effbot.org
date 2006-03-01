@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/PcxImagePlugin.py#3 $
 #
 # PCX file handling
 #

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/_imaging.c#11 $
  *
  * the imaging library bindings
  *
@@ -45,9 +45,12 @@
  * 1999-01-10 fl   Added some experimental arrow graphics stuff
  * 1999-02-06 fl   Added draw_bitmap, font acceleration stuff
  * 2001-04-17 fl   Fixed some egcs compiler nits
+ * 2001-09-17 fl   Added screen grab primitives (win32)
+ * 2002-03-09 fl   Added stretch primitive
+ * 2002-03-10 fl   
  *
- * Copyright (c) 1997-2001 by Secret Labs AB 
- * Copyright (c) 1995-2001 by Fredrik Lundh
+ * Copyright (c) 1997-2002 by Secret Labs AB 
+ * Copyright (c) 1995-2002 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -390,12 +393,16 @@ getink(PyObject* color, Imaging im, char* ink)
     int r, g, b, a;
     double f;
 
+    /* fill ink buffer (four bytes) with something that can
+       be cast to either UINT8 or INT32 */
+
     if (im->image8) {
         /* unsigned integer, single layer */
         r = PyInt_AsLong(color);
         if (r == -1 && PyErr_Occurred())
             return NULL;
         ink[0] = CLIP(r);
+       ink[1] = ink[2] = ink[3] = 0;
         return ink;
     } else {
         switch (im->type) {
@@ -571,10 +578,23 @@ _convert(ImagingObject* self, PyObject* args)
 {
     char* mode;
     int dither = 0;
-    if (!PyArg_ParseTuple(args, "s|i", &mode, &dither))
-	return NULL;
+    ImagingObject *paletteimage = NULL;
 
-    return PyImagingNew(ImagingConvert(self->image, mode, NULL, dither));
+    if (!PyArg_ParseTuple(args, "s|iO", &mode, &dither, &paletteimage))
+	return NULL;
+    if (paletteimage != NULL) {
+      if (!PyImaging_Check(paletteimage)) {
+	PyObject_Print((PyObject *)paletteimage, stderr, 0);
+	PyErr_SetString(PyExc_ValueError, "palette argument must be image with mode 'P'");
+	return NULL;
+      }
+      if (paletteimage->image->palette == NULL) {
+	PyErr_SetString(PyExc_ValueError, "null palette");
+	return NULL;
+      }
+    }
+
+    return PyImagingNew(ImagingConvert(self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither));
 }
 
 static PyObject* 
@@ -1175,7 +1195,7 @@ _rotate(ImagingObject* self, PyObject* args)
     if (theta < 0.0)
 	theta += 360;
 
-    if (filter && imIn->type == IMAGING_TYPE_SPECIAL) {
+    if (filter && imIn->type != IMAGING_TYPE_SPECIAL) {
         /* Rotate with resampling filter */
         imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
         ImagingRotate(imOut, imIn, theta, filter);
@@ -1203,6 +1223,52 @@ _rotate(ImagingObject* self, PyObject* args)
         }
     }
 
+    return PyImagingNew(imOut);
+}
+
+static PyObject* 
+_stretch(ImagingObject* self, PyObject* args)
+{
+    Imaging imIn;
+    Imaging imTemp;
+    Imaging imOut;
+
+    int xsize, ysize;
+    int filter = IMAGING_TRANSFORM_NEAREST;
+    if (!PyArg_ParseTuple(args, "(ii)|i", &xsize, &ysize, &filter))
+	return NULL;
+
+    imIn = self->image;
+
+    /* two-pass resize: minimize size of intermediate image */
+    if (imIn->xsize * ysize < xsize * imIn->ysize)
+        imTemp = ImagingNew(imIn->mode, imIn->xsize, ysize);
+    else 
+        imTemp = ImagingNew(imIn->mode, xsize, imIn->ysize);
+    if (!imTemp)
+        return NULL;
+
+    /* first pass */
+    if (!ImagingStretch(imTemp, imIn, filter)) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+
+    imOut = ImagingNew(imIn->mode, xsize, ysize);
+    if (!imOut) {
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+
+    /* second pass */
+    if (!ImagingStretch(imOut, imTemp, filter)) {
+        ImagingDelete(imOut);
+        ImagingDelete(imTemp);
+        return NULL;
+    }
+
+    ImagingDelete(imTemp);
+    
     return PyImagingNew(imOut);
 }
 
@@ -1681,7 +1747,7 @@ _font_getmask(ImagingFontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "s", &text))
         return NULL;
 
-    im = ImagingNew("1", textwidth(self, text), self->ysize);
+    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
     if (!im)
         return NULL;
 
@@ -1740,19 +1806,16 @@ _font_getattr(ImagingFontObject* self, char* name)
 static PyObject* 
 _draw_ink(ImagingObject* self, PyObject* args)
 {
-    char ink[4];
+    INT32 ink = 0;
     PyObject* color;
 
     if (!PyArg_ParseTuple(args, "O", &color))
         return NULL;
 
-    if (!getink(color, self->image, ink))
+    if (!getink(color, self->image, (char*) &ink))
         return NULL;
 
-    if (self->image->image8)
-        return Py_BuildValue("i", *(UINT8*) ink);
-    else
-        return Py_BuildValue("i", *(INT32*) ink);
+    return Py_BuildValue("i", (int) ink);
 }
 
 static PyObject* 
@@ -2201,6 +2264,7 @@ static struct PyMethodDef methods[] = {
 #endif
     {"resize", (PyCFunction)_resize, 1},
     {"rotate", (PyCFunction)_rotate, 1},
+    {"stretch", (PyCFunction)_stretch, 1},
     {"transpose", (PyCFunction)_transpose, 1},
     {"transform2", (PyCFunction)_transform2, 1},
 
@@ -2376,6 +2440,7 @@ extern PyObject* PyImaging_ZipEncoderNew(PyObject* self, PyObject* args);
 /* Display support (in display.c) */
 extern PyObject* PyImaging_DisplayWin32(PyObject* self, PyObject* args);
 extern PyObject* PyImaging_DisplayModeWin32(PyObject* self, PyObject* args);
+extern PyObject* PyImaging_GrabScreenWin32(PyObject* self, PyObject* args);
 
 /* Experimental path stuff (in path.c) */
 extern PyObject* PyPath_Create(ImagingObject* self, PyObject* args);
@@ -2436,6 +2501,7 @@ static PyMethodDef functions[] = {
 #ifdef WIN32
     {"display", (PyCFunction)PyImaging_DisplayWin32, 1},
     {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, 1},
+    {"grabscreen", (PyCFunction)PyImaging_GrabScreenWin32, 1},
 #endif
 
     /* Utilities */
@@ -2472,10 +2538,7 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-void
-#ifdef WIN32
-__declspec(dllexport)
-#endif
+DL_EXPORT(void)
 init_imaging(void)
 {
     /* Patch object type */

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Offset.c#2 $
  *
  * offset an image in x and y directions
  *

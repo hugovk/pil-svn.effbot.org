@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/image2py.py#2 $
 #
 # convert an image to a Python module
 #

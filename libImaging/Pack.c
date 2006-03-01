@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Pack.c#2 $
  *
  * code to pack raw data
  *

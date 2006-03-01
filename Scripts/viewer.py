@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/viewer.py#2 $
 #
 
 from Tkinter import *

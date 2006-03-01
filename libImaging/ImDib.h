@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/ImDib.h#2 $
  *
  * Windows DIB specifics
  *

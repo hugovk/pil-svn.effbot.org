@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/TgaImagePlugin.py#3 $
 #
 # TGA file handling
 #

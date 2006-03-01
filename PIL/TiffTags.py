@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/TiffTags.py#2 $
 #
 # TIFF tags
 #

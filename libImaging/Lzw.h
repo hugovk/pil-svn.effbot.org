@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Lzw.h#2 $
  *
  * declarations for the TIFF LZW decoder.
  *

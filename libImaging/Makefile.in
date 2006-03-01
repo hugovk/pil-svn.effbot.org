@@ -8,8 +8,8 @@
 # in the parent directory.  Once configure has run, you can recreate
 # the Makefile by running just config.status.
 #
-# Copyright (c) Secret Labs AB 1998-99.
-# Copyright (c) Fredrik Lundh 1995-98.
+# Copyright (c) 1998-2002 by Secret Labs AB
+# Copyright (c) 1995-2002 by Fredrik Lundh 
 #
 
 # --------------------------------------------------------------------
@@ -42,6 +42,7 @@ SHELL=		/bin/sh
 # Fixed definitions
 
 OBJS=		Storage.o Access.o Except.o \
+		Antialias.o \
 		Bands.o Blend.o \
 		Chops.o Convert.o ConvertYCbCr.o Copy.o Crop.o Crc32.o \
 		Dib.o Draw.o \

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/map.c#2 $
  *
  * standard memory mapping interface for the Imaging library
  *

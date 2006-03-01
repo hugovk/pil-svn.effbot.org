@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/GdImageFile.py#3 $
 #
 # GD file handling
 #

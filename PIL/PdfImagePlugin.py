@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/PdfImagePlugin.py#3 $
 #
 # PDF (Acrobat) file handling
 #

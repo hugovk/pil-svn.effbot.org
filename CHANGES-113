@@ -1,18 +1,119 @@
 The Python Imaging Library
-$Id: CHANGES$
+$Id: //modules/pil/CHANGES-113#3 $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Anthony Baxter, Jan Blom,
-Duncan Booth, Roger Burnham, Gene Cash, Kevin Cazabon, Greg Coats,
-Greg Couch, Bill Crutchfield, Tim Docker, Fred Drake, Robin Friedrich,
-Mark Hammond, Bernhard Herzog, Rob Hooft, Jack Jansen, Edward Jones,
-Richard Jones, Robert Kern, Gordon McMillan, Skip Montanaro, Fredrik
-Nehr, Håkan Karlsson, Robert Kern, Matthias Klose, Magnus Källström,
-Eric Raymond, Bertil Reinhammar, Toby Sargeant, Barry Scott, Les
-Schaffer, Joel Shprentz, Perry Stoll, Paul Svensson, Ivan Tkatchev,
-Rune Uhlin, Sasha Voynow, and Charles Waldman.
+Duncan Booth, Roger Burnham, Gene Cash, Kevin Cazabon, Fred Clare,
+Greg Coats, Greg Couch, Bill Crutchfield, Tim Docker, Fred Drake,
+Robin Friedrich, Markus Gritsch, Mark Hammond, Bernhard Herzog, Rob
+Hooft, Jack Jansen, Bill Janssen, Edward Jones, Richard Jones, Robert
+Kern, Bob Klimek, Andrew MacIntyre, Gordon McMillan, Skip Montanaro,
+Fredrik Nehr, Håkan Karlsson, Robert Kern, Matthias Klose, Magnus
+Källström, Hamish Lawson, Eric Raymond, Bertil Reinhammar, Toby
+Sargeant, Barry Scott, Les Schaffer, Joel Shprentz, D. Alan Stewart,
+Perry Stoll, Paul Svensson, Ivan Tkatchev, Rune Uhlin, Sasha Voynow,
+and Charles Waldman.
 
-*** Changes from release 1.1 to 1.1.2 ***
+*** Changes from release 1.1 to 1.1.3 ***
+
+(1.1.3 final released)
+
++ Made setup.py look for old versions of zlib.  For some back-
+  ground, see: http://www.gzip.org/zlib/advisory-2002-03-11.txt
+
+(1.1.3c2 released)
+
++ Added setup.py file (tested on Unix and Windows).  You still
+  need to build libImaging/imaging.lib in the traditional way,
+  but the setup.py script takes care of the rest.
+
+  The old Setup.in/Makefile.pre.in build method is still
+  supported.
+
++ Fixed segmentation violation in ANTIALIAS filter (an internal
+  buffer wasn't properly allocated).
+
+(1.1.3c1 released)
+
++ Added ANTIALIAS downsampling filter for high-quality "resize"
+  and "thumbnail" operations.  Also added filter option to the
+  "thumbnail" operation; the default value is NEAREST, but this
+  will most likely change in future versions.
+
++ Fixed plugin loader to be more robust if the __file__
+  variable isn't set.
+
++ Added seek/tell support (for layers) to the PhotoShop
+  loader.  Layer 0 is the main image.
+
++ Added new (but experimental) "ImageOps" module, which provides
+  shortcuts for commonly used operations on entire images.
+
++ Don't mess up when loading PNG images if the decoder leaves
+  data in the output buffer.  This could cause internal errors
+  on some PNG images, with some versions of ZLIB. (Bug report
+  and patch provided by Bernhard Herzog.)
+
++ Don't mess up on Unicode filenames.
+
++ Don't mess up when drawing on big endian platforms.
+
++ Made the TIFF loader a bit more robust; it can now read some
+  more slightly broken TIFF files (based on input from Ted Wright,
+  Bob Klimek, and D. Alan Stewart)
+
++ Added OS/2 EMX build files (from Andrew MacIntyre)
+
++ Change "ImageFont" to reject image files if they don't have the
+  right mode.  Older versions could leak memory for "P" images.
+  (Bug reported by Markus Gritsch).
+  
+(imToolkit 1.2a3 and 1.2b1 released)
+ 
++ Renamed some internal functions to avoid potential build
+  problem on Mac OS X.
+
++ Added DL_EXPORT where relevant (for Cygwin, based on input
+  from Robert Yodlowski)
+
++ (re)moved bogus __init__ call in BdfFontFile (bug spotted
+  by Fred Clare)
+
++ Added "ImageGrab" support (Windows only)
+
++ Added support for XBM hotspots (based on code contributed by
+  Bernhard Herzog).
+
++ Added support for Palm pixmaps (from Bill Janssen)
+
++ Added write support for more TIFF tags, namely the Artist,
+  Copyright, DateTime, ResolutionUnit, Software, XResolution and
+  YResolution tags (from Greg Couch)
+
++ Added TransposedFont wrapper to ImageFont module
+
++ Added "optimize" flag to GIF encoder.  If optimize is present
+  and non-zero, PIL will work harder to create a small file.
+
++ Raise "EOFError" (not IndexError) when reading beyond the
+  end of a TIFF sequence.
+
++ Support rewind ("seek(0)") for GIF and TIFF sequences.
+
++ Load grayscale GIF images as mode "L"
+
+(imToolkit 1.2a2 released)
+
++ Added DPI read/write support to the JPEG codec.  The decoder
+  sets the info["dpi"] attribute for JPEG files with JFIF dpi
+  settings.  The encoder uses the "dpi" option:
+
+      im = Image.open("file.jpg")
+      dpi = im.info["dpi"] # raises KeyError if DPI not known
+      im.save("out.jpg", dpi=dpi)
+
+  Note that PIL doesn't always preserve the "info" attribute
+  for normal image operations.
 
 (1.1.2c1 and 1.1.2 final released)
 

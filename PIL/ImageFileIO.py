@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageFileIO.py#2 $
 #
 # kludge to get basic ImageFileIO functionality
 #
@@ -13,6 +13,8 @@
 #
 
 from StringIO import StringIO
+
+# this module is deprecated
 
 class ImageFileIO(StringIO):
     def __init__(self, fp):

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/MpegImagePlugin.py#3 $
 #
 # MPEG file handling
 #

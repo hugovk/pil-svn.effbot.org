@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Convert.c#3 $
  * 
  * convert images
  *
@@ -639,27 +639,31 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode)
 }
 
 static Imaging
-topalette(Imaging imOut, Imaging imIn, ImagingPalette palette, int dither)
+topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
 {
     int x, y;
+    ImagingPalette palette = inpalette;;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0)
 	return (Imaging) ImagingError_ValueError("conversion not supported");
 
-    /* FIXME: make user configurable */
-    if (imIn->bands == 1)
+    if (palette == NULL) {
+      /* FIXME: make user configurable */
+      if (imIn->bands == 1)
 	palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
-    else
+      else
 	palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
+    }
 
     if (!palette)
 	return (Imaging) ImagingError_ValueError("no palette");
 
     imOut = ImagingNew2("P", imOut, imIn);
     if (!imOut) {
+      if (palette != inpalette)
 	ImagingPaletteDelete(palette);
-        return NULL;
+      return NULL;
     }
 
     imOut->palette = ImagingPaletteDuplicate(palette);
@@ -677,7 +681,8 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette palette, int dither)
 	/* Create mapping cache */
 	if (ImagingPaletteCachePrepare(palette) < 0) {
 	    ImagingDelete(imOut);
-	    ImagingPaletteDelete(palette);
+	    if (palette != inpalette)
+	      ImagingPaletteDelete(palette);
 	    return NULL;
 	}
 
@@ -764,10 +769,12 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette palette, int dither)
                 }
             }
         }
-	ImagingPaletteCacheDelete(palette);
+	if (inpalette != palette)
+	  ImagingPaletteCacheDelete(palette);
     }
 
-    ImagingPaletteDelete(palette);
+    if (inpalette != palette)
+      ImagingPaletteDelete(palette);
 
     return imOut;
 }
@@ -880,7 +887,7 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 	return frompalette(imOut, imIn, mode);
 
     if (strcmp(mode, "P") == 0)
-	return topalette(imOut, imIn, NULL, dither);
+	return topalette(imOut, imIn, palette, dither);
 
     if (dither && strcmp(mode, "1") == 0)
 	return tobilevel(imOut, imIn, dither);

@@ -1,27 +1,29 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/GifImagePlugin.py#2 $
 #
 # GIF file handling
 #
 # History:
-# 95-09-01 fl   Created
-# 96-12-14 fl   Added interlace support
-# 96-12-30 fl   Added animation support
-# 97-01-05 fl   Added write support, fixed local colour map bug
-# 97-02-23 fl   Make sure to load raster data in getdata()
-# 97-07-05 fl   Support external decoder
-# 98-07-09 fl   Handle all modes when saving
-# 98-07-15 fl   Renamed offset attribute to avoid name clash
+# 1995-09-01 fl   Created
+# 1996-12-14 fl   Added interlace support
+# 1996-12-30 fl   Added animation support
+# 1997-01-05 fl   Added write support, fixed local colour map bug
+# 1997-02-23 fl   Make sure to load raster data in getdata()
+# 1997-07-05 fl   Support external decoder (0.4)
+# 1998-07-09 fl   Handle all modes when saving (0.5)
+# 1998-07-15 fl   Renamed offset attribute to avoid name clash
+# 2001-04-16 fl   Added rewind support (seek to frame 0) (0.6)
+# 2001-04-17 fl   Added palette optimization (0.7)
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1995-97.
+# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1995-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 
-__version__ = "0.5"
+__version__ = "0.7"
 
 
 import Image, ImageFile, ImagePalette
@@ -47,6 +49,8 @@ class GifImageFile(ImageFile.ImageFile):
 
     format = "GIF"
     format_description = "Compuserve GIF"
+
+    global_palette = None
 
     def data(self):
         s = self.fp.read(1)
@@ -74,22 +78,30 @@ class GifImageFile(ImageFile.ImageFile):
         if flags & 128:
             # get global palette
             self.info["background"] = ord(s[11])
-            self.global_palette = self.palette =\
-                ImagePalette.raw("RGB", self.fp.read(3<<bits))
+            # check if palette contains colour indices
+            p = self.fp.read(3<<bits)
+            for i in range(0, len(p), 3):
+                if not (chr(i/3) == p[i] == p[i+1] == p[i+2]):
+                    p = ImagePalette.raw("RGB", p)
+                    self.global_palette = self.palette = p
+                    break
 
         self.__fp = self.fp # FIXME: hack
-        self.__offset = 0
-        self.dispose = None
-
-        self.frame = -1
+        self.__rewind = self.fp.tell()
         self.seek(0) # get ready to read first frame
 
     def seek(self, frame):
 
-        # FIXME: can only seek to next frame; should add rewind capability
-        if frame != self.frame + 1:
+        if frame == 0:
+            # rewind
+            self.__offset = 0
+            self.dispose = None
+            self.__frame = -1
+            self.__fp.seek(self.__rewind)
+
+        if frame != self.__frame + 1:
             raise ValueError, "cannot seek to frame %d" % frame
-        self.frame = frame
+        self.__frame = frame
 
         self.tile = []
 
@@ -180,7 +192,7 @@ class GifImageFile(ImageFile.ImageFile):
                 # raise IOError, "illegal GIF tag `%x`" % ord(s)
 
         if not self.tile:
-            self.__fp = None
+            # self.__fp = None
             raise EOFError, "no more images in GIF file"
 
         self.mode = "L"
@@ -188,7 +200,7 @@ class GifImageFile(ImageFile.ImageFile):
             self.mode = "P"
 
     def tell(self):
-        return self.frame
+        return self.__frame
 
 
 # --------------------------------------------------------------------
@@ -229,7 +241,7 @@ def _save(im, fp, filename):
             rawmode = "L"
 
     # header
-    for s in getheader(imOut):
+    for s in getheader(imOut, im.encoderinfo):
         fp.write(s)
 
     flags = 0
@@ -281,8 +293,10 @@ def _save_netpbm(im, fp, filename):
 # --------------------------------------------------------------------
 # GIF utilities
 
-def getheader(im):
+def getheader(im, info=None):
     """Return a list of strings representing a GIF header"""
+
+    optimize = info and info.get("optimize", 0)
 
     s = [
         "GIF87a" +              # magic
@@ -293,13 +307,24 @@ def getheader(im):
         chr(0)                  # reserved/aspect
     ]
 
+    if optimize:
+        # minimize color palette
+        i = 0
+        maxcolor = 0
+        for count in im.histogram():
+            if count:
+                maxcolor = i
+            i = i + 1
+    else:
+        maxcolor = 256
+
     # global palette
     if im.mode == "P":
         # colour palette
-        s.append(im.im.getpalette("RGB"))
+        s.append(im.im.getpalette("RGB")[:maxcolor*3])
     else:
         # greyscale
-        for i in range(256):
+        for i in range(maxcolor):
             s.append(chr(i) * 3)
 
     return s

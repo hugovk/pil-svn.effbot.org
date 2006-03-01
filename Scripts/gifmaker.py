@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/gifmaker.py#2 $
 #
 # convert sequence format to GIF animation
 #
@@ -22,9 +22,9 @@
 #
 #       import Image
 #       import gifmaker
-#       
+#
 #       sequence = []
-#       
+#
 #       # generate sequence
 #       for i in range(100):
 #           im = <generate image i>
@@ -34,7 +34,7 @@
 #       fp = open("out.gif", "wb")
 #       gifmaker.makedelta(fp, sequence)
 #       fp.close()
-# 
+#
 # Alternatively, use an iterator to generate the sequence, and
 # write data directly to a socket.  Or something...
 #

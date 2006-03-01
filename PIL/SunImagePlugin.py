@@ -1,22 +1,23 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/SunImagePlugin.py#3 $
 #
 # Sun image file handling
 #
 # History:
-# 95-09-10 fl   Created
-# 96-05-28 fl   Fixed 32-bit alignment
-# 98-12-29 fl   Import ImagePalette module
+# 1995-09-10 fl   Created
+# 1996-05-28 fl   Fixed 32-bit alignment
+# 1998-12-29 fl   Import ImagePalette module
+# 2001-12-18 fl   Fixed palette loading (from Jean-Claude Rimbault)
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1995-96.
+# Copyright (c) 1997-2001 by Secret Labs AB
+# Copyright (c) 1995-1996 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 import string
@@ -67,7 +68,7 @@ class SunImageFile(ImageFile.ImageFile):
             offset = offset + length
             self.palette = ImagePalette.raw("RGB;L", self.fp.read(length))
             if self.mode == "L":
-                self.mode = "P"
+                self.mode = rawmode = "P"
 
         stride = (((self.size[0] * depth + 7) / 8) + 3) & (~3)
 

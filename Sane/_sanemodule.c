@@ -1,20 +1,30 @@
 /***********************************************************
-(C) Copyright 1998,1999 A.M. Kuchling.  All Rights Reserved
+Copyright 1991-1995 by Stichting Mathematisch Centrum, Amsterdam,
+The Netherlands.
+
+                        All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the name of A.M. Kuchling not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.
+supporting documentation, and that the names of Stichting Mathematisch
+Centrum or CWI or Corporation for National Research Initiatives or
+CNRI not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior
+permission.
 
-A.M. KUCHLING DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-EVENT SHALL A.M. KUCHLING BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+While CWI is the initial source for this software, a modified version
+is made available by the Corporation for National Research Initiatives
+(CNRI) at the Internet address ftp://ftp.python.org.
+
+STICHTING MATHEMATISCH CENTRUM AND CNRI DISCLAIM ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL STICHTING MATHEMATISCH
+CENTRUM OR CNRI BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
@@ -37,7 +47,7 @@ PyObject *
 PySane_Error(st)
      SANE_Status st;
 {
-  const char *string;
+  char *string;
   
   if (st==SANE_STATUS_GOOD) {Py_INCREF(Py_None); return (Py_None);}
   string=sane_strstatus(st);
@@ -73,19 +83,6 @@ SaneDev_dealloc(self)
 }
 
 static PyObject *
-SaneDev_close(self, args)
-     SaneDevObject *self;
-     PyObject *args;
-{
-  if (!PyArg_ParseTuple(args, ""))
-    return NULL;
-  if (self->h) sane_close(self->h);
-  self->h=NULL;
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
-
-static PyObject *
 SaneDev_get_parameters(self, args)
 	SaneDevObject *self;
 	PyObject *args;
@@ -96,11 +93,6 @@ SaneDev_get_parameters(self, args)
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   st=sane_get_parameters(self->h, &p);
   if (st) return PySane_Error(st);
   switch (p.format)
@@ -127,11 +119,6 @@ SaneDev_fileno(self, args)
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   st=sane_get_select_fd(self->h, &fd);
   if (st) return PySane_Error(st);
   return PyInt_FromLong(fd);
@@ -146,16 +133,7 @@ SaneDev_start(self, args)
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
-
-  Py_BEGIN_ALLOW_THREADS
   st=sane_start(self->h);
-  Py_END_ALLOW_THREADS
-
   if (st) return PySane_Error(st);
   Py_INCREF(Py_None);
   return Py_None;
@@ -168,16 +146,7 @@ SaneDev_cancel(self, args)
 {
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
-
-  Py_BEGIN_ALLOW_THREADS
   sane_cancel(self->h);
-  Py_END_ALLOW_THREADS
-
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -187,17 +156,12 @@ SaneDev_get_options(self, args)
 	SaneDevObject *self;
 	PyObject *args;
 {
-  const SANE_Option_Descriptor *d;
+  SANE_Option_Descriptor *d;
   PyObject *list, *value;
   int i=1;
   
   if (!PyArg_ParseTuple(args, ""))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   if (!(list = PyList_New(0)))
 	    return NULL;
 
@@ -241,7 +205,7 @@ SaneDev_get_option(self, args)
 	PyObject *args;
 {
   SANE_Status st;
-  const SANE_Option_Descriptor *d;
+  SANE_Option_Descriptor *d;
   SANE_Int i;
   PyObject *value;
   int n;
@@ -249,11 +213,6 @@ SaneDev_get_option(self, args)
   
   if (!PyArg_ParseTuple(args, "i", &n))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   d=sane_get_option_descriptor(self->h, n);
   v=malloc(d->size+1);
   st=sane_control_option(self->h, n, SANE_ACTION_GET_VALUE,
@@ -289,7 +248,7 @@ SaneDev_set_option(self, args)
 	PyObject *args;
 {
   SANE_Status st;
-  const SANE_Option_Descriptor *d;
+  SANE_Option_Descriptor *d;
   SANE_Int i;
   PyObject *value;
   int n;
@@ -297,11 +256,6 @@ SaneDev_set_option(self, args)
   
   if (!PyArg_ParseTuple(args, "iO", &n, &value))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   d=sane_get_option_descriptor(self->h, n);
   v=malloc(d->size+1);
 
@@ -340,7 +294,7 @@ SaneDev_set_option(self, args)
 	  free(v);
 	  return NULL;
 	}
-      strcpy(v, PyString_AsString(value));
+      memcpy(v, PyString_AsString(value), PyString_Size(value));
       break;
     case(SANE_TYPE_BUTTON): 
     case(SANE_TYPE_GROUP):
@@ -361,17 +315,12 @@ SaneDev_set_auto_option(self, args)
 	PyObject *args;
 {
   SANE_Status st;
-  const SANE_Option_Descriptor *d;
+  SANE_Option_Descriptor *d;
   SANE_Int i;
   int n;
   
   if (!PyArg_ParseTuple(args, "i", &n))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   d=sane_get_option_descriptor(self->h, n);
   st=sane_control_option(self->h, n, SANE_ACTION_SET_AUTO,
 			 NULL, &i);
@@ -386,95 +335,43 @@ SaneDev_snap(self, args)
 	PyObject *args;
 {
   SANE_Status st; 
-   /* The buffer should be a multiple of 3 in size, so each sane_read
-      operation will return an integral number of RGB triples. */
-  SANE_Byte buffer[8192*3];  
+  SANE_Byte buffer[8192];  /* XXX how big should the buffer be? */
   SANE_Int len;
   Imaging im;
   SANE_Parameters p;
   char *format="unknown format";
-  int px, py, total=0;
+  int px, py;
   long L;
   
   if (!PyArg_ParseTuple(args, "i", &L))
     return NULL;
-  if (self->h==NULL)
-    {
-      PyErr_SetString(ErrorObject, "SaneDev object is closed");
-      return NULL;
-    }
   im=(Imaging)L;
-
- do_frame:
-  
-  st = sane_get_parameters(self->h, &p);
-  if (st != SANE_STATUS_GOOD) 
-    {
-      return PySane_Error(st);
-    }
 
   st=SANE_STATUS_GOOD; px=py=0;
   while (st!=SANE_STATUS_EOF)
     {
-      st=sane_read(self->h, buffer, sizeof(buffer), &len);
+      st=sane_read(self->h, buffer, 8192, &len);
       if (st && (st!=SANE_STATUS_EOF)) return PySane_Error(st);
-      total += len;
       if (st==SANE_STATUS_GOOD)
 	{
-	  switch(p.format)
+	  if (p.format==SANE_FRAME_RGB) 
 	    {
-	    case SANE_FRAME_RED:
-	    case SANE_FRAME_BLUE:
-	    case SANE_FRAME_GREEN:
-	    {
-	      /* Handle a single band of colour */
-	      int i;
-	      int offset = 8 * (p.format - SANE_FRAME_RED);
-	      for (i=0; i<len && py <im->ysize; i++)
-		{
-		  im->image32[py][px] = (im->image32[py][px] & ~(0xFF << offset)) 
-		                        | (buffer[i] << offset) 
-		                        | (0xFF << 24);
-		  if (++px >= (int) im->xsize)
-		    {px = 0; py++;}
-		}
-	      break;
 	    }
-	    case SANE_FRAME_GRAY:
+	  else
 	    {
 	      /* Handle some sort of 8-bit code */
+	      /* XXX Optimize */
 	      int i;
 	      for (i=0; i<len && py <im->ysize; i++)
 		{
 		  im->image8[py][px]=buffer[i];
 		  if (++px >= (int) im->xsize)
-		    {px = 0; py++;}
+		    px = 0, py++;
 		}
-	      break;
-	    }
-	    case SANE_FRAME_RGB:
-	    {
-	      /* Handle 24-bit colour */
-	      int i;
-	      for (i=0; i<len && py <im->ysize; i+=3)
-		{
-		  im->image32[py][px]=buffer[i] + 
-		                      (buffer[i+1]<<8) +
-		                      (buffer[i+2]<<16);
-		  if (++px >= (int) im->xsize)
-		    {px = 0; py++;}
-		}
-	      break;
-	    }
-	    default:
-	      PyErr_Format(ErrorObject, "Unknown frame type: %i", p.format);
-	      return NULL;
-	      break;
 	    }
 	}
     }
-  
-  if (!p.last_frame)   goto do_frame;
+
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -491,7 +388,6 @@ static PyMethodDef SaneDev_methods[] = {
 	{"cancel",	(PyCFunction)SaneDev_cancel,	1},
 	{"snap",	(PyCFunction)SaneDev_snap,	1},
 	{"fileno",	(PyCFunction)SaneDev_fileno,	1},
- 	{"close",	(PyCFunction)SaneDev_close,	1},
 	{NULL,		NULL}		/* sentinel */
 };
 
@@ -751,4 +647,3 @@ init_sane()
 	if (PyErr_Occurred())
 		Py_FatalError("can't initialize module _sane");
 }
-

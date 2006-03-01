@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/TiffImagePlugin.py#5 $
 #
 # TIFF file handling
 #
@@ -14,23 +14,27 @@
 # directory is placed first in the file.
 #
 # History:
-# 95-09-01 fl   Created
-# 96-05-04 fl   Handle JPEGTABLES tag
-# 96-05-18 fl   Fixed COLORMAP support
-# 97-01-05 fl   Fixed PREDICTOR support
-# 97-08-27 fl   Added support for rational tags (from Perry Stoll)
-# 98-01-10 fl   Fixed seek/tell (from Jan Blom)
-# 98-07-15 fl   Use private names for internal variables
-# 99-06-13 fl   Rewritten for PIL 1.0
-# 00-10-11 fl   Additional fixes for Python 2.0
+# 1995-09-01 fl   Created
+# 1996-05-04 fl   Handle JPEGTABLES tag
+# 1996-05-18 fl   Fixed COLORMAP support
+# 1997-01-05 fl   Fixed PREDICTOR support
+# 1997-08-27 fl   Added support for rational tags (from Perry Stoll)
+# 1998-01-10 fl   Fixed seek/tell (from Jan Blom)
+# 1998-07-15 fl   Use private names for internal variables
+# 1999-06-13 fl   Rewritten for PIL 1.0 (1.0)
+# 2000-10-11 fl   Additional fixes for Python 2.0 (1.1)
+# 2001-04-17 fl   Fixed rewind support (seek to frame 0) (1.2)
+# 2001-05-12 fl   Added write support for more tags (from Greg Couch) (1.3)
+# 2001-12-18 fl   Added workaround for broken Matrox library
+# 2002-01-18 fl   Don't mess up if photometric tag is missing (D. Alan Stewart)
 #
-# Copyright (c) Secret Labs AB 1997-99.
-# Copyright (c) Fredrik Lundh 1995-97.
+# Copyright (c) 1997-2002 by Secret Labs AB
+# Copyright (c) 1995-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "1.1"
+__version__ = "1.3.2"
 
 import Image, ImageFile
 import ImagePalette
@@ -66,12 +70,19 @@ STRIPOFFSETS = 273
 SAMPLESPERPIXEL = 277
 ROWSPERSTRIP = 278
 STRIPBYTECOUNTS = 279
+X_RESOLUTION = 282
+Y_RESOLUTION = 283
 PLANAR_CONFIGURATION = 284
+RESOLUTION_UNIT = 296
+SOFTWARE = 305
+DATE_TIME = 306
+ARTIST = 315
 PREDICTOR = 317
 COLORMAP = 320
 EXTRASAMPLES = 338
 SAMPLEFORMAT = 339
 JPEGTABLES = 347
+COPYRIGHT = 33432
 IPTC_NAA_CHUNK = 33723 # newsphoto properties
 PHOTOSHOP_CHUNK = 34377 # photoshop properties
 
@@ -162,6 +173,10 @@ class ImageFileDirectory:
         try:
             value = self[tag]
             if len(value) != 1:
+                if tag == SAMPLEFORMAT:
+                    # work around broken (?) matrox library
+                    # (from Ted Wright, via Bob Klimek)
+                    raise KeyError # use default
                 raise ValueError, "not a scalar"
             return value[0]
         except KeyError:
@@ -313,6 +328,9 @@ class ImageFileDirectory:
                 if tag == STRIPOFFSETS:
                     stripoffsets = len(directory)
                     typ = 4 # to avoid catch-22
+                elif tag in (X_RESOLUTION, Y_RESOLUTION):
+                    # identify rational data fields
+                    typ = 5
                 else:
                     typ = 3
                     for v in value:
@@ -329,7 +347,10 @@ class ImageFileDirectory:
             elif len(data) < 4:
                 append((tag, typ, len(value), data + (4-len(data))*"\0", ""))
             else:
-                append((tag, typ, len(value), o32(offset), data))
+                count = len(value)
+                if typ == 5:
+                    count = count / 2        # adjust for rational data field
+                append((tag, typ, count, o32(offset), data))
                 offset = offset + len(data)
                 if offset & 1:
                     offset = offset + 1 # word padding
@@ -384,6 +405,8 @@ class TiffImageFile(ImageFile.ImageFile):
     def seek(self, frame):
         "Select a given frame as current image"
 
+        if frame < 0:
+            frame = 0
         self._seek(frame)
 
     def tell(self):
@@ -396,9 +419,11 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp = self.__fp
         if frame < self.__frame:
             # rewind file
-            self.__frame = 0
+            self.__frame = -1
             self.__next = self.__first
         while self.__frame < frame:
+            if not self.__next:
+                raise EOFError, "no more images in TIFF file"
             self.fp.seek(self.__next)
             self.tag.load(self.fp)
             self.__next = self.tag.next
@@ -439,7 +464,9 @@ class TiffImageFile(ImageFile.ImageFile):
             PLANAR_CONFIGURATION, 1
             )
 
-        photo = self.tag.getscalar(PHOTOMETRIC_INTERPRETATION)
+        # photometric is a required tag, but not everyone is reading
+        # the specification
+        photo = self.tag.getscalar(PHOTOMETRIC_INTERPRETATION, 0)
 
         if Image.DEBUG:
             print "*** Summary ***"
@@ -551,6 +578,16 @@ SAVE_INFO = {
     "LAB": ("LAB", 8, 1, (8,8,8), None),
 }
 
+def _cvt_res(value):
+    # convert value to TIFF rational number -- (numerator, denominator)
+    if type(value) in (type([]), type(())):
+        assert(len(value) % 2 == 0)
+        return value
+    if type(value) == type(1):
+        return (value, 1)
+    value = float(value)
+    return (int(value * 65536), 65536)
+
 def _save(im, fp, filename):
 
     try:
@@ -566,8 +603,38 @@ def _save(im, fp, filename):
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
+    # additions written by Greg Couch, gregc@cgl.ucsf.edu
+    # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
+    if hasattr(im, 'tag'):
+        # preserve tags from original TIFF image file
+        for key in (RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION):
+            if im.tag.tagdata.has_key(key):
+                ifd[key] = im.tag.tagdata.get(key)
     if im.encoderinfo.has_key("description"):
         ifd[IMAGEDESCRIPTION] = im.encoderinfo["description"]
+    if im.encoderinfo.has_key("resolution"):
+        ifd[X_RESOLUTION] = ifd[Y_RESOLUTION] \
+                                = _cvt_res(im.encoderinfo["resolution"])
+    if im.encoderinfo.has_key("x resolution"):
+        ifd[X_RESOLUTION] = _cvt_res(im.encoderinfo["x resolution"])
+    if im.encoderinfo.has_key("y resolution"):
+        ifd[Y_RESOLUTION] = _cvt_res(im.encoderinfo["y resolution"])
+    if im.encoderinfo.has_key("resolution unit"):
+        unit = im.encoderinfo["resolution unit"]
+        if unit == "inch":
+            ifd[RESOLUTION_UNIT] = 2
+        elif unit == "cm" or unit == "centimeter":
+            ifd[RESOLUTION_UNIT] = 3
+        else:
+            ifd[RESOLUTION_UNIT] = 1
+    if im.encoderinfo.has_key("software"):
+        ifd[SOFTWARE] = im.encoderinfo["software"]
+    if im.encoderinfo.has_key("date time"):
+        ifd[DATE_TIME] = im.encoderinfo["date time"]
+    if im.encoderinfo.has_key("artist"):
+        ifd[ARTIST] = im.encoderinfo["artist"]
+    if im.encoderinfo.has_key("copyright"):
+        ifd[COPYRIGHT] = im.encoderinfo["copyright"]
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits

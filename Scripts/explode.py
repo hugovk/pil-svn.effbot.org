@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/explode.py#2 $
 #
 # split an animation into a number of frame files
 #

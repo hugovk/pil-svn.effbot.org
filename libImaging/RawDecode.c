@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/RawDecode.c#2 $
  *
  * decoder for raw (uncompressed) image data
  *

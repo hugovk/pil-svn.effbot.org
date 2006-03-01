@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/QuantHeap.c#3 $
  *
  * heap data type used by the image quantizer
  *
@@ -39,7 +39,7 @@ typedef struct {
 static int _heap_test(Heap);
 #endif
 
-void heap_free(Heap H) {
+void ImagingQuantHeapFree(Heap H) {
    IntHeap *h=(IntHeap *)H;
    free(h->heap);
    free(h);
@@ -76,7 +76,7 @@ static int _heap_test(Heap H) {
 }
 #endif
 
-int heap_remove(Heap H,void **r) {
+int ImagingQuantHeapRemove(Heap H,void **r) {
    IntHeap *h=(IntHeap *)H;
    int k,l;
    void *v;
@@ -105,7 +105,7 @@ int heap_remove(Heap H,void **r) {
    return 1;
 }
 
-int heap_add(Heap H,void *val) {
+int ImagingQuantHeapAdd(Heap H,void *val) {
    IntHeap *h=(IntHeap *)H;
    int k;
    if (h->heapcount==h->heapsize-1) {
@@ -126,7 +126,7 @@ int heap_add(Heap H,void *val) {
    return 1;
 }
 
-int heap_top(Heap H,void **r) {
+int ImagingQuantHeapTop(Heap H,void **r) {
    IntHeap *h=(IntHeap *)H;
    if (!h->heapcount) {
       return 0;
@@ -135,7 +135,7 @@ int heap_top(Heap H,void **r) {
    return 1;
 }
 
-Heap *heap_new(HeapCmpFunc cf) {
+Heap *ImagingQuantHeapNew(HeapCmpFunc cf) {
    IntHeap *h;
    
    h=malloc(sizeof(IntHeap));

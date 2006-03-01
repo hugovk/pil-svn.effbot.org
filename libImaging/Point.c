@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Point.c#2 $
  *
  * point (pixel) translation
  *

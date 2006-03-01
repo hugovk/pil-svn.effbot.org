@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/FontFile.py#3 $
 #
 # base class for raster font file parsers
 #

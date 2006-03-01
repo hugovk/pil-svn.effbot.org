@@ -1,19 +1,20 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/JpegEncode.c#2 $
  *
  * coder for JPEG data
  *
  * history:
- *	96-05-06 fl	created
- *	96-07-16 fl	don't drop last block of encoded data
- *	96-12-30 fl	added quality and progressive settings
- *	97-01-08 fl	added streamtype settings
- *	98-01-31 fl	Adapted to libjpeg 6a
- *	98-07-12 fl	added YCbCr support
+ * 1996-05-06 fl   created
+ * 1996-07-16 fl   don't drop last block of encoded data
+ * 1996-12-30 fl   added quality and progressive settings
+ * 1997-01-08 fl   added streamtype settings
+ * 1998-01-31 fl   adapted to libjpeg 6a
+ * 1998-07-12 fl   added YCbCr support
+ * 2001-04-16 fl   added DPI write support
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2001 by Secret Labs AB
+ * Copyright (c) 1995-1997 by Fredrik Lundh
  *
  * See the README file for details on usage and redistribution.
  */
@@ -145,7 +146,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    jpeg_simple_progression(&context->cinfo);
 	context->cinfo.smoothing_factor = context->smooth;
 	context->cinfo.optimize_coding = (boolean) context->optimize;
-
+        if (context->xdpi > 0 && context->ydpi > 0) {
+            context->cinfo.density_unit = 1; /* dots per inch */
+            context->cinfo.X_density = context->xdpi;
+            context->cinfo.Y_density = context->ydpi;
+        }
 	switch (context->streamtype) {
 	case 1:
 	    /* tables only -- not yet implemented */

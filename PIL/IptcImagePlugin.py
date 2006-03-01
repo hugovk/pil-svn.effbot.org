@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/IptcImagePlugin.py#3 $
 #
 # IPTC/NAA file handling
 #

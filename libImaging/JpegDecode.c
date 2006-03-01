@@ -1,20 +1,22 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/JpegDecode.c#2 $
  *
  * decoder for JPEG image data.
  *
  * history:
- * 96-05-02 fl	Created
- * 96-05-05 fl	Handle small JPEG files correctly
- * 96-05-28 fl	Added "draft mode" support
- * 97-01-25 fl	Added colour conversion override
- * 98-01-31 fl	Adapted to libjpeg 6a
- * 98-07-12 fl	Extended YCbCr support
- * 98-12-29 fl	Added new state to handle suspension in multipass modes
+ * 1996-05-02 fl   Created
+ * 1996-05-05 fl   Handle small JPEG files correctly
+ * 1996-05-28 fl   Added "draft mode" support
+ * 1997-01-25 fl   Added colour conversion override
+ * 1998-01-31 fl   Adapted to libjpeg 6a
+ * 1998-07-12 fl   Extended YCbCr support
+ * 1998-12-29 fl   Added new state to handle suspension in multipass modes
+ * 2000-10-12 fl   Suppress warnings
+ * 2000-12-04 fl   Suppress errors beyond end of image data
  *
- * Copyright (c) Secret Labs AB 1998.
- * Copyright (c) Fredrik Lundh 1996-97.
+ * Copyright (c) 1998-2000 Secret Labs AB 
+ * Copyright (c) 1996-2000 Fredrik Lundh 
  *
  * See the README file for details on usage and redistribution.
  */
@@ -98,13 +100,14 @@ error(j_common_ptr cinfo)
 {
   JPEGERROR* error;
   error = (JPEGERROR*) cinfo->err;
-#if 0
-  /* DEBUG */
-  cinfo->err->output_message(cinfo);
-#endif
   longjmp(error->setjmp_buffer, 1);
 }
 
+METHODDEF(void)
+output(j_common_ptr cinfo)
+{
+    /* nothing */
+}
 
 /* -------------------------------------------------------------------- */
 /* Decoder								*/
@@ -128,6 +131,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	/* Setup decompression context */
 	context->cinfo.err = jpeg_std_error(&context->error.pub);
 	context->error.pub.error_exit = error;
+	context->error.pub.output_message = output;
 	jpeg_create_decompress(&context->cinfo);
 	jpeg_buffer_src(&context->cinfo, &context->source);
 
@@ -141,7 +145,6 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     context->source.pub.bytes_in_buffer = bytes;
 
     if (context->source.skip > 0) {
-	/* There's more data to skip */
 	skip_input_data(&context->cinfo, context->source.skip);
 	if (context->source.skip > 0)
 	    return context->source.pub.next_input_byte - buf; 
@@ -171,10 +174,10 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
 	else if (strcmp(context->jpegmode, "RGB") == 0)
 	    context->cinfo.jpeg_color_space = JCS_RGB;
-	else if (strcmp(context->jpegmode, "YCbCr") == 0)
-	    context->cinfo.jpeg_color_space = JCS_YCbCr;
 	else if (strcmp(context->jpegmode, "CMYK") == 0)
 	    context->cinfo.jpeg_color_space = JCS_CMYK;
+	else if (strcmp(context->jpegmode, "YCbCr") == 0)
+	    context->cinfo.jpeg_color_space = JCS_YCbCr;
 	else if (strcmp(context->jpegmode, "YCbCrK") == 0) {
 	    context->cinfo.jpeg_color_space = JCS_YCCK;
 	}
@@ -240,8 +243,11 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     case 4:
 
 	/* Finish decompression */
-	if (!jpeg_finish_decompress(&context->cinfo))
-	    break;
+	if (!jpeg_finish_decompress(&context->cinfo)) {
+            /* FIXME: add strictness mode test */
+            if (state->y < state->ysize)
+                break;
+        }
 
 	/* Clean up */
 	jpeg_destroy_decompress(&context->cinfo);

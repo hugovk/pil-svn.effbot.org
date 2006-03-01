@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/DcxImagePlugin.py#3 $
 #
 # DCX file handling
 #

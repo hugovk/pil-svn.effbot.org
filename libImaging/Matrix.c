@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Matrix.c#2 $
  *
  * colour and luminance matrix transforms
  *

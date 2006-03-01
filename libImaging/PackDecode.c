@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/PackDecode.c#2 $
  *
  * decoder for PackBits image data.
  *

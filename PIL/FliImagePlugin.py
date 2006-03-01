@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/FliImagePlugin.py#3 $
 #
 # FLI/FLC file handling.
 #

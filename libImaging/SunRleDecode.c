@@ -2,7 +2,7 @@
  * THIS IS WORK IN PROGRESS
  *
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/SunRleDecode.c#2 $
  *
  * decoder for SUN RLE data.
  *

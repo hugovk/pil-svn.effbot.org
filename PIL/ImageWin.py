@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageWin.py#3 $
 #
 # a Windows DIB display interface
 #

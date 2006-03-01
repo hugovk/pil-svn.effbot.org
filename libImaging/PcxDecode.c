@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/PcxDecode.c#2 $
  *
  * decoder for PCX image data.
  *

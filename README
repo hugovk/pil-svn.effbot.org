@@ -1,11 +1,11 @@
 
 The Python Imaging Library
-$Id: README$
+$Id: //modules/pil/README#9 $
 
-Release 1.1.2 (May 7, 2001)
+Release 1.1.3 (Mar 15, 2002)
 
 ====================================================================
-The Python Imaging Library 1.1.2
+The Python Imaging Library 1.1.3
 ====================================================================
 
 Contents
@@ -27,10 +27,10 @@ your Python environment.  This library provides extensive file format
 support, an efficient internal representation, and fairly powerful
 image processing capabilities.
 
-This source kit has been built and tested on Windows 95, 98 and NT,
-and a number of Unix platforms (including Alpha, Solaris, and Intel
-systems).  We believe that it should work on most modern platforms
-(people are using it on Crays, after all ;-)
+This source kit has been built and tested on Windows NT/2000, and a a
+number of Unix platforms (including Alpha, Solaris and Intel systems).
+We believe that it should work on most modern platforms (people are
+using it on Crays, after all ;-)
 
 The main distribution site for this software is:
 
@@ -45,6 +45,7 @@ latest version, check:
         http://www.pythonware.com/library/
 
 For installation and licensing details, see below.
+
 
 --------------------------------------------------------------------
 Support Options
@@ -81,11 +82,14 @@ Or send a mail to:
 
         sales@pythonware.com
 
+
 --------------------------------------------------------------------
-News Highlights in 1.1.2 (as compared to 1.0):
+News Highlights in 1.1.3 (as compared to 1.0):
 --------------------------------------------------------------------
 
-+ Adapted to Python 1.6, 2.0 and 2.1.
++ Adapted to Python 1.6, 2.0, 2.1 and 2.2.  This version also
+  runs under 1.5.2, but probably not under versions older than
+  that.
 
 + To reduce module dependencies, the Tkinter support has been
   moved to a separate binary module.
@@ -93,10 +97,15 @@ News Highlights in 1.1.2 (as compared to 1.0):
 + The JPEG decoder is more tolerant for broken files.  As long
   as all image data can be read, it won't complain.
 
++ An ANTIALIAS downsampling filter has been added.
+
++ Includes distutils build script (setup.py) for 2.0 and later.
+
 + The usual crop of bug fixes and performance tweaks.
 
-For more information on these and other changes, see the CHANGES
+For detailed information on these and other changes, see the CHANGES
 documents.
+
 
 --------------------------------------------------------------------
 Software License
@@ -104,8 +113,8 @@ Software License
 
 The Python Imaging Library is
 
-Copyright (c) 1997-2001 by Secret Labs AB
-Copyright (c) 1995-2001 by Fredrik Lundh
+Copyright (c) 1997-2002 by Secret Labs AB
+Copyright (c) 1995-2002 by Fredrik Lundh
 
 By obtaining, using, and/or copying this software and/or its
 associated documentation, you agree that you have read, understood,
@@ -167,21 +176,22 @@ support.
    need additional developer packages.
 
    If this doesn't mean anything to you, you can still carry out
-   steps 3 to 6 as described below.  Step 7 will probably fail,
+   steps 3 to 5 as described below.  Step 6 will probably fail,
    though.
 
-3. Unpack the PIL distribution (the file Imaging-1.1.tar.gz)
+
+3. Unpack the PIL distribution (the file Imaging-1.1.3.tar.gz)
    in your Python extensions directory (if you have one.  If
    not, feel free to unpack it in any other suitable directory).
 
-        $ cd Python-2.0/Extensions # example
-        $ gunzip Imaging-1.1.2.tar.gz
-        $ tar xvf Imaging-1.1.2.tar
+        $ cd Python-2.1/Extensions # example
+        $ gunzip Imaging-1.1.3.tar.gz
+        $ tar xvf Imaging-1.1.3.tar
 
 
 4. Now build the Imaging core library (libImaging.a):
 
-        $ cd Imaging-1.1.2/libImaging
+        $ cd Imaging-1.1.3/libImaging
         $ ./configure
         $ make
 
@@ -191,21 +201,37 @@ support.
         $ CC="cc -ansi" ./configure
 
 
-5. To check that this library works as it should, type:
+5. When the build has finished, go back to the Imaging directory.
 
-        $ make check
-
-   (It isn't much of a test, but at least it shouldn't crash :-)
+        $ cd ..
 
 
-6. Go back to the Imaging directory.
+6. If you're using Python 2.0 or later, you can use the setup.py
+   script to finish the build.  The following commands should do
+   the trick:
 
-   If you don't have the IJG JPEG or ZLIB libraries (or you have them,
+        $ python setup.py build
+        $ python setup.py install
+
+   (depending on how Python has been installed on your machine,
+   you might have to log in as a superuser to run the 'install'
+   command.)
+
+   If the setup.py command finishes without any errors, you're
+   done!
+
+   If you have an older Python version, or if the setup.py script
+   cannot figure out how your system is configured, you can build
+   PIL in the traditional way, using the Setup.in file.  See steps
+   7 through 10 below for details.
+
+
+7. If you don't have the IJG JPEG or ZLIB libraries (or you have them,
    but not in a standard place), copy the "Setup.in" file to "Setup"
    and edit it according to the instructions in the file.
 
 
-7. Edit Makefile.pre.in and build a Makefile following the instructions
+8. Edit Makefile.pre.in and build a Makefile following the instructions
    there.  In most cases, you can simply give the following command:
 
         $ make -f Makefile.pre.in boot
@@ -215,7 +241,7 @@ support.
    information.
 
 
-8. To build a dynamically loaded module, just type "make":
+9. To build a dynamically loaded module, just type "make":
 
         $ make
 
@@ -234,11 +260,16 @@ support.
    If both imports works, you've successfully added PIL to your Python
    environment.
 
-   There are a few demo scripts in the Imaging/Scripts directory that
-   you can use to further test the library.
+   To to a slightly more extensive test, you can run the MiniTest
+   test suite:
+
+        $ python MiniTest/test.py
+
+   There are a few demo scripts in the Scripts directory that you
+   can use to further test the library.
 
 
-9. Copy the "_imaging.so" module, the "_imagingtk.so" module, and the
+10. Copy the "_imaging.so" module, the "_imagingtk.so" module, and the
    contents of the "Imaging/PIL" directory to a suitable place along
    the Python path.
 
@@ -260,9 +291,12 @@ support.
         $ mkdir /usr/local/lib/Python1.5/PIL
         $ cp *.so PIL/* /usr/local/lib/Python1.5/PIL
 
+
 --------------------------------------------------------------------
 Build instructions for Windows
 --------------------------------------------------------------------
+
+[FIXME: this section needs to be updated]
 
 The current release does not include Windows makefiles.  For prebuilt
 versions, check the product site:
@@ -271,7 +305,7 @@ versions, check the product site:
 
 Building your own copy under Visual Studio should be straightforward;
 create a new project based on the sample extensions provided with
-Python (the target should be "_imaging.dll"), add all C files except
+Python (the target should be "_imaging.pyd"), add all C files except
 "Except.c" and "coretest.c" to that project, check the contents of the
 "ImConfig.h" file (modify it if necessary), and build the DLL.
 

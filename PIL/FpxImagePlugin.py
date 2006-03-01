@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/FpxImagePlugin.py#3 $
 #
 # FlashPix support for PIL
 #

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/thresholder.py#2 $
 #
 # this demo script illustrates how a 1-bit BitmapImage can be used
 # as a dynamically updated overlay
@@ -30,7 +30,7 @@ class UI(Frame):
         scale.set(value)
         scale.bind("<ButtonRelease-1>", self.redraw)
         scale.pack()
- 
+
         # uncomment the following line for instant feedback (might
         # be too slow on some platforms)
         # self.redraw()

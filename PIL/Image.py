@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/Image.py#17 $
 #
 # the Image class wrapper
 #
@@ -22,14 +22,16 @@
 # 2000-06-07 fl   PIL release 1.1
 # 2000-10-20 fl   PIL release 1.1.1
 # 2001-05-07 fl   PIL release 1.1.2
+# 2002-01-14 fl   PIL release 1.2b1 (imToolkit)
+# 2002-03-15 fl   PIL release 1.1.3
 #
-# Copyright (c) 1997-2001 by Secret Labs AB.
-# Copyright (c) 1995-2001 by Fredrik Lundh.
+# Copyright (c) 1997-2002 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1995-2002 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-VERSION = "1.1.2"
+VERSION = "1.1.3"
 
 class _imaging_not_installed:
     # module placeholder
@@ -60,11 +62,16 @@ import os, string, sys
 # type stuff
 from types import IntType, StringType, TupleType
 
-def isStringType(t):
-    return type(t) is StringType
+try:
+    UnicodeStringType = type(unicode(""))
+    def isStringType(t):
+        return isinstance(t, StringType) or isinstance(t, UnicodeStringType)
+except NameError:
+    def isStringType(t):
+        return isinstance(t, StringType)
 
 def isTupleType(t):
-    return type(t) is TupleType
+    return isinstance(t, TupleType)
 
 def isImageType(t):
     return hasattr(t, "im")
@@ -98,12 +105,12 @@ PERSPECTIVE = 2 # Not yet implemented
 QUAD = 3
 MESH = 4
 
-# resampling
+# resampling filters
 NONE = 0
 NEAREST = 0
-ANTIALIAS = 1
-BILINEAR = 2
-BICUBIC = 3
+ANTIALIAS = 1 # 3-lobed lanczos
+LINEAR = BILINEAR = 2
+CUBIC = BICUBIC = 3
 
 # dithers
 NONE = 0
@@ -197,7 +204,12 @@ def init():
 
     visited = {}
 
-    directories = sys.path + [os.path.dirname(__file__)]
+    directories = sys.path
+
+    try:
+        directories = directories + [os.path.dirname(__file__)]
+    except NameError:
+        pass
 
     # only check directories (including current, if present in the path)
     for directory in filter(isDirectory, directories):
@@ -231,7 +243,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
     # tweak arguments
     if args is None:
         args = ()
-    elif type(args) != TupleType:
+    elif not isTupleType(args):
         args = (args,)
 
     try:
@@ -240,14 +252,14 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # print decoder, (mode,) + args + extra
         return apply(decoder, (mode,) + args + extra)
     except AttributeError:
-        raise IOError, "decoder %s not available" % decoder_name
+        raise IOError("decoder %s not available" % decoder_name)
 
 def _getencoder(mode, encoder_name, args, extra=()):
 
     # tweak arguments
     if args is None:
         args = ()
-    elif type(args) != TupleType:
+    elif not isTupleType(args):
         args = (args,)
 
     try:
@@ -256,7 +268,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # print encoder, (mode,) + args + extra
         return apply(encoder, (mode,) + args + extra)
     except AttributeError:
-        raise IOError, "encoder %s not available" % encoder_name
+        raise IOError("encoder %s not available" % encoder_name)
 
 
 # --------------------------------------------------------------------
@@ -284,7 +296,7 @@ def _getscaleoffset(expr):
             d == "__add__" and isNumberType(e)):
             return c, e
     except TypeError: pass
-    raise ValueError, "illegal expression"
+    raise ValueError("illegal expression")
 
 
 # --------------------------------------------------------------------
@@ -361,7 +373,7 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError, "encoder error %d in tostring" % s
+            raise RuntimeError("encoder error %d in tostring" % s)
 
         return string.join(data, "")
 
@@ -370,7 +382,7 @@ class Image:
 
         self.load()
         if self.mode != "1":
-            raise ValueError, "not a bitmap"
+            raise ValueError("not a bitmap")
         data = self.tostring("xbm")
         return string.join(["#define %s_width %d\n" % (name, self.size[0]),
                 "#define %s_height %d\n"% (name, self.size[1]),
@@ -393,9 +405,9 @@ class Image:
         s = d.decode(data)
 
         if s[0] >= 0:
-            raise ValueError, "not enough image data"
+            raise ValueError("not enough image data")
         if s[1] != 0:
-            raise ValueError, "cannot decode image data"
+            raise ValueError("cannot decode image data")
 
     def load(self):
         if self.im and self.palette and self.palette.rawmode:
@@ -429,7 +441,7 @@ class Image:
         if data:
             # matrix conversion
             if mode not in ("L", "RGB"):
-                raise ValueError, "illegal conversion"
+                raise ValueError("illegal conversion")
             im = self.im.convert_matrix(mode, data)
             return self._new(im)
 
@@ -449,11 +461,11 @@ class Image:
                 im = self.im.convert(getmodebase(self.mode))
                 im = im.convert(mode, dither)
             except KeyError:
-                raise ValueError, "illegal conversion"
+                raise ValueError("illegal conversion")
 
         return self._new(im)
 
-    def quantize(self, colors=256, method=0, kmeans=0):
+    def quantize(self, colors=256, method=0, kmeans=0, palette=None):
 
         # methods:
         #    0 = median cut
@@ -463,6 +475,19 @@ class Image:
         # quantizer interface in a later versions of PIL.
 
         self.load()
+
+        if palette:
+            # use palette from reference image
+            palette.load()
+            if palette.mode != "P":
+                raise ValueError("bad mode for palette image")
+            if self.mode != "RGB" and self.mode != "L":
+                raise ValueError(
+                    "only RGB or L mode images can be quantized to a palette"
+                    )
+            im = self.im.convert("P", 1, palette.im)
+            return self._makeself(im)
+
         im = self.im.quantize(colors, method, kmeans)
         return self._new(im)
 
@@ -480,7 +505,7 @@ class Image:
         if box is None:
             return self.copy()
 
-        # delayed operation
+        # lazy operation
         return _ImageCrop(self, box)
 
     def draft(self, mode, size):
@@ -492,7 +517,7 @@ class Image:
         "Apply environment filter to image"
 
         if self.mode == "P":
-            raise ValueError, "cannot filter palette images"
+            raise ValueError("cannot filter palette images")
         self.load()
         id = kernel.id
         if self.im.bands == 1:
@@ -619,7 +644,7 @@ class Image:
         "Set alpha layer"
 
         if self.mode != "RGBA" or im.mode not in ("1", "L"):
-            raise ValueError, "illegal image mode"
+            raise ValueError("illegal image mode")
 
         im.load()
         self.load()
@@ -639,8 +664,8 @@ class Image:
         "Put palette data into an image."
 
         if self.mode not in ("L", "P"):
-            raise ValueError, "illegal image mode"
-        if type(data) != StringType:
+            raise ValueError("illegal image mode")
+        if not isStringType(data):
             data = string.join(map(chr, data), "")
         self.mode = "P"
         self.palette = ImagePalette.raw(rawmode, data)
@@ -656,7 +681,7 @@ class Image:
         "Resize image"
 
         if resample not in (NEAREST, BILINEAR, BICUBIC, ANTIALIAS):
-            raise ValueError, "unknown resampling filter"
+            raise ValueError("unknown resampling filter")
 
         self.load()
 
@@ -664,15 +689,11 @@ class Image:
             resample = NEAREST
 
         if resample == ANTIALIAS:
-            x0, y0 = self.size
-            x1, y1 = size
+            # requires stretch support (imToolkit & PIL 1.1.3)
             try:
-                if x0 * y1 < x1 * y0:
-                    im = self.im.vstretch(x0, y1).hstretch(x1, y1)
-                else:
-                    im = self.im.hstretch(x1, y0).vstretch(x1, y1)
+                im = self.im.stretch(size, resample)
             except AttributeError:
-                raise ValueError, "unsupported resampling filter"
+                raise ValueError("unsupported resampling filter")
         else:
             im = self.im.resize(size, resample)
 
@@ -682,7 +703,7 @@ class Image:
         "Rotate image.  Angle given as degrees counter-clockwise."
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
-            raise ValueError, "unknown resampling filter"
+            raise ValueError("unknown resampling filter")
 
         self.load()
 
@@ -762,8 +783,11 @@ class Image:
 
         return 0
 
-    def thumbnail(self, size, resample=ANTIALIAS):
+    def thumbnail(self, size, resample=NEAREST):
         "Create thumbnail representation (modifies image in place)"
+
+        # FIXME: the default resampling filter will be changed
+        # to ANTIALIAS in future versions
 
         # preserve aspect ratio
         x, y = self.size
@@ -783,7 +807,7 @@ class Image:
         except ValueError:
             if resample != ANTIALIAS:
                 raise
-            im = self.resize(size, NEAREST)
+            im = self.resize(size, NEAREST) # fallback
 
         self.im = im.im
         self.mode = im.mode
@@ -834,10 +858,10 @@ class Image:
                     y0, (ne[1]-y0)*As, (sw[1]-y0)*At,
                     (se[1]-sw[1]-ne[1]+y0)*As*At)
         else:
-            raise ValueError, "unknown transformation method"
+            raise ValueError("unknown transformation method")
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
-            raise ValueError, "unknown resampling filter"
+            raise ValueError("unknown resampling filter")
 
         image.load()
 
@@ -855,9 +879,24 @@ class Image:
         im = self.im.transpose(method)
         return self._new(im)
 
+    #
+    # test/extension hooks (don't use in production code!)
+
+    def _stretch(self, size, resample=NEAREST):
+        # same as resize
+
+        if resample not in (NEAREST, BILINEAR, BICUBIC, ANTIALIAS):
+            raise ValueError("unknown resampling filter")
+
+        self.load()
+
+        if self.mode in ("1", "P"):
+            resample = NEAREST
+
+        return self._new(self.im.stretch(size, resample))
 
 # --------------------------------------------------------------------
-# Delayed operations
+# Lazy operations
 
 class _ImageCrop(Image):
 
@@ -924,7 +963,7 @@ def open(fp, mode="r"):
     "Open an image file, without loading the raster data"
 
     if mode != "r":
-        raise ValueError, "bad mode"
+        raise ValueError("bad mode")
 
     if isStringType(fp):
         import __builtin__
@@ -957,7 +996,7 @@ def open(fp, mode="r"):
         except (SyntaxError, IndexError, TypeError):
             pass
 
-    raise IOError, "cannot identify image file"
+    raise IOError("cannot identify image file")
 
 #
 # Image processing.
@@ -989,12 +1028,12 @@ def merge(mode, bands):
     "Merge a set of single band images into a new multiband image."
 
     if getmodebands(mode) != len(bands) or "*" in mode:
-        raise ValueError, "wrong number of bands"
+        raise ValueError("wrong number of bands")
     for im in bands[1:]:
         if im.mode != getmodetype(mode):
-            raise ValueError, "mode mismatch"
+            raise ValueError("mode mismatch")
         if im.size != bands[0].size:
-            raise ValueError, "size mismatch"
+            raise ValueError("size mismatch")
     im = core.new(mode, bands[0].size)
     for i in range(getmodebands(mode)):
         bands[i].load()
@@ -1020,7 +1059,7 @@ def register_extension(id, extension):
 
 
 # --------------------------------------------------------------------
-# Unix display support
+# Simple display support
 
 def _showxv(self, title=None, command=None):
 
@@ -1043,6 +1082,6 @@ def _showxv(self, title=None, command=None):
 
     if os.name == "nt":
         os.system("%s %s" % (command, file))
-        # FIXME: leaves temporary files around...
+        # FIXME: this leaves temporary files around...
     else:
         os.system("(%s %s; rm -f %s)&" % (command, file, file))

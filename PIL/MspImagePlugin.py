@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/MspImagePlugin.py#3 $
 #
 # MSP file handling
 #

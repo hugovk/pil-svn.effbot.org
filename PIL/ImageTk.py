@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageTk.py#2 $
 #
 # a Tk display interface
 #
@@ -19,8 +19,8 @@
 # 99-07-26 fl   Automatically hook into Tkinter (if possible)
 # 99-08-15 fl   Hook uses _imagingtk instead of _imaging
 #
-# Copyright (c) Secret Labs AB 1997-99.
-# Copyright (c) Fredrik Lundh 1996-97.
+# Copyright (c) 1997-1999 by Secret Labs AB
+# Copyright (c) 1996-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #

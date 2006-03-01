@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/_imagingtk.c#3 $
  *
  * tkinter hooks
  *
@@ -64,10 +64,7 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-void
-#ifdef WIN32
-__declspec(dllexport)
-#endif
+DL_EXPORT(void)
 init_imagingtk(void)
 {
     Py_InitModule("_imagingtk", functions);

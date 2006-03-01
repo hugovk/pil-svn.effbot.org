@@ -22,7 +22,7 @@ module runs an interactive interpreter, each line of which is split into
 space-separated tokens and passed to the execute method.
 
 In the method descriptions below, a first line beginning with the string
-`usage:' means this method can be invokeed with the token that follows
+`usage:' means this method can be invoked with the token that follows
 it.  Following <>-enclosed arguments describe how the method interprets
 the entries on the stack.  Each argument specification begins with a
 type specification: either `int', `float', `string', or `image'.
@@ -40,7 +40,7 @@ of its upper-left-hand corner and displays the cropped portion.
 30 degrees, and saves the result as rotated.png (in PNG format).
 """
 # by Eric S. Raymond <esr@thyrsus.com>
-# $Id: pildriver,v 1.6 1998/07/19 03:45:44 esr Exp $
+# $Id: //modules/pil/Scripts/pildriver.py#3 $
 
 # TO DO:
 # 1. Add PILFont capabilities, once that's documented.
@@ -56,7 +56,7 @@ class PILDriver:
 
     def do_verbose(self):
         """usage: verbose <int:num>
-        
+
         Set verbosity flag from top of stack.
         """
         self.verbose = self.do_pop()
@@ -77,14 +77,14 @@ class PILDriver:
 
     def do_clear(self):
         """usage: clear
-        
+
         Clear the stack.
         """
         self.stack = []
 
     def do_pop(self):
         """usage: pop
-        
+
         Discard the top element on the stack.
         """
         top = self.stack[0]
@@ -93,10 +93,10 @@ class PILDriver:
 
     def do_dup(self):
         """usage: dup
-        
+
         Duplicate the top-of-stack item.
         """
-        if hasattr(self, 'format'):     # If it's an image, do a real copy 
+        if hasattr(self, 'format'):     # If it's an image, do a real copy
             dup = self.stack[0].copy()
         else:
              dup = self.stack[0]
@@ -104,7 +104,7 @@ class PILDriver:
 
     def do_swap(self):
         """usage: swap
-        
+
         Swap the top-of-stack item with the next one down.
         """
         self.stack = [self.stack[1], self.stack[0]] + self.stack[2:]
@@ -113,7 +113,7 @@ class PILDriver:
 
     def do_new(self):
         """usage: new <int:xsize> <int:ysize> <int:color>:
-        
+
         Create and push a greyscale image of given size and color.
         """
         xsize = int(self.do_pop())
@@ -123,14 +123,14 @@ class PILDriver:
 
     def do_open(self):
         """usage: open <string:filename>
-        
+
         Open the indicated image, read it, push the image on the stack.
         """
         self.push(Image.open(self.do_pop()))
 
     def do_blend(self):
         """usage: blend <image:pic1> <image:pic2> <float:alpha>
-        
+
         Replace two images and an alpha with the blended image.
         """
         image1 = self.do_pop()
@@ -140,7 +140,7 @@ class PILDriver:
 
     def do_composite(self):
         """usage: composite <image:pic1> <image:pic2> <image:mask>
-        
+
         Replace two images and a mask with their composite.
         """
         image1 = self.do_pop()
@@ -150,7 +150,7 @@ class PILDriver:
 
     def do_merge(self):
         """usage: merge <string:mode> <image:pic1> [<image:pic2> [<image:pic3> [<image:pic4>]]]
-        
+
         Merge top-of stack images in a way described by the mode.
         """
         mode = self.do_pop()
@@ -163,7 +163,7 @@ class PILDriver:
 
     def do_convert(self):
         """usage: convert <string:mode> <image:pic1>
-        
+
         Convert the top image to the given mode.
         """
         mode = self.do_pop()
@@ -172,14 +172,14 @@ class PILDriver:
 
     def do_copy(self):
         """usage: copy <image:pic1>
-        
+
         Make and push a true copy of the top image.
         """
         self.dup()
 
     def do_crop(self):
         """usage: crop <int:left> <int:upper> <int:right> <int:lower> <image:pic1>
-        
+
         Crop and push a rectangular region from the current image.
         """
         left = int(self.do_pop())
@@ -191,7 +191,7 @@ class PILDriver:
 
     def do_draft(self):
         """usage: draft <string:mode> <int:xsize> <int:ysize>
-        
+
         Configure the loader for a given mode and size.
         """
         mode = self.do_pop()
@@ -201,7 +201,7 @@ class PILDriver:
 
     def do_filter(self):
         """usage: filter <string:filtername> <image:pic1>
-        
+
         Process the top image with the given filter.
         """
         import ImageFilter
@@ -209,9 +209,29 @@ class PILDriver:
         image = self.do_pop()
         self.push(image.filter(filter))
 
+    def do_getbbox(self):
+        """usage: getbbox
+
+        Push left, upper, right, and lower pixel coordinates of the top image.
+        """
+        bounding_box = self.do_pop().getbbox()
+        self.push(bounding_box[3])
+        self.push(bounding_box[2])
+        self.push(bounding_box[1])
+        self.push(bounding_box[0])
+
+    def do_getextrema(self):
+        """usage: extrema
+
+        Push minimum and maximum pixel values of the top image.
+        """
+        extrema = self.do_pop().extrema()
+        self.push(extrema[1])
+        self.push(extrema[0])
+
     def do_offset(self):
         """usage: offset <int:xoffset> <int:yoffset> <image:pic1>
-        
+
         Offset the pixels in the top image.
         """
         xoff = int(self.do_pop())
@@ -219,10 +239,9 @@ class PILDriver:
         image = self.do_pop()
         self.push(image.offset(xoff, yoff))
 
-
     def do_paste(self):
         """usage: paste <image:figure> <int:xoffset> <int:yoffset> <image:ground>
-        
+
         Paste figure image into ground with upper left at given offsets.
         """
         figure = self.do_pop()
@@ -236,7 +255,7 @@ class PILDriver:
 
     def do_resize(self):
         """usage: resize <int:xsize> <int:ysize> <image:pic1>
-        
+
         Resize the top image.
         """
         ysize = int(self.do_pop())
@@ -246,7 +265,7 @@ class PILDriver:
 
     def do_rotate(self):
         """usage: rotate <int:angle> <image:pic1>
-        
+
         Rotate image through a given angle
         """
         angle = int(self.do_pop())
@@ -255,7 +274,7 @@ class PILDriver:
 
     def do_save(self):
         """usage: save <string:filename> <image:pic1>
-        
+
         Save image with default options.
         """
         filename = self.do_pop()
@@ -264,7 +283,7 @@ class PILDriver:
 
     def do_save2(self):
         """usage: save2 <string:filename> <string:options> <image:pic1>
-        
+
         Save image with specified options.
         """
         filename = self.do_pop()
@@ -274,14 +293,14 @@ class PILDriver:
 
     def do_show(self):
         """usage: show <image:pic1>
-        
+
         Display and pop the top image.
         """
         self.do_pop().show()
 
     def do_thumbnail(self):
         """usage: thumbnail <int:xsize> <int:ysize> <image:pic1>
-        
+
         Modify the top image in the stack to contain a thumbnail of itself.
         """
         ysize = int(self.do_pop())
@@ -290,7 +309,7 @@ class PILDriver:
 
     def do_transpose(self):
         """usage: transpose <string:operator> <image:pic1>
-        
+
         Transpose the top image.
         """
         transpose = string.upper(self.do_pop())
@@ -301,21 +320,21 @@ class PILDriver:
 
     def do_format(self):
         """usage: format <image:pic1>
-        
+
         Push the format of the top image onto the stack.
         """
         self.push(self.pop().format)
 
     def do_mode(self):
         """usage: mode <image:pic1>
-        
+
         Push the mode of the top image onto the stack.
         """
         self.push(self.pop().mode)
 
     def do_size(self):
         """usage: size <image:pic1>
-        
+
         Push the image size on the stack as (y, x).
         """
         size = self.pop().size
@@ -326,7 +345,7 @@ class PILDriver:
 
     def do_invert(self):
         """usage: invert <image:pic1>
-        
+
         Invert the top image.
         """
         import ImageChops
@@ -334,7 +353,7 @@ class PILDriver:
 
     def do_lighter(self):
         """usage: lighter <image:pic1> <image:pic2>
-        
+
         Pop the two top images, push an image of the lighter pixels of both.
         """
         import ImageChops
@@ -344,7 +363,7 @@ class PILDriver:
 
     def do_darker(self):
         """usage: darker <image:pic1> <image:pic2>
-        
+
         Pop the two top images, push an image of the darker pixels of both.
         """
         import ImageChops
@@ -354,7 +373,7 @@ class PILDriver:
 
     def do_difference(self):
         """usage: difference <image:pic1> <image:pic2>
-        
+
         Pop the two top images, push the difference image
         """
         import ImageChops
@@ -364,7 +383,7 @@ class PILDriver:
 
     def do_multiply(self):
         """usage: multiply <image:pic1> <image:pic2>
-        
+
         Pop the two top images, push the multiplication image.
         """
         import ImageChops
@@ -374,7 +393,7 @@ class PILDriver:
 
     def do_screen(self):
         """usage: screen <image:pic1> <image:pic2>
-        
+
         Pop the two top images, superimpose their inverted versions.
         """
         import ImageChops
@@ -384,7 +403,7 @@ class PILDriver:
 
     def do_add(self):
         """usage: add <image:pic1> <image:pic2> <int:offset> <float:scale>
-        
+
         Pop the two top images, produce the scaled sum with offset.
         """
         import ImageChops
@@ -396,7 +415,7 @@ class PILDriver:
 
     def do_subtract(self):
         """usage: subtract <image:pic1> <image:pic2> <int:offset> <float:scale>
-        
+
         Pop the two top images, produce the scaled difference with offset.
         """
         import ImageChops
@@ -410,7 +429,7 @@ class PILDriver:
 
     def do_color(self):
         """usage: color <image:pic1>
-        
+
         Enhance color in the top image.
         """
         import ImageEnhance
@@ -421,7 +440,7 @@ class PILDriver:
 
     def do_contrast(self):
         """usage: contrast <image:pic1>
-        
+
         Enhance contrast in the top image.
         """
         import ImageEnhance
@@ -432,7 +451,7 @@ class PILDriver:
 
     def do_brightness(self):
         """usage: brightness <image:pic1>
-        
+
         Enhance brightness in the top image.
         """
         import ImageEnhance
@@ -443,7 +462,7 @@ class PILDriver:
 
     def do_sharpness(self):
         """usage: sharpness <image:pic1>
-        
+
         Enhance sharpness in the top image.
         """
         import ImageEnhance
@@ -473,7 +492,7 @@ class PILDriver:
                 func = getattr(self, funcname)
                 func()
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     import sys
     try:
         import readline

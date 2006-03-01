@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/GetBBox.c#2 $
  *
  * get bounding box for image
  *

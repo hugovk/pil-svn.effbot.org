@@ -2,16 +2,17 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/BdfFontFile.py#3 $
 #
 # bitmap distribution font file parser
 #
 # history:
-# 96-05-16 fl   created (as bdf2pil)
-# 97-08-25 fl   converted to FontFile driver
+# 1996-05-16 fl   created (as bdf2pil)
+# 1997-08-25 fl   converted to FontFile driver
+# 2001-05-25 fl   removed bogus __init__ call
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1997.
+# Copyright (c) Secret Labs AB 1997-2001.
+# Copyright (c) Fredrik Lundh 1997-2001.
 #
 # See the README file for information on usage and redistribution.
 #
@@ -83,13 +84,11 @@ class BdfFontFile(FontFile.FontFile):
 
     def __init__(self, fp):
 
-        FontFile.FontFile.__init__()
+        FontFile.FontFile.__init__(self)
 
         s = fp.readline()
         if s[:13] != "STARTFONT 2.1":
             raise SyntaxError, "not a valid BDF file"
-
-        FontFile.FontFile.__init__(self)
 
         props = {}
         comments = []

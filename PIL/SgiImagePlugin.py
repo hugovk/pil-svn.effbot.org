@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/SgiImagePlugin.py#2 $
 #
 # SGI image file handling
 #

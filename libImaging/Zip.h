@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Zip.h#3 $
  *
  * declarations for the ZIP codecs
  *
@@ -37,6 +37,8 @@ typedef struct {
     z_stream z_stream;		/* (de)compression stream */
 
     UINT8* previous;		/* previous line (allocated) */
+
+    int last_output;		/* # bytes last output by inflate */
 
     /* Compressor specific stuff */
     UINT8* prior;		/* filter storage (allocated) */

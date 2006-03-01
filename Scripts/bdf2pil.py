@@ -1,6 +1,6 @@
 #! /usr/local/bin/python
 #
-# $Id: bdf2pil.py,v 1.1 1996/12/16 18:51:31 fl Exp $
+# $Id: //modules/pil/Scripts/bdf2pil.py#2 $
 #
 # File:
 #       bdf2pil.py -- font compiler for X bitmap distribution files
@@ -212,7 +212,7 @@ for file in files:
             metrics[id] = (x, y, x0, ascent-y1, x1, ascent-y0) + srcbbox[id]
         fp = open(os.path.splitext(file)[0] + ".pil", "wb")
         fp.write("PILfont\n")
-        fp.write("%s\n" % fontname) 
+        fp.write("%s\n" % fontname)
         fp.write("DATA\n")
         for id in range(256):
             try:

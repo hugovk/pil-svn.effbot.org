@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/encode.c#3 $
  *
  * standard encoder interfaces for the Imaging library
  *
@@ -26,9 +26,11 @@
 #include "Python.h"
 
 #include "Imaging.h"
-
 #include "Gif.h"
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h> /* write */
+#endif
 
 /* -------------------------------------------------------------------- */
 /* Common								*/
@@ -488,8 +490,10 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     int smooth = 0;
     int optimize = 0;
     int streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
-    if (!PyArg_ParseTuple(args, "ss|iiiii", &mode, &rawmode, &quality,
-			  &progressive, &smooth, &optimize, &streamtype))
+    int xdpi = 0, ydpi = 0;
+    if (!PyArg_ParseTuple(args, "ss|iiiiiii", &mode, &rawmode, &quality,
+			  &progressive, &smooth, &optimize, &streamtype,
+                          &xdpi, &ydpi))
 	return NULL;
 
     encoder = PyImaging_EncoderNew(sizeof(JPEGENCODERSTATE));
@@ -506,6 +510,8 @@ PyImaging_JpegEncoderNew(PyObject* self, PyObject* args)
     ((JPEGENCODERSTATE*)encoder->state.context)->smooth = smooth;
     ((JPEGENCODERSTATE*)encoder->state.context)->optimize = optimize;
     ((JPEGENCODERSTATE*)encoder->state.context)->streamtype = streamtype;
+    ((JPEGENCODERSTATE*)encoder->state.context)->xdpi = xdpi;
+    ((JPEGENCODERSTATE*)encoder->state.context)->ydpi = ydpi;
 
     return (PyObject*) encoder;
 }

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageEnhance.py#3 $
 #
 # image enhancement classes
 #

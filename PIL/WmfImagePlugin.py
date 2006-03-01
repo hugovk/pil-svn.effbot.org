@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS.
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/WmfImagePlugin.py#3 $
 #
 # WMF support for PIL
 #

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/coretest.c#2 $
  *
  * minimal test hack for the core library
  *

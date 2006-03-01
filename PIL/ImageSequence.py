@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageSequence.py#3 $
 #
 # some sequence support stuff
 #
