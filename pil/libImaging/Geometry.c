@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Geometry.c#3 $
  *
  * the imaging geometry methods
  *
@@ -17,8 +17,8 @@
  * 1999-02-16 fl  Added fixed-point version of affine transform
  * 2001-03-28 fl  Fixed transform(EXTENT) for xoffset < 0
  *
- * Copyright (c) Secret Labs AB 1997-2001.
- * Copyright (c) Fredrik Lundh 1995-1997.
+ * Copyright (c) 1997-2001 by Secret Labs AB
+ * Copyright (c) 1995-1997 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */

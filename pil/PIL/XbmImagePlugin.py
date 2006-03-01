@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/XbmImagePlugin.py#3 $
 #
 # XBM File handling
 #
@@ -10,6 +10,7 @@
 # 1997-07-07 fl   Made header parser more tolerant
 # 1997-07-22 fl   Fixed yet another parser bug
 # 2001-02-17 fl   Use 're' instead of 'regex' (Python 2.1) (0.4)
+# 2001-05-13 fl   Added hotspot handling (based on code from Bernhard Herzog)
 #
 # Copyright (c) 1997-2001 by Secret Labs AB
 # Copyright (c) 1996-1997 by Fredrik Lundh
@@ -24,11 +25,14 @@ import Image, ImageFile
 
 # XBM header
 xbm_head = re.compile(
-    "#define[ \t]+[^_]*_width[ \t]+([0-9]*)[\r\n]+"
-    "#define[ \t]+[^_]*_height[ \t]+([0-9]*)[\r\n]+"
+    "#define[ \t]+[^_]*_width[ \t]+(?P<width>[0-9]+)[\r\n]+"
+    "#define[ \t]+[^_]*_height[ \t]+(?P<height>[0-9]+)[\r\n]+"
+    "(?P<hotspot>"
+    "#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
+    "#define[ \t]+[^_]*_y_hot[ \t]+(?P<yhot>[0-9]+)[\r\n]+"
+    ")?"
     "[\\000-\\377]*_bits\\[\\]"
 )
-
 
 def _accept(prefix):
     return prefix[:7] == "#define"
@@ -45,8 +49,13 @@ class XbmImageFile(ImageFile.ImageFile):
 
         if m:
 
-            xsize = int(m.group(1))
-            ysize = int(m.group(2))
+            xsize = int(m.group("width"))
+            ysize = int(m.group("height"))
+
+            if m.group("hotspot"):
+                self.info["hotspot"] = (
+                    int(m.group("xhot")), int(m.group("yhot"))
+                    )
 
             self.mode = "1"
             self.size = xsize, ysize
@@ -61,6 +70,12 @@ def _save(im, fp, filename):
 
     fp.write("#define im_width %d\n" % im.size[0])
     fp.write("#define im_height %d\n" % im.size[1])
+
+    hotspot = im.encoderinfo.get("hotspot")
+    if hotspot:
+        fp.write("#define im_x_hot %d\n" % hotspot[0])
+        fp.write("#define im_y_hot %d\n" % hotspot[1])
+
     fp.write("static char im_bits[] = {\n")
 
     ImageFile._save(im, fp, [("xbm", (0,0)+im.size, 0, None)])

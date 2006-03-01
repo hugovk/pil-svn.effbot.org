@@ -1,11 +1,11 @@
 Imaging/README
 
-Imaging/CHANGES
-Imaging/FORMATS
+Imaging/CHANGES-113
 Imaging/CONTENTS
 
-Imaging/BUILD
+Imaging/BUILDME
 
+Imaging/setup.py
 Imaging/Setup.in
 Imaging/Makefile.pre.in
 
@@ -13,7 +13,6 @@ Imaging/libImaging/Makefile.win
 Imaging/libImaging/ImConfig.h.win
 
 Imaging/libImaging/Imaging.h
-Imaging/libImaging/ImConfig.h
 Imaging/libImaging/ImDib.h
 Imaging/libImaging/ImPlatform.h
 
@@ -24,6 +23,7 @@ Imaging/libImaging/QuantDefines.h
 Imaging/libImaging/QuantTypes.h
 
 Imaging/libImaging/Access.c
+Imaging/libImaging/Antialias.c
 Imaging/libImaging/Bands.c
 Imaging/libImaging/Blend.c
 Imaging/libImaging/Chops.c
@@ -127,6 +127,7 @@ Imaging/PIL/ImageFile.py
 Imaging/PIL/ImageFileIO.py
 Imaging/PIL/ImageFilter.py
 Imaging/PIL/ImageFont.py
+Imaging/PIL/ImageOps.py
 Imaging/PIL/ImagePalette.py
 Imaging/PIL/ImagePath.py
 Imaging/PIL/ImageSequence.py
@@ -199,4 +200,5 @@ Imaging/Tk/install.txt
 Imaging/Tk/booster.txt
 Imaging/Tk/pilbitmap.txt
 
-Imaging/MiniTest/*.py
+Imaging/MiniTest/test.py
+Imaging/MiniTest/doctest.py

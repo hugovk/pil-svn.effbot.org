@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/OleFileIO.py#3 $
 #
 # stuff to deal with OLE2 Structured Storage files.  this module is
 # used by PIL to read Image Composer and FlashPix files, but can also

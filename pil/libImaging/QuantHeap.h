@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/QuantHeap.h#3 $
  *
  * image quantizer
  *
@@ -14,10 +14,10 @@
 
 #include "QuantTypes.h"
 
-void heap_free(Heap);
-int heap_remove(Heap,void **);
-int heap_add(Heap,void *);
-int heap_top(Heap,void **);
-Heap *heap_new(HeapCmpFunc);
+void ImagingQuantHeapFree(Heap);
+int ImagingQuantHeapRemove(Heap,void **);
+int ImagingQuantHeapAdd(Heap,void *);
+int ImagingQuantHeapTop(Heap,void **);
+Heap *ImagingQuantHeapNew(HeapCmpFunc);
 
 #endif

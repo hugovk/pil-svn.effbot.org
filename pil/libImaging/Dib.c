@@ -1,19 +1,19 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Dib.c#3 $
  *
  * imaging display object for Windows
  *
  * history:
- * 96-05-12 fl	Created
- * 96-05-17 fl	Up and running
- * 96-05-21 fl	Added palette stuff
- * 96-05-26 fl	Added query palette and mode inquery
- * 97-09-21 fl	Added draw primitive
- * 98-01-20 fl	Use StretchDIBits instead of StretchBlt
- * 98-12-30 fl	Plugged a resource leak in DeleteDIB (from Roger Burnham)
+ * 1996-05-12 fl  Created
+ * 1996-05-17 fl  Up and running
+ * 1996-05-21 fl  Added palette stuff
+ * 1996-05-26 fl  Added query palette and mode inquery
+ * 1997-09-21 fl  Added draw primitive
+ * 1998-01-20 fl  Use StretchDIBits instead of StretchBlt
+ * 1998-12-30 fl  Plugged a resource leak in DeleteDIB (from Roger Burnham)
  *
- * Copyright (c) Secret Labs AB 1997-98.
+ * Copyright (c) Secret Labs AB 1997-2001.
  * Copyright (c) Fredrik Lundh 1996.
  *
  * See the README file for information on usage and redistribution.

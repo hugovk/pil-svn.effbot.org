@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Bands.c#2 $
  * 
  * stuff to extract and paste back individual bands
  *

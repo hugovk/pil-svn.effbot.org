@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Gif.h#2 $
  *
  * Declarations for a fast, suspendable GIF decoder.
  *

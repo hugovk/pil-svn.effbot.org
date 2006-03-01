@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Effects.c#2 $
  *
  * various special effects and image generators
  *

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/XbmEncode.c#2 $
  *
  * encoder for Xbm data
  *

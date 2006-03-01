@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/HexDecode.c#2 $
  *
  * decoder for hex encoded image data
  *

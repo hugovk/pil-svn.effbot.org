@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/EpsEncode.c#2 $
  *
  * encoder for EPS hex data
  *

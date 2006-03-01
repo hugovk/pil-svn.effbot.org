@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/McIdasImagePlugin.py#2 $
 #
 # Basic McIdas support for PIL
 #

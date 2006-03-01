@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Quant.c#3 $
  *
  * image quantizer
  *
@@ -622,9 +622,9 @@ median_cut(PixelList *hl[3],
    Heap h;
    BoxNode *thisNode;
 
-   h=heap_new(box_heap_cmp);
+   h=ImagingQuantHeapNew(box_heap_cmp);
    root=malloc(sizeof(BoxNode));
-   if (!root) { heap_free(h); return NULL; }
+   if (!root) { ImagingQuantHeapFree(h); return NULL; }
    for(i=0;i<3;i++) {
       for (tl[i]=hl[i];tl[i]&&tl[i]->next[i];tl[i]=tl[i]->next[i]);
       root->head[i]=hl[i];
@@ -635,10 +635,10 @@ median_cut(PixelList *hl[3],
    root->volume=-1;
    root->pixelCount=imPixelCount;
 
-   heap_add(h,(void *)root);
+   ImagingQuantHeapAdd(h,(void *)root);
    while (--nPixels) {
       do {
-         if (!heap_remove(h,(void **)&thisNode)) {
+         if (!ImagingQuantHeapRemove(h,(void **)&thisNode)) {
             goto done;
          }
       } while (compute_box_volume(thisNode)==1);
@@ -648,10 +648,10 @@ median_cut(PixelList *hl[3],
 #endif
          exit (1);
       }
-      heap_add(h,(void *)(thisNode->l));
-      heap_add(h,(void *)(thisNode->r));
+      ImagingQuantHeapAdd(h,(void *)(thisNode->l));
+      ImagingQuantHeapAdd(h,(void *)(thisNode->r));
    }
-   heap_free(h);
+   ImagingQuantHeapFree(h);
 done:
    return root;
 }

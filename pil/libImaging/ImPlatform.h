@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/ImPlatform.h#2 $
  *
  * platform declarations for the imaging core library
  *

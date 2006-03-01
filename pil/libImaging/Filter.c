@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Filter.c#2 $
  *
  * apply convolution kernel to image
  *

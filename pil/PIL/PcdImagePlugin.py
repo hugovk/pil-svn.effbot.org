@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/PcdImagePlugin.py#3 $
 #
 # PCD file handling
 #

@@ -113,4 +113,9 @@ def testimage():
 if __name__ == "__main__":
     # use doctest to make sure the test program behaves as documented!
     import doctest, test
-    doctest.testmod(test)
+    status = doctest.testmod(test)
+    if status[0]:
+        print "*** %s tests of %d failed." % status
+    else:
+        print "%s tests passed." % status[1]
+

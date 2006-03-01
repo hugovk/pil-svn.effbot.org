@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/FliDecode.c#2 $
  *
  * decoder for Autodesk Animator FLI/FLC animations
  *

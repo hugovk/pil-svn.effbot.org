@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: pilconvert.py,v 1.1 1996/10/04 19:40:40 fredrik Exp $
+# $Id: //modules/pil/Scripts/pilconvert.py#2 $
 #
 # convert image files
 #
@@ -60,7 +60,7 @@ for o, a in opt:
             if Image.SAVE.has_key(i):
                 print i+"*",
             else:
-                print i, 
+                print i,
         sys.exit(1)
 
     elif o == "-c":

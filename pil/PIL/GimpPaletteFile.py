@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/GimpPaletteFile.py#3 $
 #
 # stuff to read GIMP palette files
 #

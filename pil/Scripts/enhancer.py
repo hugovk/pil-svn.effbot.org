@@ -1,10 +1,10 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/enhancer.py#2 $
 #
 # this demo script creates four windows containing an image and a slider.
 # drag the slider to modify the image.
-# 
+#
 
 from Tkinter import *
 import Image, ImageTk, ImageEnhance

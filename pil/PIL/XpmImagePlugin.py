@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/XpmImagePlugin.py#2 $
 #
 # XPM File handling
 #

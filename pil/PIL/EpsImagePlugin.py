@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/EpsImagePlugin.py#2 $
 #
 # EPS file handling
 #

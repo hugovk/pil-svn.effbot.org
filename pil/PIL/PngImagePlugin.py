@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/PngImagePlugin.py#2 $
 #
 # PNG support code
 #

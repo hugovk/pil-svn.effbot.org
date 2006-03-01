@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/GimpGradientFile.py#2 $
 #
 # stuff to read (and render) GIMP gradient files
 #

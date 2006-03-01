@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/PcdDecode.c#2 $
  *
  * decoder for uncompressed PCD image data.
  *

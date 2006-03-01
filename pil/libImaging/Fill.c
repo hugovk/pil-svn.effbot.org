@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Fill.c#3 $
  *
  * fill image with constant pixel value
  *
@@ -30,13 +30,15 @@ ImagingFill(Imaging im, const void* colour)
     c = 0L;
     memcpy(&c, colour, im->pixelsize);
 
-    if (im->image32 && c != 0L)
+    if (im->image32 && c != 0L) {
 	for (y = 0; y < im->ysize; y++)
 	    for (x = 0; x < im->xsize; x++)
 		im->image32[y][x] = c;
-    else
+    } else {
+        unsigned char cc = (unsigned char) *(UINT8*) colour;
 	for (y = 0; y < im->ysize; y++)
-	    memset(im->image[y], (unsigned char) c, im->linesize);
+           memset(im->image[y], cc, im->linesize);
+    }
 
     return im;
 }

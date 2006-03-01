@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/BitDecode.c#2 $
  *
  * decoder for packed bitfields (converts to floating point)
  *

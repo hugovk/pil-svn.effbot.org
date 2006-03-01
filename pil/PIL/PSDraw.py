@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/PSDraw.py#3 $
 #
 # simple postscript graphics interface
 #

@@ -1,15 +1,16 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/ZipDecode.c#3 $
  *
  * decoder for ZIP (deflated) image data.
  *
  * history:
- *	96-12-14 fl	Created (for PNG)
- *	97-01-15 fl	Prepared to read TIFF/ZIP
+ * 1996-12-14 fl   Created (for PNG)
+ * 1997-01-15 fl   Prepared to read TIFF/ZIP
+ * 2001-11-19 fl   PNG incomplete read patch (from Bernhard Herzog)
  *
  * Copyright (c) Fredrik Lundh 1996.
- * Copyright (c) Secret Labs AB 1997.
+ * Copyright (c) Secret Labs AB 1997-2001.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -51,6 +52,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    return -1;
 	}
 
+        context->last_output = 0;
+
 	/* Initialize to black */
 	memset(context->previous, 0, state->bytes+1);
 
@@ -77,8 +80,9 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     /* Decompress what we've got this far */
     while (context->z_stream.avail_in > 0) {
 
-	context->z_stream.next_out = state->buffer;
-	context->z_stream.avail_out = state->bytes + context->prefix;
+	context->z_stream.next_out = state->buffer + context->last_output;
+	context->z_stream.avail_out =
+            state->bytes + context->prefix - context->last_output;
 
 	err = inflate(&context->z_stream, Z_NO_FLUSH);
 
@@ -98,8 +102,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	n = state->bytes + context->prefix - context->z_stream.avail_out;
 
 	if (n < state->bytes + context->prefix) {
-	    /* FIXME: if n is not zero, we're in trouble.  But can
-	       that really happen?  My tests say it cannot... */
+            context->last_output = n;
 	    break; /* need more input data */
 	}
 
@@ -175,6 +178,9 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		       state->xsize);
 
 	state->y++;
+
+        /* all inflate output has been consumed */
+        context->last_output = 0;
 
 	if (state->y >= state->ysize || err == Z_STREAM_END) {
 

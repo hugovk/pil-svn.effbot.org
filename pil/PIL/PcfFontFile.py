@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/PcfFontFile.py#3 $
 #
 # portable compiled font file parser
 #

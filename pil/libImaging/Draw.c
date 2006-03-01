@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Draw.c#3 $
  *
  * a simple drawing package for the Imaging library
  *
@@ -829,10 +829,6 @@ ImagingOutlineCurve2(ImagingOutline outline, float cx, float cy,
     /* add bezier curve based on three control points (as
        in the Flash file format) */
 
-    /* FIXME: Flash uses quadratic beziers, not cubics.  one day, I
-       should really figure if this approximation is correct or not.
-       looks pretty ok, though... */
-
     return ImagingOutlineCurve(
         outline,
         (outline->x + cx + cx)/3, (outline->y + cy + cy)/3,
@@ -890,25 +886,14 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6])
         else
             y1 = eIn->ymin;
 
-        /* full moon tonight!  strange spells needed to prevent
-           compiler errors.  (or you could install the appropriate
-           service pack...) */
+        /* full moon tonight!  if this doesn't work, you may need to
+           upgrade your compiler (make sure you have the right service
+           pack) */
 
         X0 = (int) (a0*x0 + a1*y0 + a2);
-
-        /* printf(""); */
-
         Y0 = (int) (a3*x0 + a4*y0 + a5);
-
-        /* printf(""); */
-
         X1 = (int) (a0*x1 + a1*y1 + a2);
-
-        /* printf(""); */
-
         Y1 = (int) (a3*x1 + a4*y1 + a5);
-
-        /* printf(""); */
 
         add_edge(eOut, X0, Y0, X1, Y1);
 

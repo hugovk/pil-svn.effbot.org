@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/XbmDecode.c#2 $
  *
  * decoder for XBM hex image data
  *

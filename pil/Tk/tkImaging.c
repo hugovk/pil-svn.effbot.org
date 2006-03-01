@@ -29,7 +29,7 @@
  * 1995-09-12 fl  Created
  * 1996-04-08 fl  Ready for release
  * 1997-05-09 fl  Use command instead of image type
- * 2001-03-18 fl  Reset alpha index
+ * 2001-03-18 fl  Initialize alpha layer pointer (struct changed in 8.3)
  *
  * Copyright (c) 1997-2001 by Secret Labs AB
  * Copyright (c) 1995-2001 by Fredrik Lundh

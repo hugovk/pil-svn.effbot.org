@@ -1,14 +1,15 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/display.c#3 $
  *
  * display support
  *
  * History:
- * 96-05-13 fl	Windows DIB support
- * 96-05-21 fl	Added palette stuff
- * 96-05-28 fl	Added display_mode stuff
- * 97-09-21 fl	Added draw primitive
+ * 1996-05-13 fl  Windows DIB support
+ * 1996-05-21 fl  Added palette stuff
+ * 1996-05-28 fl  Added display_mode stuff
+ * 1997-09-21 fl  Added draw primitive
+ * 2001-09-17 fl  Added ImagingGrabScreen (from _grabscreen.c)
  *
  * Copyright (c) Secret Labs AB 1997.
  * Copyright (c) Fredrik Lundh 1996-97.
@@ -200,6 +201,66 @@ PyImaging_DisplayModeWin32(PyObject* self, PyObject* args)
     mode = ImagingGetModeDIB(size);
 
     return Py_BuildValue("s(ii)", mode, size[0], size[1]);
+}
+
+PyObject*
+PyImaging_GrabScreenWin32(PyObject* self, PyObject* args)
+{
+    int width, height;
+    HBITMAP bitmap;
+    BITMAPCOREHEADER core;
+    HDC screen, screen_copy;
+    PyObject* buffer;
+    
+    /* step 1: create a memory DC large enough to hold the
+       entire screen */
+
+    screen = CreateDC("DISPLAY", NULL, NULL, NULL); 
+    screen_copy = CreateCompatibleDC(screen); 
+
+    width = GetDeviceCaps(screen, HORZRES);
+    height = GetDeviceCaps(screen, VERTRES);
+ 
+    bitmap = CreateCompatibleBitmap(screen, width, height);
+    if (!bitmap)
+        goto error;
+        
+    if (!SelectObject(screen_copy, bitmap))
+        goto error;
+
+    /* step 2: copy bits into memory DC bitmap */
+
+    if (!BitBlt(screen_copy, 0, 0, width, height, screen, 0, 0, SRCCOPY))
+        goto error;
+
+    /* step 3: extract bits from bitmap */
+
+    buffer = PyString_FromStringAndSize(NULL, height * ((width*3 + 3) & -4));
+    if (!buffer)
+        return NULL;
+
+    core.bcSize = sizeof(core);
+    core.bcWidth = width;
+    core.bcHeight = height;
+    core.bcPlanes = 1;
+    core.bcBitCount = 24;
+    if (!GetDIBits(screen_copy, bitmap, 0, height, PyString_AS_STRING(buffer),
+                   (BITMAPINFO*) &core, DIB_RGB_COLORS))
+        goto error;
+
+    DeleteObject(bitmap);
+    DeleteDC(screen_copy);
+    DeleteDC(screen);
+
+    return Py_BuildValue("(ii)N", width, height, buffer);
+
+error:
+    PyErr_SetString(PyExc_IOError, "screen grab failed");
+
+    DeleteDC(screen_copy);
+    DeleteDC(screen);
+
+    return NULL;
 }
 
 #endif /* WIN32 */

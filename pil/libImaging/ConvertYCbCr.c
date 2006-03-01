@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: ConvertYCbCr.c$
+ * $Id: //modules/pil/libImaging/ConvertYCbCr.c#2 $
  *
  * code to convert YCbCr data
  *

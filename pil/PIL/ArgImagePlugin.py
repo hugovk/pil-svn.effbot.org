@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ArgImagePlugin.py#2 $
 #
 # ARG animation support code
 #

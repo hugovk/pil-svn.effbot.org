@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/Scripts/pilfile.py#2 $
 #
 # a utility to identify image files
 #

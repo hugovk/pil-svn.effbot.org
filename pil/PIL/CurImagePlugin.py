@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/CurImagePlugin.py#3 $
 #
 # Windows Cursor support for PIL
 #

@@ -1,8 +1,7 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/player.py#2 $
 #
-
 
 from Tkinter import *
 import Image, ImageTk

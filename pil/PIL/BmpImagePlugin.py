@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/BmpImagePlugin.py#3 $
 #
 # BMP file handler
 #

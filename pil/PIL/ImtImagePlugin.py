@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImtImagePlugin.py#2 $
 #
 # IM Tools support for PIL
 #

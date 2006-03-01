@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/PaletteFile.py#3 $
 #
 # stuff to read simple, teragon-style palette files
 #

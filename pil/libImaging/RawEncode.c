@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/RawEncode.c#2 $
  *
  * coder for raw data
  *

@@ -1,10 +1,11 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/libImaging/Jpeg.h#2 $
  *
  * declarations for the IJG JPEG codec interface.
  *
- * Copyright (c) Fredrik Lundh 1995-96.  All rights reserved.
+ * Copyright (c) 1995-2001 by Secret Labs AB
+ * Copyright (c) 1995-1996 by Fredrik Lundh
  */
 
 #include "jpeglib.h"
@@ -80,6 +81,9 @@ typedef struct {
 
     /* Stream type (0=full, 1=tables only, 2=image only) */
     int streamtype;
+
+    /* DPI setting (0=square pixels, otherwide DPI) */
+    int xdpi, ydpi;
 
     /* PRIVATE CONTEXT (set by encoder) */
 

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/JpegImagePlugin.py#2 $
 #
 # JPEG (JFIF) file handling
 #
@@ -17,6 +17,7 @@
 # 1997-08-27 fl   Save mode 1 images as BW (0.3)
 # 1998-07-12 fl   Added YCbCr to draft and save methods (0.4)
 # 1998-10-19 fl   Don't hang on files using 16-bit DQT's (0.4.1)
+# 2001-04-16 fl   Extract DPI settings from JFIF files (0.4.2)
 #
 # Copyright (c) 1997-2001 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
@@ -24,7 +25,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 import array, string
 import Image, ImageFile
@@ -47,13 +48,32 @@ def APP(self, marker):
     # Also look for well-known application markers.
 
     s = self.fp.read(i16(self.fp.read(2))-2)
+
     self.app["APP%d" % (marker&15)] = s
 
     if marker == 0xFFE0 and s[:4] == "JFIF":
-        self.info["jfif"] = i16(s[5:])
-    if marker == 0xFFEE and s[:5] == "Adobe":
-        self.info["adobe"] = i16(s[5:])
-        self.info["adobe_transform"] = ord(s[11])
+        self.info["jfif"] = version = i16(s, 5) # version
+        self.info["jfif_version"] = divmod(version, 256)
+        # extract JFIF properties
+        try:
+            jfif_unit = ord(s[7])
+            jfif_density = i16(s, 8), i16(s, 10)
+        except:
+            pass
+        else:
+            if jfif_unit == 1:
+                self.info["dpi"] = jfif_density
+            self.info["jfif_unit"] = jfif_unit
+            self.info["jfif_density"] = jfif_density
+    elif marker == 0xFFEE and s[:5] == "Adobe":
+        self.info["adobe"] = i16(s, 5)
+        # extract Adobe custom properties
+        try:
+            adobe_transform = ord(s[1])
+        except:
+            pass
+        else:
+            self.info["adobe_transform"] = adobe_transform
 
 def SOF(self, marker):
     #
@@ -296,12 +316,15 @@ def _save(im, fp, filename):
     except KeyError:
         raise IOError, "cannot write mode %s as JPEG" % im.mode
 
+    dpi = _fetch(im.encoderinfo, "dpi", (0, 0))
+
     # get keyword arguments
     im.encoderconfig = (_fetch(im.encoderinfo, "quality", 0),
                         im.encoderinfo.has_key("progressive"),
                         _fetch(im.encoderinfo, "smooth", 0),
                         im.encoderinfo.has_key("optimize"),
-                        _fetch(im.encoderinfo, "streamtype", 0))
+                        _fetch(im.encoderinfo, "streamtype", 0),
+                        dpi[0], dpi[1])
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
 

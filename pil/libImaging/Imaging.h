@@ -1,11 +1,11 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/Imaging.h#3 $
  * 
  * declarations for the imaging core library
  *
- * Copyright (c) Secret Labs AB 1997-2000.
- * Copyright (c) Fredrik Lundh 1995-2000.
+ * Copyright (c) 1997-2002 by Secret Labs AB
+ * Copyright (c) 1995-2002 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -243,6 +243,7 @@ extern Imaging ImagingRotate(
 extern Imaging ImagingRotate90(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate180(Imaging imOut, Imaging imIn);
 extern Imaging ImagingRotate270(Imaging imOut, Imaging imIn);
+extern Imaging ImagingStretch(Imaging imOut, Imaging imIn, int filter);
 extern Imaging ImagingTransformAffine(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, 
     double a[6], int filter, int fill);

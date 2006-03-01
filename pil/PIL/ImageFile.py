@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageFile.py#2 $
 #
 # base class for image file handlers
 #

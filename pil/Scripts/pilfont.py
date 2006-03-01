@@ -1,32 +1,25 @@
 #
-# THIS IS WORK IN PROGRESS
-#
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/Scripts/pilfont.py#3 $
 #
 # PIL raster font compiler
 #
 # history:
-# 97-08-25 fl   created
-#
-# Copyright (c) Fredrik Lundh 1997.  All rights reserved.
-#
-# See the README file for information on usage and redistribution.
+# 1997-08-25 fl   created
+# 2002-03-10 fl   use "from PIL import"
 #
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 import glob, os, sys
 
 # drivers
-import BdfFontFile
-import PcfFontFile
-
-print "PILFONT", VERSION, "-- PIL font compiler."
-print "Copyright (c) Fredrik Lundh 1997.  All rights reserved."
-print
+from PIL import BdfFontFile
+from PIL import PcfFontFile
 
 if len(sys.argv) <= 1:
+    print "PILFONT", VERSION, "-- PIL font compiler."
+    print
     print "Usage: pilfont fontfiles..."
     print
     print "Convert given font files to the PIL raster font format."

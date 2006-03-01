@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id$
+ * $Id: //modules/pil/libImaging/QuantHash.c#2 $
  *
  * hash tables used by the image quantizer
  *

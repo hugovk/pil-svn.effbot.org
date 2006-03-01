@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id$
+ * $Id: //modules/pil/path.c#2 $
  *
  * 2D path utilities
  *

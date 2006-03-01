@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id$
+# $Id: //modules/pil/PIL/ImageFont.py#4 $
 #
 # PIL raster font management
 #
@@ -10,12 +10,14 @@
 # 1999-02-06 fl   rewrote most font management stuff in C
 # 1999-03-17 fl   take pth files into account in load_path (from Richard Jones)
 # 2001-02-17 fl   added freetype support
+# 2001-05-09 fl   added TransposedFont wrapper class
+# 2002-03-04 fl   make sure we have a "L" or "1" font
 #
 # Todo:
 # Adapt to PILFONT2 format (16-bit fonts, compressed, single file)
 #
-# Copyright (c) Secret Labs AB 1997-2001
-# Copyright (c) Fredrik Lundh 1996-2001
+# Copyright (c) 1997-2002 by Secret Labs AB
+# Copyright (c) 1996-2001 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
@@ -58,18 +60,21 @@ class ImageFont:
         data = fp.read(256*20)
 
         # read PILfont bitmap
-        image = None
         for ext in (".png", ".gif", ".pbm"):
             try:
-                image = Image.open(os.path.splitext(filename)[0] + ext)
+                fullname = os.path.splitext(filename)[0] + ext
+                image = Image.open(fullname)
             except:
                 pass
-            if image:
-                break
-        if image is None:
+            else:
+                if image and image.mode in ("1", "L"):
+                    break
+        else:
             raise IOError, "cannot find glyph data file"
 
         image.load()
+
+        self.file = fullname
         self.font = Image.core.font(image.im, data)
 
         # delegate critical operations to internal type
@@ -92,6 +97,26 @@ class FreeTypeFont:
         size = self.font.getsize(text)
         im = fill("L", size, 0)
         self.font.render(text, im.id)
+        return im
+
+
+class TransposedFont:
+    "Wrapper for writing rotated or mirrored text"
+
+    def __init__(self, font, orientation=None):
+        self.font = font
+        self.orientation = orientation # any 'transpose' argument, or None
+
+    def getsize(self, text):
+        w, h = self.font.getsize(text)
+        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
+            return h, w
+        return w, h
+
+    def getmask(self, text):
+        im = self.font.getmask(text)
+        if self.orientation is not None:
+            return im.transpose(self.orientation)
         return im
 
 #

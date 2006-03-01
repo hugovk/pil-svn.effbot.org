@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id$
+# $Id: //modules/pil/PIL/ImagePath.py#3 $
 #
 # path interface
 #
