@@ -19,8 +19,7 @@ all: imaging.lib
 
 JPEGINCLUDE=	-I../../../kits/jpeg-6b
 TIFFINCLUDE=	-I../../../kits/tifflib
-ZLIBINCLUDE=	-I../../../kits/zlib-1.1.3
-
+ZLIBINCLUDE=	-I../../../kits/zlib-1.1.4
 CC=		cl.exe
 CFLAGS=		-W3 -Ox -O2 -c -MD -nologo $(JPEGINCLUDE) \
 		$(TIFFINCLUDE) $(ZLIBINCLUDE)
@@ -71,6 +70,7 @@ OBJS=		Access.obj\
 		PcxDecode.obj\
 		PcxEncode.obj\
 		Point.obj\
+		RankFilter.obj\
 		RawDecode.obj\
 		RawEncode.obj\
 		Storage.obj\

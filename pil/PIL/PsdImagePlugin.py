@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/PsdImagePlugin.py#5 $
+# $Id: //modules/pil/PIL/PsdImagePlugin.py#6 $
 #
 # Adobe PSD 2.5/3.0 file handling
 #
@@ -48,6 +48,9 @@ def i32(c):
 
 def _accept(prefix):
     return prefix[:4] == "8BPS"
+
+##
+# Image plugin for Photoshop images.
 
 class PsdImageFile(ImageFile.ImageFile):
 

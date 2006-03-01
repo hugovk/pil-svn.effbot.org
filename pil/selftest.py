@@ -1,8 +1,9 @@
+# $Id: //modules/pil/selftest.py#6 $
 # minimal sanity check
 
 import sys
-sys.path.insert(0, "PIL")
-sys.path.insert(1, "MiniTest")
+sys.path.insert(0, ".")
+sys.path.insert(1, "PIL")
 
 import Image
 import ImageDraw
@@ -44,8 +45,8 @@ def testimage():
     or you call the "load" method:
 
     >>> im = Image.open("Images/lena.ppm")
-    >>> type(im.im) # internal image attribute
-    <type 'None'>
+    >>> print im.im # internal image attribute
+    None
     >>> im.load()
     >>> type(im.im)
     <type 'ImagingCore'>
@@ -102,6 +103,30 @@ def testimage():
     >>> im.getextrema()
     (64, 128)
 
+    In 1.1.4, you can specify colors in a number of ways:
+
+    >>> xy = 0, 0, 128, 128
+    >>> im = Image.new("RGB", (128, 128), 0)
+    >>> d = ImageDraw.ImageDraw(im)
+    >>> d.rectangle(xy, "#f00")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+    >>> d.rectangle(xy, "#ff0000")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+    >>> d.rectangle(xy, "rgb(255,0,0)")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+    >>> d.rectangle(xy, "rgb(100%,0%,0%)")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+    >>> d.rectangle(xy, "hsl(0, 100%, 50%)")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+    >>> d.rectangle(xy, "red")
+    >>> im.getpixel((0, 0))
+    (255, 0, 0)
+
     PIL can do many other things, but I'll leave that for another
     day.  If you're curious, check the handbook, available from:
 
@@ -112,8 +137,8 @@ def testimage():
 
 if __name__ == "__main__":
     # use doctest to make sure the test program behaves as documented!
-    import doctest, test
-    status = doctest.testmod(test)
+    import doctest, selftest
+    status = doctest.testmod(selftest)
     if status[0]:
         print "*** %s tests of %d failed." % status
     else:

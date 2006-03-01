@@ -2,7 +2,7 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/PcfFontFile.py#3 $
+# $Id: //modules/pil/PIL/PcfFontFile.py#4 $
 #
 # portable compiled font file parser
 #
@@ -56,9 +56,8 @@ def b32(c):
 def sz(s, o):
     return s[o:string.index(s, "\0", o)]
 
-
-# --------------------------------------------------------------------
-# parser
+##
+# Font file plugin for the X11 PCF format.
 
 class PcfFontFile(FontFile.FontFile):
 

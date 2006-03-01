@@ -1,10 +1,10 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/XVThumbImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/XVThumbImagePlugin.py#4 $
 #
 # XV Thumbnail file handler by Charles E. "Gene" Cash
 # (gcash@magicnet.net)
-# 
+#
 # see xvcolor.c and xvbrowse.c in the sources to John Bradley's XV,
 # available from ftp://ftp.cis.upenn.edu/pub/xv/
 #
@@ -28,6 +28,9 @@ for r in range(8):
     for g in range(8):
         for b in range(4):
             PALETTE = PALETTE + (chr((r*255)/7)+chr((g*255)/7)+chr((b*255)/3))
+
+##
+# Image plugin for XV thumbnail images.
 
 class XVThumbImageFile(ImageFile.ImageFile):
 

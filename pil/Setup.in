@@ -42,7 +42,7 @@ _imaging  _imaging.c decode.c encode.c map.c display.c outline.c path.c \
 
 _imagingtk  _imagingtk.c \
 	-IlibImaging Tk/tkImaging.c \
-	-I/usr/local/include -L/usr/local/lib -ltcl8.0 -ltk8.0 \
+	-I/usr/local/include -L/usr/local/lib -ltcl8.3 -ltk8.3 \
         -L/usr/X11R6/lib -lX11 
 
 # --------------------------------------------------------------------

@@ -1,17 +1,17 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Histo.c#2 $
+ * $Id: //modules/pil/libImaging/Histo.c#3 $
  *
  * histogram support
  *
  * history:
- * 95-06-15 fl	Created.
- * 96-04-05 fl	Fixed histogram for multiband images.
- * 97-02-23 fl	Added mask support
- * 98-07-01 fl	Added basic 32-bit float/integer support
+ * 1995-06-15 fl   Created.
+ * 1996-04-05 fl   Fixed histogram for multiband images.
+ * 1997-02-23 fl   Added mask support
+ * 1998-07-01 fl   Added basic 32-bit float/integer support
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1995-2003 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */

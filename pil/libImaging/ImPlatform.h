@@ -1,12 +1,11 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/ImPlatform.h#2 $
+ * $Id: //modules/pil/libImaging/ImPlatform.h#3 $
  *
  * platform declarations for the imaging core library
  *
- * Copyright (c) Fredrik Lundh 1995-96.
+ * Copyright (c) Fredrik Lundh 1995-2003.
  */
-
 
 #include "ImConfig.h"
 

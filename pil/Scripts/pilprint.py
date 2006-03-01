@@ -1,16 +1,17 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/Scripts/pilprint.py#2 $
+# $Id: //modules/pil/Scripts/pilprint.py#3 $
 #
 # print image files to postscript printer
 #
 # History:
-# 0.1   96-04-20 fl     Created
-# 0.2a1 96-10-04 fl     Use draft mode when converting.
+# 0.1   1996-04-20 fl   Created
+# 0.2   1996-10-04 fl   Use draft mode when converting.
+# 0.3   2003-05-06 fl   Fixed a typo or two.
 #
 
-VERSION = "pilprint 0.2a1/96-10-04"
+VERSION = "pilprint 0.3/2003-05-05"
 
 import Image
 import PSDraw
@@ -48,7 +49,7 @@ monochrome = 1 # reduce file size for most common case
 for o, a in opt:
     if o == "-d":
         # debug: show available drivers
-        Image.import_plugins()
+        Image.init()
         print Image.ID
         sys.exit(1)
     elif o == "-c":
@@ -59,7 +60,7 @@ for o, a in opt:
         printer = "lpr"
     elif o == "-P":
         # printer channel
-        printer = "lpr -P%s" % v
+        printer = "lpr -P%s" % a
 
 for file in argv:
     try:

@@ -2,15 +2,15 @@
 # THIS IS WORK IN PROGRESS
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/OleFileIO.py#3 $
+# $Id: //modules/pil/PIL/OleFileIO.py#4 $
 #
 # stuff to deal with OLE2 Structured Storage files.  this module is
 # used by PIL to read Image Composer and FlashPix files, but can also
 # be used to read other files of this type.
 #
 # History:
-# 97-01-20 fl   Created
-# 97-01-22 fl   Fixed 64-bit portability quirk
+# 1997-01-20 fl   Created
+# 1997-01-22 fl   Fixed 64-bit portability quirk
 #
 # Notes:
 # FIXME: change filename to use "a/b/c" instead of ["a", "b", "c"]
@@ -22,7 +22,7 @@
 #  September 1996.
 #
 # Quotes:
-# 
+#
 # "If this document and functionality of the Software conflict,
 #  the actual functionality of the Software represents the correct
 #  functionality" -- Microsoft, in the OLE format specification
@@ -98,7 +98,7 @@ class _OleStream(StringIO.StringIO):
 
         data = []
 
-        while sect != 0xFFFFFFFE:
+        while sect != 0xFFFFFFFEL:
             fp.seek(offset + sectorsize * sect)
             data.append(fp.read(sectorsize))
             sect = fat[sect]
@@ -157,7 +157,7 @@ class _OleDirectoryEntry:
 
             left, right, child = sidlist[sid][4]
 
-            while left != 0xFFFFFFFF:
+            while left != 0xFFFFFFFFL:
                 stack.append(sid)
                 sid = left
                 left, right, child = sidlist[sid][4]
@@ -168,12 +168,12 @@ class _OleDirectoryEntry:
 
                 # try to move right
                 left, right, child = sidlist[sid][4]
-                if right != 0xFFFFFFFF:
+                if right != 0xFFFFFFFFL:
                     # and then back to the left
                     sid = right
                     while 1:
                         left, right, child = sidlist[sid][4]
-                        if left == 0xFFFFFFFF:
+                        if left == 0xFFFFFFFFL:
                             break
                         stack.append(sid)
                         sid = left
@@ -261,7 +261,7 @@ class OleFileIO:
             self.fp = filename
 
         header = self.fp.read(512)
-        
+
         if len(header) != 512 or header[:8] != MAGIC:
             raise IOError, "not an OLE2 structured storage file"
 
@@ -295,7 +295,7 @@ class OleFileIO:
         fat = []
         for i in range(0, len(sect), 4):
             ix = i32(sect, i)
-            if ix in [0xFFFFFFFE, 0xFFFFFFFF]:
+            if ix == 0xFFFFFFFEL or x == 0xFFFFFFFFL:
                 break
             s = self.getsect(ix)
             fat = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))

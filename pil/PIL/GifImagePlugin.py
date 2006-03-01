@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/GifImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/GifImagePlugin.py#5 $
 #
 # GIF file handling
 #
@@ -15,15 +15,16 @@
 # 1998-07-15 fl   Renamed offset attribute to avoid name clash
 # 2001-04-16 fl   Added rewind support (seek to frame 0) (0.6)
 # 2001-04-17 fl   Added palette optimization (0.7)
+# 2002-06-06 fl   Added transparency support for save (0.8)
 #
-# Copyright (c) 1997-2001 by Secret Labs AB
-# Copyright (c) 1995-1997 by Fredrik Lundh
+# Copyright (c) 1997-2003 by Secret Labs AB
+# Copyright (c) 1995-2003 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
 
-__version__ = "0.7"
+__version__ = "0.8"
 
 
 import Image, ImageFile, ImagePalette
@@ -44,6 +45,10 @@ def o16(i):
 
 def _accept(prefix):
     return prefix[:6] in ["GIF87a", "GIF89a"]
+
+##
+# Image plugin for GIF images.  This plugin supports both GIF87 and
+# GIF89 images.
 
 class GifImageFile(ImageFile.ImageFile):
 
@@ -248,10 +253,24 @@ def _save(im, fp, filename):
 
     try:
         interlace = im.encoderinfo["interlace"]
-    except:
+    except KeyError:
         # default is on (since we're writing uncompressed images)
         interlace = 1
         flags = flags | 64
+
+    try:
+        transparency = im.encoderinfo["transparency"]
+    except KeyError:
+        pass
+    else:
+        # transparency extension block
+        fp.write("!" +
+                 chr(249) +             # extension intro
+                 chr(4) +               # length
+                 chr(1) +               # transparency info present
+                 o16(0) +               # duration
+                 chr(int(transparency)) # transparency index
+                 + chr(0))
 
     # local image header
     fp.write("," +

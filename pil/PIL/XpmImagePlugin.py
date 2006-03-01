@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/XpmImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/XpmImagePlugin.py#3 $
 #
 # XPM File handling
 #
@@ -28,6 +28,8 @@ xpm_head = re.compile("\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")
 def _accept(prefix):
     return prefix[:9] == "/* XPM */"
 
+##
+# Image plugin for X11 pixel maps.
 
 class XpmImageFile(ImageFile.ImageFile):
 

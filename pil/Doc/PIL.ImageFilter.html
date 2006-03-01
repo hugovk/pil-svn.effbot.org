@@ -1,0 +1,72 @@
+<html><head><title>Module PIL.ImageFilter</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageFilter</h1><h4>Module Summary:</h4><pre><a href="#150">class BLUR</a>:
+    def __init__(self)</pre><blockquote>Blur filter.</blockquote><pre><a href="#163">class CONTOUR</a>:
+    def __init__(self)</pre><blockquote>Contour filter.</blockquote><pre><a href="#174">class DETAIL</a>:
+    def __init__(self)</pre><blockquote>Detail filter.</blockquote><pre><a href="#185">class EDGE_ENHANCE</a>:
+    def __init__(self)</pre><blockquote>Edge enhancement filter.</blockquote><pre><a href="#196">class EDGE_ENHANCE_MORE</a>:
+    def __init__(self)</pre><blockquote>Stronger edge enhancement filter.</blockquote><pre><a href="#207">class EMBOSS</a>:
+    def __init__(self)</pre><blockquote>Embossing filter.</blockquote><pre><a href="#218">class FIND_EDGES</a>:
+    def __init__(self)</pre><blockquote>Edge-finding filter.</blockquote><pre><a href="#22">class Kernel</a>:
+    def __init__(self, size, kernel, **options)</pre><blockquote>Convolution filter kernel.</blockquote><pre><a href="#116">class MaxFilter</a>:
+    def __init__(self, size=3)</pre><blockquote>Max filter.</blockquote><pre><a href="#84">class MedianFilter</a>:
+    def __init__(self, size=3)</pre><blockquote>Median filter.</blockquote><pre><a href="#100">class MinFilter</a>:
+    def __init__(self, size=3)</pre><blockquote>Min filter.</blockquote><pre><a href="#134">class ModeFilter</a>:
+    def __init__(self, size=3)</pre><blockquote>Mode filter.</blockquote><pre><a href="#62">class RankFilter</a>:
+    def __init__(self, size, rank)</pre><blockquote>Rank filter.</blockquote><pre><a href="#253">class SHARPEN</a>:
+    def __init__(self)</pre><blockquote>Sharpening filter.</blockquote><pre><a href="#229">class SMOOTH</a>:
+    def __init__(self)</pre><blockquote>Smoothing filter.</blockquote><pre><a href="#240">class SMOOTH_MORE</a>:
+    def __init__(self)</pre><blockquote>Stronger smoothing filter.</blockquote><h2>Classes</h2><div class="class" id="150"><h3>The BLUR Class</h3><pre>BLUR()</pre><p>Blur filter.
+</p></div><div class="class" id="163"><h3>The CONTOUR Class</h3><pre>CONTOUR()</pre><p>Contour filter.
+</p></div><div class="class" id="174"><h3>The DETAIL Class</h3><pre>DETAIL()</pre><p>Detail filter.
+</p></div><div class="class" id="185"><h3>The EDGE_ENHANCE Class</h3><pre>EDGE_ENHANCE()</pre><p>Edge enhancement filter.
+</p></div><div class="class" id="196"><h3>The EDGE_ENHANCE_MORE Class</h3><pre>EDGE_ENHANCE_MORE()</pre><p>Stronger edge enhancement filter.
+</p></div><div class="class" id="207"><h3>The EMBOSS Class</h3><pre>EMBOSS()</pre><p>Embossing filter.
+</p></div><div class="class" id="218"><h3>The FIND_EDGES Class</h3><pre>FIND_EDGES()</pre><p>Edge-finding filter.
+</p></div><div class="class" id="22"><h3>The Kernel Class</h3><pre>Kernel()</pre><p>Convolution filter kernel.
+</p></div><h4>Constructor:</h4><div class="constructor" id="42"><pre>Kernel(size, kernel, **options)</pre><p>Create a convolution kernel.  The current version only
+supports 3x3 and 5x5 integer and floating point kernels.
+</p><p>
+In the current version, kernels can only be applied to
+"L" and "RGB" images.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- Kernel size, given as (width, height).  In
+   the current version, this must be (3,3) or (5,5).
+</p><p><code>kernel</code> -- A sequence containing kernel weights.
+</p><p><code>**options</code> -- Optional keyword arguments.
+</p><h4>Keyword Parameters:</h4><p><code>scale</code> -- Scale factor.  If given, the result for each
+   pixel is divided by this value.  The default is the sum
+   of the kernel weights.
+</p><p><code>offset</code> -- Offset.  If given, this value is added to the
+   result, after it has been divided by the scale factor.
+</p></div><h4>Method Summary:</h4><div class="class" id="116"><h3>The MaxFilter Class</h3><pre>MaxFilter()</pre><p>Max filter.  Picks the largest pixel value in a window with the
+given size.
+</p></div><h4>Constructor:</h4><div class="constructor" id="124"><pre>MaxFilter(size=3)</pre><p>Create a max filter.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
+</p></div><h4>Method Summary:</h4><div class="class" id="84"><h3>The MedianFilter Class</h3><pre>MedianFilter()</pre><p>Median filter.  Picks the median pixel value in a window with the
+given size.
+</p></div><h4>Constructor:</h4><div class="constructor" id="92"><pre>MedianFilter(size=3)</pre><p>Create a median filter.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
+</p></div><h4>Method Summary:</h4><div class="class" id="100"><h3>The MinFilter Class</h3><pre>MinFilter()</pre><p>Min filter.  Picks the lowest pixel value in a window with the given
+size.
+</p></div><h4>Constructor:</h4><div class="constructor" id="108"><pre>MinFilter(size=3)</pre><p>Create a min filter.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
+</p></div><h4>Method Summary:</h4><div class="class" id="134"><h3>The ModeFilter Class</h3><pre>ModeFilter()</pre><p>Mode filter.  Picks the most frequent pixel value in a box with the
+given size.  Pixel values that occur only once or twice are ignored;
+if no pixel value occurs more than twice, the original pixel value
+is preserved.
+</p></div><h4>Constructor:</h4><div class="constructor" id="142"><pre>ModeFilter(size=3)</pre><p>Create a mode filter.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
+</p></div><h4>Method Summary:</h4><div class="class" id="62"><h3>The RankFilter Class</h3><pre>RankFilter()</pre><p>Rank filter.
+</p></div><h4>Constructor:</h4><div class="constructor" id="73"><pre>RankFilter(size, rank)</pre><p>Create a rank filter.  The rank filter sorts all pixels in
+a window of the given size, and returns the rank'th value.
+
+</p><h4>Parameters:</h4><p><code>size</code> -- The kernel size, in pixels.
+</p><p><code>rank</code> -- What pixel value to pick.  Use 0 for a min filter,
+   size/2 for a median filter, size-1 for a max filter, etc.
+</p></div><h4>Method Summary:</h4><div class="class" id="253"><h3>The SHARPEN Class</h3><pre>SHARPEN()</pre><p>Sharpening filter.
+</p></div><div class="class" id="229"><h3>The SMOOTH Class</h3><pre>SMOOTH()</pre><p>Smoothing filter.
+</p></div><div class="class" id="240"><h3>The SMOOTH_MORE Class</h3><pre>SMOOTH_MORE()</pre><p>Stronger smoothing filter.
+</p></div></body></html>

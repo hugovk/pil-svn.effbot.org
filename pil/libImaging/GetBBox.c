@@ -1,16 +1,16 @@
 /* 
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/GetBBox.c#2 $
+ * $Id: //modules/pil/libImaging/GetBBox.c#4 $
  *
  * get bounding box for image
  *
  * history:
- *	96-07-22 fl:	Created
- *	96-12-30 fl:	Added projection stuff
- *	98-07-12 fl:	Added extrema stuff
+ * 1996-07-22 fl   Created
+ * 1996-12-30 fl   Added projection stuff
+ * 1998-07-12 fl   Added extrema stuff
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1996.
+ * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1996-2003 by Fredrik Lundh.
  *
  * See the README file for details on usage and redistribution.
  */
@@ -150,7 +150,7 @@ ImagingGetExtrema(Imaging im, void *extrema)
         ((INT32*) extrema)[1] = imax;
         break;
     case IMAGING_TYPE_FLOAT32:
-        fmin = fmax = ((FLOAT32*)im->image32[0])[0];
+        fmin = fmax = ((FLOAT32*) im->image32[0])[0];
         for (y = 0; y < im->ysize; y++) {
             FLOAT32* in = (FLOAT32*) im->image32[y];
             for (x = 0; x < im->xsize; x++) {
@@ -163,6 +163,23 @@ ImagingGetExtrema(Imaging im, void *extrema)
         ((FLOAT32*) extrema)[0] = fmin;
         ((FLOAT32*) extrema)[1] = fmax;
         break;
+    case IMAGING_TYPE_SPECIAL:
+      if (strcmp(im->mode, "I;16") == 0) {
+          imin = imax = ((UINT16*) im->image8[0])[0];
+          for (y = 0; y < im->ysize; y++) {
+              UINT16* in = (UINT16 *) im->image[y];
+              for (x = 0; x < im->xsize; x++) {
+                  if (imin > in[x])
+                      imin = in[x];
+                  else if (imax < in[x])
+                      imax = in[x];
+              }
+          }
+          ((UINT16*) extrema)[0] = (UINT16) imin;
+          ((UINT16*) extrema)[1] = (UINT16) imax;
+	  break;
+      }
+      /* FALL THROUGH */
     default:
         ImagingError_ModeError();
         return -1;

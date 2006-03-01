@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/McIdasImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/McIdasImagePlugin.py#3 $
 #
 # Basic McIdas support for PIL
 #
@@ -30,6 +30,9 @@ def i32(c,i=0):
 
 def _accept(s):
     return i32(s) == 0 and i32(s, 4) == 4
+
+##
+# Image plugin for McIdas area images.
 
 class McIdasImageFile(ImageFile.ImageFile):
 

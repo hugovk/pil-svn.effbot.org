@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/GimpGradientFile.py#2 $
+# $Id: //modules/pil/PIL/GimpGradientFile.py#3 $
 #
 # stuff to read (and render) GIMP gradient files
 #
@@ -52,9 +52,6 @@ def sphere_decreasing(middle, pos):
 
 SEGMENTS = [ linear, curved, sine, sphere_increasing, sphere_decreasing ]
 
-# --------------------------------------------------------------------
-#
-
 class GradientFile:
 
     gradient = None
@@ -92,6 +89,8 @@ class GradientFile:
 
         return string.join(palette, ""), "RGBA"
 
+##
+# File handler for GIMP's gradient format.
 
 class GimpGradientFile(GradientFile):
 

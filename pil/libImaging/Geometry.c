@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Geometry.c#3 $
+ * $Id: //modules/pil/libImaging/Geometry.c#4 $
  *
  * the imaging geometry methods
  *
@@ -16,13 +16,13 @@
  * 1999-02-03 fl  Fixed bicubic filtering for RGB images
  * 1999-02-16 fl  Added fixed-point version of affine transform
  * 2001-03-28 fl  Fixed transform(EXTENT) for xoffset < 0
+ * 2003-03-10 fl  Compiler tweaks
  *
- * Copyright (c) 1997-2001 by Secret Labs AB
+ * Copyright (c) 1997-2003 by Secret Labs AB
  * Copyright (c) 1995-1997 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
-
 
 #include "Imaging.h"
 
@@ -439,45 +439,45 @@ getfilter(Imaging im, int filterid)
         if (im->image8)
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return nearest_filter8;
+                return (ImagingTransformFilter) nearest_filter8;
             case IMAGING_TYPE_SPECIAL:
                 switch (im->pixelsize) {
                 case 1:
-                    return nearest_filter8;
+                    return (ImagingTransformFilter) nearest_filter8;
                 case 2:
-                    return nearest_filter16;
+                    return (ImagingTransformFilter) nearest_filter16;
                 case 4:
-                    return nearest_filter32;
+                    return (ImagingTransformFilter) nearest_filter32;
                 }
             }
         else
-            return nearest_filter32;
+            return (ImagingTransformFilter) nearest_filter32;
         break;
     case IMAGING_TRANSFORM_BILINEAR:
         if (im->image8)
-            return bilinear_filter8;
+            return (ImagingTransformFilter) bilinear_filter8;
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return bilinear_filter32RGB;
+                return (ImagingTransformFilter) bilinear_filter32RGB;
             case IMAGING_TYPE_INT32:
-                return bilinear_filter32I;
+                return (ImagingTransformFilter) bilinear_filter32I;
             case IMAGING_TYPE_FLOAT32:
-                return bilinear_filter32F;
+                return (ImagingTransformFilter) bilinear_filter32F;
             }
         }
         break;
     case IMAGING_TRANSFORM_BICUBIC:
         if (im->image8)
-            return bicubic_filter8;
+            return (ImagingTransformFilter) bicubic_filter8;
         else if (im->image32) {
             switch (im->type) {
             case IMAGING_TYPE_UINT8:
-                return bicubic_filter32RGB;
+                return (ImagingTransformFilter) bicubic_filter32RGB;
             case IMAGING_TYPE_INT32:
-                return bicubic_filter32I;
+                return (ImagingTransformFilter) bicubic_filter32I;
             case IMAGING_TYPE_FLOAT32:
-                return bicubic_filter32F;
+                return (ImagingTransformFilter) bicubic_filter32F;
             }
         }
         break;

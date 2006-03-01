@@ -1,0 +1,46 @@
+
+/* $Id: //people/fredrik/xmltoys/pythondoc.py#6 $ */
+/* quick pythondoc.css, based on the standard effbot.org style */
+
+BODY {
+    font: 10pt Georgia, Times, serif;
+    background: white; color: black;
+    margin-left: 100px; margin-right: 100px;
+}
+
+CODE, PRE {
+    font: 10pt "Courier New", Courier, Monaco, monospace;
+    color: #008040;
+}
+
+H1, H2, H3 {
+    font-family: Georgia, Times, serif;
+    color: #008040; margin-left: -80px; margin-right: -80px;
+}
+
+H4, H5, H6 {
+    font-family: Georgia, Times, serif;
+    color: #008040;
+}
+
+.text {
+    font: 10pt/18pt Georgia, Times, serif;
+}
+
+A:link, A:hover { color: #008040; }
+A:visited { color: #404040; }
+
+.title { margin-bottom: 2px; color: #008040;
+         margin-left: -80px; margin-right: -80px
+        }
+.info { font-size: 80%; margin: 0; color: #008040; margin-left: -80px; }
+.highlight { background: #ccffcc; }
+
+.navigate { color: #008040; background: #e0e0e0;
+            margin-left: -80px; margin-right: -80px; }
+
+.bluebox { color: #008040; margin-top: 10px; }
+
+.mark { color: #008040; }
+.small { font-size: 80%; }
+.display { background: #e0e0e0; padding: 20px; }

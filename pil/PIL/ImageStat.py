@@ -1,20 +1,19 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImageStat.py#3 $
+# $Id: //modules/pil/PIL/ImageStat.py#4 $
 #
-# global statistics
+# global image statistics
 #
 # History:
-#       96-04-05 fl     Created
-#       97-05-21 fl     Added mask; added rms, var, stddev attributes
-#       97-08-05 fl     Added median
-#       98-07-05 hk     Fixed integer overflow error
+# 1996-04-05 fl   Created
+# 1997-05-21 fl   Added mask; added rms, var, stddev attributes
+# 1997-08-05 fl   Added median
+# 1998-07-05 hk   Fixed integer overflow error
 #
 # Notes:
-#       This class shows how to implement delayed evaluation of
-#       attributes.  To get a certain value, simply access the
-#       corresponding attribute.  The __getattr__ dispatcher takes
-#       care of the rest.
+# This class shows how to implement delayed evaluation of attributes.
+# To get a certain value, simply access the corresponding attribute.
+# The __getattr__ dispatcher takes care of the rest.
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1996-97.
@@ -25,8 +24,24 @@
 import Image
 import operator, math
 
+##
+# The <b>ImageStat</b> module calculates global statistics for an
+# image, or a region of an image.
+
+##
+# Calculate statistics for the given image.  If a mask is included,
+# only the regions covered by that mask are included in the
+# statistics.
+
 class Stat:
     "Get image or feature statistics"
+
+    ##
+    # Create a statistics object.
+    #
+    # @def __init__(image, mask=None)
+    # @param image A PIL image, or a precalculate histogram.
+    # @param mask An optional mask.
 
     def __init__(self, image_or_list, mask = None):
         try:
@@ -150,7 +165,7 @@ Global = Stat # compatibility
 if __name__ == "__main__":
 
     im = Image.open("Images/lena.ppm")
-    
+
     st = Stat(im)
 
     print "extrema", st.extrema

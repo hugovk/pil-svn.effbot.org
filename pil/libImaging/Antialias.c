@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Antialias.c#6 $
+ * $Id: //modules/pil/libImaging/Antialias.c#7 $
  *
  * pilopen antialiasing support 
  *
@@ -199,8 +199,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     for (xx = 0; xx < imOut->xsize; xx++) {
                         ss = 0.0;
                         for (y = (int) ymin; y < (int) ymax; y++)
-                            ss = ss + imIn->image32[y][xx] * k[y - (int) ymin];
-                        imOut->image32[yy][xx] = ss * ww;
+                            ss = ss + IMAGING_PIXEL_I(imIn, xx, y) * k[y - (int) ymin];
+                        IMAGING_PIXEL_I(imOut, xx, yy) = ss * ww;
                     }
                     break;
                 case IMAGING_TYPE_FLOAT32:
@@ -208,8 +208,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     for (xx = 0; xx < imOut->xsize; xx++) {
                         ss = 0.0;
                         for (y = (int) ymin; y < (int) ymax; y++)
-                            ss = ss + ((FLOAT32*) imIn->image32[y])[xx] * k[y - (int) ymin];
-                        ((FLOAT32*) imOut->image32[yy])[xx] = ss * ww;
+                            ss = ss + IMAGING_PIXEL_F(imIn, xx, y) * k[y - (int) ymin];
+                        IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
                     }
                     break;
                 default:
@@ -275,8 +275,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     for (yy = 0; yy < imOut->ysize; yy++) {
                         ss = 0.0;
                         for (x = (int) xmin; x < (int) xmax; x++)
-                            ss = ss + imIn->image32[yy][x] * k[x - (int) xmin];
-                        imOut->image32[yy][xx] = ss * ww;
+                            ss = ss + IMAGING_PIXEL_I(imIn, x, yy) * k[x - (int) xmin];
+                        IMAGING_PIXEL_I(imOut, xx, yy) = ss * ww;
                     }
                     break;
                 case IMAGING_TYPE_FLOAT32:
@@ -284,8 +284,8 @@ ImagingStretch(Imaging imOut, Imaging imIn, int filter)
                     for (yy = 0; yy < imOut->ysize; yy++) {
                         ss = 0.0;
                         for (x = (int) xmin; x < (int) xmax; x++)
-                            ss = ss + ((FLOAT32*) imIn->image[yy])[x] * k[x - (int) xmin];
-                        ((FLOAT32*) imOut->image[yy])[xx] = ss * ww;
+                            ss = ss + IMAGING_PIXEL_F(imIn, x, yy) * k[x - (int) xmin];
+                        IMAGING_PIXEL_F(imOut, xx, yy) = ss * ww;
                     }
                     break;
                 default:

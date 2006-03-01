@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PpmImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/PpmImagePlugin.py#3 $
 #
 # PPM support for PIL
 #
@@ -39,6 +39,9 @@ MODES = {
 
 def _accept(prefix):
     return prefix[0] == "P" and prefix[1] in "0456y"
+
+##
+# Image plugin for PBM, PGM, and PPM images.
 
 class PpmImageFile(ImageFile.ImageFile):
 

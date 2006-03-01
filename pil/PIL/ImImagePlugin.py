@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ImImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/ImImagePlugin.py#3 $
 #
 # IFUNC IM file handling for PIL
 #
@@ -90,6 +90,9 @@ for i in range(2, 33):
 # Read IM directory
 
 split = re.compile(r"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+
+##
+# Image plugin for the IFUNC IM file format.
 
 class ImImageFile(ImageFile.ImageFile):
 

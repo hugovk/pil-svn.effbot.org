@@ -1,28 +1,29 @@
 /* 
  * The Python Imaging Library.
- * $Id: //modules/pil/decode.c#2 $
+ * $Id: //modules/pil/decode.c#4 $
  *
  * standard decoder interfaces for the Imaging library
  *
  * history:
- * 96-03-28 fl	Moved from _imagingmodule.c
- * 96-04-15 fl	Support subregions in setimage
- * 96-04-19 fl	Allocate decoder buffer (where appropriate)
- * 96-05-02 fl	Added jpeg decoder
- * 96-05-12 fl	Compile cleanly as C++
- * 96-05-16 fl	Added hex decoder
- * 96-05-26 fl	Added jpeg configuration parameters
- * 96-12-14 fl	Added zip decoder
- * 96-12-30 fl	Plugged potential memory leak for tiled images
- * 97-01-03 fl	Added fli and msp decoders
- * 97-01-04 fl	Added sun_rle and tga_rle decoders
- * 97-05-31 fl	Added bitfield decoder
- * 98-09-11 fl	Added orientation and pixelsize fields to tga_rle decoder
- * 98-12-29 fl	Added mode/rawmode argument to decoders
- * 98-12-30 fl	Added mode argument to *all* decoders
+ * 1996-03-28 fl   Moved from _imagingmodule.c
+ * 1996-04-15 fl   Support subregions in setimage
+ * 1996-04-19 fl   Allocate decoder buffer (where appropriate)
+ * 1996-05-02 fl   Added jpeg decoder
+ * 1996-05-12 fl   Compile cleanly as C++
+ * 1996-05-16 fl   Added hex decoder
+ * 1996-05-26 fl   Added jpeg configuration parameters
+ * 1996-12-14 fl   Added zip decoder
+ * 1996-12-30 fl   Plugged potential memory leak for tiled images
+ * 1997-01-03 fl   Added fli and msp decoders
+ * 1997-01-04 fl   Added sun_rle and tga_rle decoders
+ * 1997-05-31 fl   Added bitfield decoder
+ * 1998-09-11 fl   Added orientation and pixelsize fields to tga_rle decoder
+ * 1998-12-29 fl   Added mode/rawmode argument to decoders
+ * 1998-12-30 fl   Added mode argument to *all* decoders
+ * 2002-06-09 fl   Added stride argument to pcx decoder
  *
- * Copyright (c) Secret Labs AB 1997-98.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1997-2002 by Secret Labs AB.
+ * Copyright (c) 1995-2002 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -30,6 +31,10 @@
 /* FIXME: make these pluggable! */
 
 #include "Python.h"
+
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
 
 #include "Imaging.h"
 
@@ -96,7 +101,7 @@ _dealloc(ImagingDecoderObject* decoder)
     free(decoder->state.buffer);
     free(decoder->state.context);
     Py_XDECREF(decoder->lock);
-    PyMem_DEL(decoder);
+    PyObject_DEL(decoder);
 }
 
 static PyObject* 
@@ -157,7 +162,8 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
 
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
-	state->bytes = (state->bits * state->xsize+7)/8;
+        if (!state->bytes)
+            state->bytes = (state->bits * state->xsize+7)/8;
 	state->buffer = (UINT8*) malloc(state->bytes);
 	if (!state->buffer) {
 	    PyErr_NoMemory();
@@ -459,7 +465,8 @@ PyImaging_PcxDecoderNew(PyObject* self, PyObject* args)
 
     char* mode;
     char* rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode))
+    int stride;
+    if (!PyArg_ParseTuple(args, "ssi", &mode, &rawmode, &stride))
 	return NULL;
 
     decoder = PyImaging_DecoderNew(0);
@@ -468,6 +475,8 @@ PyImaging_PcxDecoderNew(PyObject* self, PyObject* args)
 
     if (get_unpacker(decoder, mode, rawmode) < 0)
 	return NULL;
+
+    decoder->state.bytes = stride;
 
     decoder->decode = ImagingPcxDecode;
 

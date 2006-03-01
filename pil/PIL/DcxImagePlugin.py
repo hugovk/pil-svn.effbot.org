@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/DcxImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/DcxImagePlugin.py#5 $
 #
 # DCX file handling
 #
@@ -10,33 +10,33 @@
 # PCX files.
 #
 # History:
-#       95-09-09 fl     Created
-#       96-03-20 fl     Properly derived from PcxImageFile.
-#       98-07-15 fl     Renamed offset attribute to avoid name clash
+# 1995-09-09 fl   Created
+# 1996-03-20 fl   Properly derived from PcxImageFile.
+# 1998-07-15 fl   Renamed offset attribute to avoid name clash
+# 2002-07-30 fl   Fixed file handling
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1995-96.
+# Copyright (c) 1997-98 by Secret Labs AB.
+# Copyright (c) 1995-96 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-
-__version__ = "0.1"
-
+__version__ = "0.2"
 
 import Image, ImageFile
 
 from PcxImagePlugin import PcxImageFile
 
-
 MAGIC = 0x3ADE68B1 # QUIZ: what's this value, then?
-
 
 def i32(c):
     return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
 
 def _accept(prefix):
     return i32(prefix) == MAGIC
+
+##
+# Image plugin for the Intel DCX format.
 
 class DcxImageFile(PcxImageFile):
 
@@ -58,12 +58,14 @@ class DcxImageFile(PcxImageFile):
                 break
             self._offset.append(offset)
 
+        self.__fp = self.fp
         self.seek(0)
 
     def seek(self, frame):
         if frame >= len(self._offset):
-            raise IndexError, "attempt to seek outside DCX directory"
+            raise EOFError("attempt to seek outside DCX directory")
         self.frame = frame
+        self.fp = self.__fp
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
 

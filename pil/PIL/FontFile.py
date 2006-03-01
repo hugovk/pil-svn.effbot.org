@@ -1,17 +1,15 @@
 #
-# THIS IS WORK IN PROGRESS
-#
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/FontFile.py#3 $
+# $Id: //modules/pil/PIL/FontFile.py#5 $
 #
 # base class for raster font file parsers
 #
 # history:
-# 97-06-05 fl   created
-# 97-08-19 fl   restrict image width
+# 1997-06-05 fl   created
+# 1997-08-19 fl   restrict image width
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1997.
+# Copyright (c) 1997-1998 by Secret Labs AB
+# Copyright (c) 1997-1998 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
@@ -34,6 +32,9 @@ def puti16(fp, values):
         if v < 0:
             v = v + 65536
         fp.write(chr(v>>8&255) + chr(v&255))
+
+##
+# Base class for raster font file handlers.
 
 class FontFile:
 
@@ -119,6 +120,8 @@ class FontFile:
 
     def save2(self, filename):
         "Save font in version 2 format"
+
+        # THIS IS WORK IN PROGRESS
 
         self.compile()
 

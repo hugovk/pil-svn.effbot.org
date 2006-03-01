@@ -1,0 +1,62 @@
+<html><head><title>Module PIL.ImageTk</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageTk</h1><h4>Module Summary:</h4><pre><a href="#194">class BitmapImage</a>:
+    def __init__(self, image=None, **options)</pre><blockquote>Create a Tkinter-compatible bitmap image.</blockquote><pre><a href="#60">class PhotoImage</a>:
+    def __init__(self, image=None, size=None, **options)</pre><blockquote>Creates a Tkinter-compatible photo image.</blockquote><h2>Classes</h2><div class="class" id="194"><h3>The BitmapImage Class</h3><pre>BitmapImage()</pre><p>Create a Tkinter-compatible bitmap image.  This can be used
+everywhere Tkinter expects an image object.
+</p></div><h4>Constructor:</h4><div class="constructor" id="209"><pre>BitmapImage(image=None, **options)</pre><p>Create a Tkinter-compatible bitmap image.
+</p><p>
+The given image must have mode "1".  Pixels having value 0 are
+treated as transparent.  Options, if any, are passed on to
+Tkinter.  The most commonly used option is <b>foreground</b>,
+which is used to specify the colour for the non-transparent
+parts.  See the Tkinter documentation for information on how to
+specify colours.
+
+</p><h4>Parameters:</h4><p><code>image</code> -- A PIL image.
+</p></div><h4>Method Summary:</h4><pre><a href="#265">__str__()</a></pre><blockquote>Get the Tkinter bitmap image identifier.</blockquote><pre><a href="#255">height()</a></pre><blockquote>Get the height of the image.</blockquote><pre><a href="#247">width()</a></pre><blockquote>Get the width of the image.</blockquote><div class="method" id="265"><h3>__str__</h3><pre>__str__()</pre><p>Get the Tkinter bitmap image identifier.  This method is
+automatically called by Tkinter whenever a BitmapImage object
+is passed to a Tkinter method.
+
+</p><h4>Returns:</h4><p>A Tkinter bitmap image identifier (a string).
+</p></div><div class="method" id="255"><h3>height</h3><pre>height()</pre><p>Get the height of the image.
+
+</p><h4>Returns:</h4><p>The height, in pixels.
+</p></div><div class="method" id="247"><h3>width</h3><pre>width()</pre><p>Get the width of the image.
+
+</p><h4>Returns:</h4><p>The width, in pixels.
+</p></div><div class="class" id="60"><h3>The PhotoImage Class</h3><pre>PhotoImage()</pre><p>Creates a Tkinter-compatible photo image.  This can be used
+everywhere Tkinter expects an image object.  If the image is an RGBA
+image, pixels having alpha 0 are treated as transparent.
+</p></div><h4>Constructor:</h4><div class="constructor" id="78"><pre>PhotoImage(image=None, size=None, **options)</pre><p>Create a photo image object. The constructor takes either
+a PIL image, or a mode and a size.  Alternatively, you can
+use the <b>file</b> or <b>data</b> options to initialize
+the photo image object.
+</p><p>
+</p><h4>Parameters:</h4><p><code>image</code> -- Either a PIL image, or a mode string.  If a
+   mode string is used, a size must also be given.
+</p><p><code>size</code> -- If the first argument is a mode string, this
+   defines the size of the image.
+</p><h4>Keyword Parameters:</h4><p><code>file</code> -- A filename to load the image from (using
+   Image.open(file)).
+</p><p><code>data</code> -- An 8-bit string containing image data (as
+   loaded from an image file).
+</p></div><h4>Method Summary:</h4><pre><a href="#130">__str__()</a></pre><blockquote>Get the Tkinter photo image identifier.</blockquote><pre><a href="#146">height()</a></pre><blockquote>Get the height of the image.</blockquote><pre><a href="#160">paste(im, box=None)</a></pre><blockquote>Paste a PIL image into the photo image.</blockquote><pre><a href="#138">width()</a></pre><blockquote>Get the width of the image.</blockquote><div class="method" id="130"><h3>__str__</h3><pre>__str__()</pre><p>Get the Tkinter photo image identifier.  This method is
+automatically called by Tkinter whenever a PhotoImage object is
+passed to a Tkinter method.
+
+</p><h4>Returns:</h4><p>A Tkinter photo image identifier (a string).
+</p></div><div class="method" id="146"><h3>height</h3><pre>height()</pre><p>Get the height of the image.
+
+</p><h4>Returns:</h4><p>The height, in pixels.
+</p></div><div class="method" id="160"><h3>paste</h3><pre>paste(im, box=None)</pre><p>Paste a PIL image into the photo image.  Note that this can
+be very slow if the photo image is displayed.
+
+</p><h4>Parameters:</h4><p><code>im</code> -- A PIL image.  The size must match the target region.
+   If the mode does not match, the image is converted to the
+   mode of the bitmap image.
+</p><p><code>box</code> -- A 4-tuple defining the left, upper, right, and
+   lower pixel coordinate.  If None is given instead of a
+   tuple, all of the image is assumed.
+</p></div><div class="method" id="138"><h3>width</h3><pre>width()</pre><p>Get the width of the image.
+
+</p><h4>Returns:</h4><p>The width, in pixels.
+</p></div></body></html>

@@ -1,21 +1,22 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/IptcImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/IptcImagePlugin.py#5 $
 #
 # IPTC/NAA file handling
 #
 # history:
-# 95-10-01 fl   Created
-# 98-03-09 fl   Cleaned up and added to PIL
+# 1995-10-01 fl   Created
+# 1998-03-09 fl   Cleaned up and added to PIL
+# 2002-06-18 fl   Added getiptcinfo helper
 #
-# Copyright (c) Secret Labs AB 1997-2000.
+# Copyright (c) Secret Labs AB 1997-2002.
 # Copyright (c) Fredrik Lundh 1995.
 #
 # See the README file for information on usage and redistribution.
 #
 
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 import Image, ImageFile
@@ -46,9 +47,9 @@ def dump(c):
         print "%02x" % ord(i),
     print
 
-
-#
-# Parser
+##
+# Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields
+# from TIFF and JPEG files, use the <b>getiptcinfo</b> function.
 
 class IptcImageFile(ImageFile.ImageFile):
 
@@ -199,3 +200,82 @@ class IptcImageFile(ImageFile.ImageFile):
 Image.register_open("IPTC", IptcImageFile)
 
 Image.register_extension("IPTC", ".iim")
+
+##
+# Get IPTC information from TIFF, JPEG, or IPTC file.
+#
+# @param im An image containing IPTC data.
+# @return A dictionary containing IPTC information, or None if
+#     no IPTC information block was found.
+
+def getiptcinfo(im):
+
+    import TiffImagePlugin, JpegImagePlugin
+    import StringIO
+
+    data = None
+
+    if isinstance(im, IptcImageFile):
+        # return info dictionary right away
+        return im.info
+
+    elif isinstance(im, JpegImagePlugin.JpegImageFile):
+        # extract the IPTC/NAA resource
+        try:
+            app = im.app["APP13"]
+            if app[:14] == "Photoshop 3.0\x00":
+                app = app[14:]
+                # parse the image resource block
+                offset = 0
+                while app[offset:offset+4] == "8BIM":
+                    offset = offset + 4
+                    # resource code
+                    code = JpegImagePlugin.i16(app, offset)
+                    offset = offset + 2
+                    # resource name (usually empty)
+                    name_len = ord(app[offset])
+                    name = app[offset+1:offset+1+name_len]
+                    offset = 1 + offset + name_len
+                    if offset & 1:
+                        offset = offset + 1
+                    # resource data block
+                    size = JpegImagePlugin.i32(app, offset)
+                    offset = offset + 4
+                    if code == 0x0404:
+                        # 0x0404 contains IPTC/NAA data
+                        data = app[offset:offset+size]
+                        break
+                    offset = offset + size
+                    if offset & 1:
+                        offset = offset + 1
+        except (AttributeError, KeyError):
+            pass
+
+    elif isinstance(im, TiffImagePlugin.TiffImageFile):
+        # get raw data from the IPTC/NAA tag (PhotoShop tags the data
+        # as 4-byte integers, so we cannot use the get method...)
+        try:
+            type, data = im.tag.tagdata[TiffImagePlugin.IPTC_NAA_CHUNK]
+        except (AttributeError, KeyError):
+            pass
+
+    if data is None:
+        return None # no properties
+
+    # create an IptcImagePlugin object without initializing it
+    class FakeImage:
+        pass
+    im = FakeImage()
+    im.__class__ = IptcImageFile
+
+    # parse the IPTC information chunk
+    im.info = {}
+    im.fp = StringIO.StringIO(data)
+
+    try:
+        im._open()
+    except (IndexError, KeyError):
+        pass # expected failure
+
+    return im.info
+

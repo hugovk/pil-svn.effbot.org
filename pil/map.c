@@ -1,14 +1,16 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/map.c#2 $
+ * $Id: //modules/pil/map.c#7 $
  *
  * standard memory mapping interface for the Imaging library
  *
  * history:
- * 98-03-05 fl	Added Win32 read mapping
- * 99-02-06 fl	Added "I;16" support
+ * 1998-03-05 fl   added Win32 read mapping
+ * 1999-02-06 fl   added "I;16" support
+ * 2003-04-21 fl   added PyImaging_MapBuffer primitive
  *
- * Copyright (c) Secret Labs AB 1998.
+ * Copyright (c) 1998-2003 by Secret Labs AB.
+ * Copyright (c) 2003 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -19,12 +21,23 @@
 
 #include "Python.h"
 
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
+
 #include "Imaging.h"
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
+#ifdef __GNUC__
+#undef INT32
+#undef UINT32
+#endif
 #include "windows.h"
 #endif
+
+/* -------------------------------------------------------------------- */
+/* Standard mapper */
 
 typedef struct {
     PyObject_HEAD
@@ -67,7 +80,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
         NULL);
     if (mapper->hFile == (HANDLE)-1) {
         PyErr_SetString(PyExc_IOError, "cannot open file");
-        PyMem_DEL(mapper);
+        PyObject_DEL(mapper);
         return NULL;
     }
 
@@ -78,7 +91,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
     if (mapper->hMap == (HANDLE)-1) {
 	CloseHandle(mapper->hFile);
         PyErr_SetString(PyExc_IOError, "cannot map file");
-        PyMem_DEL(mapper);
+        PyObject_DEL(mapper);
         return NULL;
     }
 
@@ -106,7 +119,7 @@ mapping_dealloc(ImagingMapperObject* mapper)
     mapper->base = 0;
     mapper->hMap = mapper->hFile = (HANDLE)-1;
 #endif
-    PyMem_DEL(mapper);
+    PyObject_DEL(mapper);
 }
 
 /* -------------------------------------------------------------------- */
@@ -271,3 +284,97 @@ PyImaging_Mapper(PyObject* self, PyObject* args)
 
     return (PyObject*) PyImaging_MapperNew(filename, 1);
 }
+
+/* -------------------------------------------------------------------- */
+/* Buffer mapper */
+
+typedef struct ImagingBufferInstance {
+    struct ImagingMemoryInstance im;
+    PyObject* target;
+} ImagingBufferInstance;
+
+static void
+mapping_destroy_buffer(Imaging im)
+{
+    ImagingBufferInstance* buffer = (ImagingBufferInstance*) im;
+    
+    Py_XDECREF(buffer->target);
+}
+
+PyObject* 
+PyImaging_MapBuffer(PyObject* self, PyObject* args)
+{
+    int y, size;
+    Imaging im;
+    PyBufferProcs *buffer;
+    char* ptr;
+    int bytes;
+
+    PyObject* target;
+    char* mode;
+    char* codec;
+    PyObject* bbox;
+    int offset;
+    int xsize, ysize;
+    int stride;
+    int ystep;
+
+    if (!PyArg_ParseTuple(args, "O(ii)sOi(sii)", &target, &xsize, &ysize,
+                          &codec, &bbox, &offset, &mode, &stride, &ystep))
+	return NULL;
+
+    /* check target object */
+    buffer = target->ob_type->tp_as_buffer;
+    if (!buffer || !buffer->bf_getreadbuffer || !buffer->bf_getsegcount ||
+        buffer->bf_getsegcount(target, NULL) != 1) {
+        PyErr_SetString(PyExc_TypeError, "expected string or buffer");
+        return NULL;
+    }
+
+    if (stride <= 0) {
+        if (!strcmp(mode, "L") || !strcmp(mode, "P"))
+            stride = xsize;
+        else if (!strcmp(mode, "I;16") || !strcmp(mode, "I;16B"))
+            stride = xsize * 2;
+        else
+            stride = xsize * 4;
+    }
+
+    size = ysize * stride;
+
+    /* check buffer size */
+    bytes = buffer->bf_getreadbuffer(target, 0, (void**) &ptr);
+    if (bytes < 0) {
+        PyErr_SetString(PyExc_ValueError, "buffer has negative size");
+        return NULL;
+    }
+    if (offset + size > bytes) {
+        PyErr_SetString(PyExc_ValueError, "buffer is not large enough");
+        return NULL;
+    }
+
+    im = ImagingNewPrologueSubtype(
+        mode, xsize, ysize, sizeof(ImagingBufferInstance)
+        );
+    if (!im)
+        return NULL;
+
+    /* setup file pointers */
+    if (ystep > 0)
+        for (y = 0; y < ysize; y++)
+            im->image[y] = ptr + offset + y * stride;
+    else
+        for (y = 0; y < ysize; y++)
+            im->image[ysize-y-1] = ptr + offset + y * stride;
+
+    im->destroy = mapping_destroy_buffer;
+
+    Py_INCREF(target);
+    ((ImagingBufferInstance*) im)->target = target;
+
+    if (!ImagingNewEpilogue(im))
+        return NULL;
+
+    return PyImagingNew(im);
+}
+

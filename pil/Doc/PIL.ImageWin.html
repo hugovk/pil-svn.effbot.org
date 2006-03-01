@@ -1,0 +1,51 @@
+<html><head><title>Module PIL.ImageWin</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageWin</h1><h4>Module Summary:</h4><pre><a href="#47">class Dib</a>:
+    def __init__(self, image, size=None)</pre><blockquote>Create a Windows bitmap with the given mode and size.</blockquote><pre><a href="#23">class HDC</a>:
+    def __init__(self)</pre><blockquote>The ImageWin module contains support to create and display
+images under Windows 95/98, NT, 2000 and later.</blockquote><h2>Classes</h2><div class="class" id="47"><h3>The Dib Class</h3><pre>Dib()</pre><p>Create a Windows bitmap with the given mode and size.  The mode can
+be one of "1", "L", "P", or "RGB".
+
+If the display requires a palette, this constructor creates a
+suitable palette and associates it with the image. For an "L" image,
+128 greylevels are allocated. For an "RGB" image, a 6x6x6 colour
+cube is used, together with 20 greylevels.
+
+To make sure that palettes work properly under Windows, you must
+call the <b>palette</b> method upon certain events from Windows.
+</p></div><h4>Constructor:</h4><div class="constructor" id="58"><pre>Dib(image, size=None)</pre><p>Create Windows bitmap.
+
+</p><h4>Parameters:</h4><p><code>image</code> -- Either a PIL image, or a mode string.  If a
+   mode string is used, a size must also be given.  The
+   mode can be one of "1", "L", "P", or "RGB".
+</p><p><code>size</code> -- If the first argument is a mode string, this
+   defines the size of the image.
+</p></div><h4>Method Summary:</h4><pre><a href="#81">expose(handle)</a></pre><blockquote>Copy the bitmap contents to a device context.</blockquote><pre><a href="#141">paste(im, box=None)</a></pre><blockquote>Paste a PIL image into the bitmap image.</blockquote><pre><a href="#120">query_palette(dc)</a></pre><blockquote>Installs the palette associated with the image in the
+given device context.</blockquote><div class="method" id="81"><h3>expose</h3><pre>expose(handle)</pre><p>Copy the bitmap contents to a device context.
+
+</p><h4>Parameters:</h4><p><code>handle</code> -- Device context (HDC), cast to a Python integer,
+   or a HDC or HWND instance.  In PythonWin, you can use the
+   <b>GetHandleAttrib</b> method of the <b>CDC</b> class to get
+   a suitable handle.
+</p></div><div class="method" id="141"><h3>paste</h3><pre>paste(im, box=None)</pre><p>Paste a PIL image into the bitmap image.
+
+</p><h4>Parameters:</h4><p><code>im</code> -- A PIL image.  The size must match the target region.
+   If the mode does not match, the image is converted to the
+   mode of the bitmap image.
+</p><p><code>box</code> -- A 4-tuple defining the left, upper, right, and
+   lower pixel coordinate.  If None is given instead of a
+   tuple, all of the image is assumed.
+</p></div><div class="method" id="120"><h3>query_palette</h3><pre>query_palette(dc)</pre><p>Installs the palette associated with the image in the
+given device context.
+</p><p>
+This method should be called upon <b>QUERYNEWPALETTE</b>
+and <b>PALETTECHANGED</b> events from Windows. If this
+method returns a non-zero value, one or more display
+palette entries were changed, and the image should be
+redrawn.
+
+</p><h4>Parameters:</h4><p><code>dc</code> -- Device context (HDC), cast to a Python integer,
+    or an HDC or HWND instance.
+</p><h4>Returns:</h4><p>A true value if one or more entries were changed
+   (this indicates that the image should be redrawn).
+</p></div><div class="class" id="23"><h3>The HDC Class</h3><pre>HDC()</pre><p>The <b>ImageWin</b> module contains support to create and display
+images under Windows 95/98, NT, 2000 and later.
+</p></div></body></html>

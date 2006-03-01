@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/MspImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/MspImagePlugin.py#4 $
 #
 # MSP file handling
 #
@@ -30,6 +30,10 @@ def i16(c):
 
 def _accept(prefix):
     return prefix[:4] in ["DanM", "LinS"]
+
+##
+# Image plugin for Windows MSP images.  This plugin supports both
+# uncompressed (Windows 1.0).
 
 class MspImageFile(ImageFile.ImageFile):
 

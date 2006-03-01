@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/TarIO.py#3 $
+# $Id: //modules/pil/PIL/TarIO.py#4 $
 #
 # read files from within a tar file
 #
@@ -17,7 +17,17 @@
 import ContainerIO
 import string
 
+##
+# A file object that provides read access to a given member of a TAR
+# file.
+
 class TarIO(ContainerIO.ContainerIO):
+
+    ##
+    # Create file object.
+    #
+    # @param tarfile Name of TAR file.
+    # @param file Name of member file.
 
     def __init__(self, tarfile, file):
 

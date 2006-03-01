@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/CurImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/CurImagePlugin.py#4 $
 #
 # Windows Cursor support for PIL
 #
@@ -37,6 +37,8 @@ def i32(c):
 def _accept(prefix):
     return prefix[:4] == "\0\0\2\0"
 
+##
+# Image plugin for Windows Cursor files.
 
 class CurImageFile(BmpImagePlugin.BmpImageFile):
 
@@ -78,7 +80,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         self.tile[0] = d, (0,0)+self.size, o, a
 
         return
-        
+
 
 #
 # --------------------------------------------------------------------

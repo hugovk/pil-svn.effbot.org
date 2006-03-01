@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: //modules/pil/path.c#2 $
+ * $Id: //modules/pil/path.c#4 $
  *
  * 2D path utilities
  *
@@ -13,12 +13,13 @@
  * 1998-12-29 fl   Improved sequence handling (from Richard Jones)
  * 1999-01-10 fl   Fixed IndexError test for 1.5 (from Fred Drake)
  * 2000-10-12 fl   Added special cases for tuples and lists
+ * 2002-10-27 fl   Added clipping boilerplate
  *
  * notes:
  * FIXME: fill in remaining slots in the sequence api
  *
- * Copyright (c) 1997-2000 by Secret Labs AB
- * Copyright (c) 1997-2000 by Fredrik Lundh
+ * Copyright (c) 1997-2002 by Secret Labs AB
+ * Copyright (c) 1997-2002 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -27,6 +28,10 @@
 #include <math.h>
 
 #include "Python.h"
+
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
 
 
 /* -------------------------------------------------------------------- */
@@ -43,7 +48,7 @@ typedef struct {
 staticforward PyTypeObject PyPathType;
 
 static PyPathObject*
-_new(int count, double* xy, int duplicate)
+path_new(int count, double* xy, int duplicate)
 {
     PyPathObject *path;
 
@@ -70,10 +75,10 @@ _new(int count, double* xy, int duplicate)
 }
 
 static void
-_dealloc(PyPathObject* path)
+path_dealloc(PyPathObject* path)
 {
     free(path->xy);
-    PyMem_DEL(path);
+    PyObject_DEL(path);
 }
 
 /* -------------------------------------------------------------------- */
@@ -238,7 +243,7 @@ PyPath_Create(PyObject* self, PyObject* args)
             return NULL;
     }
 
-    return (PyObject*) _new(count, xy, 0);
+    return (PyObject*) path_new(count, xy, 0);
 }
 
 
@@ -247,7 +252,7 @@ PyPath_Create(PyObject* self, PyObject* args)
 /* -------------------------------------------------------------------- */
 
 static PyObject*
-_compact(PyPathObject* self, PyObject* args)
+path_compact(PyPathObject* self, PyObject* args)
 {
     /* Simple-minded method to shorten path.  A point is removed if
        the city block distance to the previous point is less than the
@@ -281,7 +286,23 @@ _compact(PyPathObject* self, PyObject* args)
 }
 
 static PyObject*
-_getbbox(PyPathObject* self, PyObject* args)
+path_clip_polygon(PyPathObject* self, PyObject* args)
+{
+    /* Clip path representing a single polygon */
+    PyErr_SetString(PyExc_RuntimeError, "not yet implemented");
+    return NULL;
+}
+
+static PyObject*
+path_clip_polyline(PyPathObject* self, PyObject* args)
+{
+    /* Clip path representing a single polyline (outline) */
+    PyErr_SetString(PyExc_RuntimeError, "not yet implemented");
+    return NULL;
+}
+
+static PyObject*
+path_getbbox(PyPathObject* self, PyObject* args)
 {
     /* Find bounding box */
     int i;
@@ -308,7 +329,7 @@ _getbbox(PyPathObject* self, PyObject* args)
 }
 
 static PyObject*
-_getitem(PyPathObject* self, int i)
+path_getitem(PyPathObject* self, int i)
 {
     if (i < 0 || i >= self->count) {
 	PyErr_SetString(PyExc_IndexError, "path index out of range");
@@ -319,7 +340,7 @@ _getitem(PyPathObject* self, int i)
 }
 
 static PyObject*
-_getslice(PyPathObject* self, int ilow, int ihigh)
+path_getslice(PyPathObject* self, int ilow, int ihigh)
 {
     /* adjust arguments */
     if (ilow < 0)
@@ -333,17 +354,17 @@ _getslice(PyPathObject* self, int ilow, int ihigh)
     else if (ihigh > self->count)
         ihigh = self->count;
     
-    return (PyObject*) _new(ihigh - ilow, self->xy + ilow * 2, 1);
+    return (PyObject*) path_new(ihigh - ilow, self->xy + ilow * 2, 1);
 }
 
 static int
-_len(PyPathObject* self)
+path_len(PyPathObject* self)
 {
     return self->count;
 }
 
 static PyObject*
-_map(PyPathObject* self, PyObject* args)
+path_map(PyPathObject* self, PyObject* args)
 {
     /* Map coordinate set through function */
     int i;
@@ -374,17 +395,19 @@ _map(PyPathObject* self, PyObject* args)
 }
 
 static int
-_setitem(PyPathObject* self, int i, PyObject* op)
+path_setitem(PyPathObject* self, int i, PyObject* op)
 {
     double* xy;
 
     if (i < 0 || i >= self->count) {
-        PyErr_SetString(PyExc_IndexError, "path assignment index out of range");
+        PyErr_SetString(PyExc_IndexError,
+                        "path assignment index out of range");
         return -1;
     }
 
     if (op == NULL) {
-        PyErr_SetString(PyExc_TypeError, "cannot delete from path");
+        PyErr_SetString(PyExc_TypeError,
+                        "cannot delete from path");
         return -1;
     }
 
@@ -397,7 +420,7 @@ _setitem(PyPathObject* self, int i, PyObject* op)
 }
 
 static PyObject*
-_tolist(PyPathObject* self, PyObject* args)
+path_tolist(PyPathObject* self, PyObject* args)
 {
     PyObject *list;
     int i;
@@ -419,7 +442,7 @@ _tolist(PyPathObject* self, PyObject* args)
 }
 
 static PyObject*
-_transform(PyPathObject* self, PyObject* args)
+path_transform(PyPathObject* self, PyObject* args)
 {
     /* Apply affine transform to coordinate set */
     int i;
@@ -461,16 +484,18 @@ _transform(PyPathObject* self, PyObject* args)
 }
 
 static struct PyMethodDef methods[] = {
-    {"compact", (PyCFunction)_compact, 1},
-    {"getbbox", (PyCFunction)_getbbox, 1},
-    {"map", (PyCFunction)_map, 1},
-    {"tolist", (PyCFunction)_tolist, 1},
-    {"transform", (PyCFunction)_transform, 1},
+    {"getbbox", (PyCFunction)path_getbbox, 1},
+    {"tolist", (PyCFunction)path_tolist, 1},
+    {"clip_polygon", (PyCFunction)path_clip_polygon, 1},
+    {"clip_polyline", (PyCFunction)path_clip_polyline, 1},
+    {"compact", (PyCFunction)path_compact, 1},
+    {"map", (PyCFunction)path_map, 1},
+    {"transform", (PyCFunction)path_transform, 1},
     {NULL, NULL} /* sentinel */
 };
 
 static PyObject*  
-_getattr(PyPathObject* self, char* name)
+path_getattr(PyPathObject* self, char* name)
 {
     PyObject* res;
 
@@ -488,12 +513,12 @@ _getattr(PyPathObject* self, char* name)
 }
 
 static PySequenceMethods path_as_sequence = {
-	(inquiry)_len, /*sq_length*/
+	(inquiry)path_len, /*sq_length*/
 	(binaryfunc)0, /*sq_concat*/
 	(intargfunc)0, /*sq_repeat*/
-	(intargfunc)_getitem, /*sq_item*/
-	(intintargfunc)_getslice, /*sq_slice*/
-	(intobjargproc)_setitem, /*sq_ass_item*/
+	(intargfunc)path_getitem, /*sq_item*/
+	(intintargfunc)path_getslice, /*sq_slice*/
+	(intobjargproc)path_setitem, /*sq_ass_item*/
 	(intintobjargproc)0, /*sq_ass_slice*/
 };
 
@@ -504,9 +529,9 @@ statichere PyTypeObject PyPathType = {
 	sizeof(PyPathObject),		/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
-	(destructor)_dealloc,		/*tp_dealloc*/
+	(destructor)path_dealloc,	/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
+	(getattrfunc)path_getattr,	/*tp_getattr*/
 	0,				/*tp_setattr*/
 	0,				/*tp_compare*/
 	0,				/*tp_repr*/

@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: //modules/pil/PIL/PaletteFile.py#3 $
+# $Id: //modules/pil/PIL/PaletteFile.py#4 $
 #
 # stuff to read simple, teragon-style palette files
 #
@@ -14,6 +14,9 @@
 #
 
 import string
+
+##
+# File handler for Teragon-style palette files.
 
 class PaletteFile:
 
@@ -31,7 +34,7 @@ class PaletteFile:
                 break
             if len(s) > 100:
                 raise SyntaxError, "bad palette file"
-            
+
             v = map(string.atoi, string.split(s))
             try:
                 [i, r, g, b] = v

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: //modules/pil/PIL/ImageDraw.py#2 $
+# $Id: //modules/pil/PIL/ImageDraw.py#9 $
 #
 # drawing interface operations
 #
@@ -16,50 +16,100 @@
 # 1999-02-20 fl   Fixed backwards compatibility
 # 2000-10-12 fl   Copy on write, when necessary
 # 2001-02-18 fl   Use default ink for bitmap/text also in fill mode
+# 2002-10-24 fl   Added support for CSS-style color strings
+# 2002-12-10 fl   Added experimental support for RGBA-on-RGB drawing
+# 2002-12-11 fl   Refactored low-level drawing API (work in progress)
 #
-# Copyright (c) 1997-2001 by Secret Labs AB
-# Copyright (c) 1996-2001 by Fredrik Lundh
+# Copyright (c) 1997-2002 by Secret Labs AB
+# Copyright (c) 1996-2002 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+import Image, ImageColor
+
+
+##
+# A simple 2D drawing interface for PIL images.
+# <p>
+# Note that <b>Draw</b> and <b>ImageDraw</b> are two names for the
+# same class.  New code should use <b>Draw</b>.
 
 class Draw:
 
-    def __init__(self, im):
+    ##
+    # Create a drawing instance.
+    #
+    # @param im The image to draw in.
+    # @param mode Optional mode to use for color values.  For RGB
+    #    images, this argument can be RGB or RGBA (to blend the
+    #    drawing into the image).  For all other modes, this argument
+    #    must be the same as the image mode.  If omitted, the mode
+    #    defaults to the mode of the image.
+
+    def __init__(self, im, mode=None):
         im.load()
         if im.readonly:
             im._copy() # make it writable
-        self.im = im.im
-        if im.mode in ("I", "F"):
-            self.ink = self.im.draw_ink(1)
+        blend = 0
+        if mode is None:
+            mode = im.mode
+        if mode != im.mode:
+            if mode == "RGBA" and im.mode == "RGB":
+                blend = 1
+            else:
+                raise ValueError("mode mismatch")
+        if mode == "P":
+            self.palette = im.palette
         else:
-            self.ink = self.im.draw_ink(-1)
+            self.palette = None
+        self.im = im.im
+        self.draw = Image.core.draw(self.im, blend)
+        self.mode = mode
+        if mode in ("I", "F"):
+            self.ink = self.draw.draw_ink(1, mode)
+        else:
+            self.ink = self.draw.draw_ink(-1, mode)
         self.fill = 0
         self.font = None
 
-    #
-    # attributes
+    ##
+    # Set the default pen color.
 
     def setink(self, ink):
         # compatibility
-        self.ink = self.im.draw_ink(ink)
+        if Image.isStringType(ink):
+            ink = ImageColor.getcolor(ink, self.mode)
+        if self.palette and not Image.isNumberType(ink):
+            ink = self.palette.getcolor(ink)
+        self.ink = self.draw.draw_ink(ink, self.mode)
+
+    ##
+    # Set the default background color.
 
     def setfill(self, onoff):
         # compatibility
         self.fill = onoff
 
+    ##
+    # Set the default font.
+
     def setfont(self, font):
         # compatibility
         self.font = font
+
+    ##
+    # Get the current default font.
 
     def getfont(self):
         if not self.font:
             # FIXME: should add a font repository
             import ImageFont
-            self.font = ImageFont.load_path("BDF/courR14.pil")
+            self.font = ImageFont.load_default()
         return self.font
+
+    ##
+    # Get the size of a given string, in pixels.
 
     def textsize(self, text, font=None):
         if font is None:
@@ -74,18 +124,29 @@ class Draw:
                 ink = self.ink
         else:
             if ink is not None:
-                ink = self.im.draw_ink(ink)
+                if Image.isStringType(ink):
+                    ink = ImageColor.getcolor(ink, self.mode)
+                if self.palette and not Image.isNumberType(ink):
+                    ink = self.palette.getcolor(ink)
+                ink = self.draw.draw_ink(ink, self.mode)
             if fill is not None:
-                fill = self.im.draw_ink(fill)
+                if Image.isStringType(fill):
+                    fill = ImageColor.getcolor(fill, self.mode)
+                if self.palette and not Image.isNumberType(fill):
+                    fill = self.palette.getcolor(fill)
+                fill = self.draw.draw_ink(fill, self.mode)
         return ink, fill
 
-    #
-    # primitives
+    ##
+    # Draw an arc.
 
     def arc(self, xy, start, end, fill=None):
         ink, fill = self._getink(fill)
         if ink is not None:
-            self.im.draw_arc(xy, start, end, ink)
+            self.draw.draw_arc(xy, start, end, ink)
+
+    ##
+    # Draw a bitmap.
 
     def bitmap(self, xy, bitmap, fill=None):
         bitmap.load()
@@ -93,61 +154,88 @@ class Draw:
         if ink is None:
             ink = fill
         if ink is not None:
-            self.im.draw_bitmap(xy, bitmap.im, ink)
+            self.draw.draw_bitmap(xy, bitmap.im, ink)
+
+    ##
+    # Draw a chord.
 
     def chord(self, xy, start, end, fill=None, outline=None):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_chord(xy, start, end, fill, 1)
+            self.draw.draw_chord(xy, start, end, fill, 1)
         if ink is not None:
-            self.im.draw_chord(xy, start, end, ink, 0)
+            self.draw.draw_chord(xy, start, end, ink, 0)
+
+    ##
+    # Draw an ellipse.
 
     def ellipse(self, xy, fill=None, outline=None):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_ellipse(xy, fill, 1)
+            self.draw.draw_ellipse(xy, fill, 1)
         if ink is not None:
-            self.im.draw_ellipse(xy, ink, 0)
+            self.draw.draw_ellipse(xy, ink, 0)
+
+    ##
+    # Draw a line, or a connected sequence of line segments.
 
     def line(self, xy, fill=None):
         ink, fill = self._getink(fill)
         if ink is not None:
-            self.im.draw_lines(xy, ink)
+            self.draw.draw_lines(xy, ink)
+
+    ##
+    # (Experimental) Draw a shape.
 
     def shape(self, shape, fill=None, outline=None):
         # experimental
         shape.close()
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_outline(shape, fill, 1)
+            self.draw.draw_outline(shape, fill, 1)
         if ink is not None:
-            self.im.draw_outline(shape, ink, 0)
+            self.draw.draw_outline(shape, ink, 0)
+
+    ##
+    # Draw a pieslice.
 
     def pieslice(self, xy, start, end, fill=None, outline=None):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_pieslice(xy, start, end, fill, 1)
+            self.draw.draw_pieslice(xy, start, end, fill, 1)
         if ink is not None:
-            self.im.draw_pieslice(xy, start, end, ink, 0)
+            self.draw.draw_pieslice(xy, start, end, ink, 0)
+
+    ##
+    # Draw one or more individual pixels.
 
     def point(self, xy, fill=None):
         ink, fill = self._getink(fill)
         if ink is not None:
-            self.im.draw_points(xy, ink)
+            self.draw.draw_points(xy, ink)
+
+    ##
+    # Draw a polygon.
 
     def polygon(self, xy, fill=None, outline=None):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_polygon(xy, fill, 1)
+            self.draw.draw_polygon(xy, fill, 1)
         if ink is not None:
-            self.im.draw_polygon(xy, ink, 0)
+            self.draw.draw_polygon(xy, ink, 0)
+
+    ##
+    # Draw a rectangle.
 
     def rectangle(self, xy, fill=None, outline=None):
         ink, fill = self._getink(outline, fill)
         if fill is not None:
-            self.im.draw_rectangle(xy, fill, 1)
+            self.draw.draw_rectangle(xy, fill, 1)
         if ink is not None:
-            self.im.draw_rectangle(xy, ink, 0)
+            self.draw.draw_rectangle(xy, ink, 0)
+
+    ##
+    # Draw text.
 
     def text(self, xy, text, fill=None, font=None, anchor=None):
         ink, fill = self._getink(fill)
@@ -156,7 +244,7 @@ class Draw:
         if ink is None:
             ink = fill
         if ink is not None:
-            self.im.draw_bitmap(xy, font.getmask(text), ink)
+            self.draw.draw_bitmap(xy, font.getmask(text), ink)
 
 # backwards compatibility
 ImageDraw = Draw
@@ -166,3 +254,4 @@ try:
     Outline = Image.core.outline
 except:
     Outline = None
+

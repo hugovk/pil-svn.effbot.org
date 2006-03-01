@@ -2,7 +2,7 @@
  * THIS IS WORK IN PROGRESS.
  *
  * The Python Imaging Library.
- * $Id: //modules/pil/outline.c#2 $
+ * $Id: //modules/pil/outline.c#4 $
  *
  * "arrow" outline stuff.  the contents of this module
  * will be merged with the path module and the rest of
@@ -18,8 +18,12 @@
  * See the README file for information on usage and redistribution.
  */
 
-
 #include "Python.h"
+
+#if PY_VERSION_HEX < 0x01060000
+#define PyObject_DEL(op) PyMem_DEL((op))
+#endif
+
 #include "Imaging.h"
 
 
@@ -53,7 +57,7 @@ static void
 _outline_dealloc(OutlineObject* self)
 {
     ImagingOutlineDelete(self->outline);
-    PyMem_DEL(self);
+    PyObject_DEL(self);
 }
 
 ImagingOutline
@@ -72,7 +76,8 @@ PyOutline_AsOutline(PyObject* outline)
 PyObject*
 PyOutline_Create(PyObject* self, PyObject* args)
 {
-    /* FIXME: NoArgs */
+    if (!PyArg_ParseTuple(args, ":outline"))
+        return NULL;
 
     return (PyObject*) _outline_new();
 }
@@ -123,7 +128,8 @@ _outline_curve(OutlineObject* self, PyObject* args)
 static PyObject*
 _outline_close(OutlineObject* self, PyObject* args)
 {
-    /* FIXME: NoArgs */
+    if (!PyArg_ParseTuple(args, ":close"))
+        return NULL;
 
     ImagingOutlineClose(self->outline);
 

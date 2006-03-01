@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/SgiImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/SgiImagePlugin.py#3 $
 #
 # SGI image file handling
 #
@@ -34,6 +34,8 @@ def i32(c):
 def _accept(prefix):
     return i16(prefix) == 474
 
+##
+# Image plugin for SGI images.
 
 class SgiImageFile(ImageFile.ImageFile):
 

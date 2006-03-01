@@ -1,0 +1,29 @@
+<html><head><title>Module PIL.ImageFont</title><link href="pythondoc.css" rel="stylesheet" title="style" /></head><body><h1>Module PIL.ImageFont</h1><h4>Module Summary:</h4><pre><a href="#164">def load</a>(filename)</pre><blockquote>Load font file.</blockquote><pre><a href="#224">def load_default</a>()</pre><blockquote>Load a (probably rather ugly) default font.</blockquote><pre><a href="#209">def load_path</a>(filename)</pre><blockquote>Load font file.</blockquote><pre><a href="#185">def truetype</a>(filename, size, index=0)</pre><blockquote>Load a TrueType or OpenType font file, and create a font object.</blockquote><h2>Functions</h2><div class="function" id="164"><h3>load</h3><pre>load(filename)</pre><p>Load font file.  This function loads a font object from the given
+bitmap font file, and returns the corresponding font object.
+
+</p><h4>Parameters:</h4><p><code>filename</code> -- Name of font file.
+</p><h4>Returns:</h4><p>A font object.
+</p><h4>Exceptions:</h4><p><code>IOError</code> -- Raised if the file could not be read.
+</p></div><div class="function" id="224"><h3>load_default</h3><pre>load_default()</pre><p>Load a (probably rather ugly) default font.
+
+</p><h4>Returns:</h4><p>A font object.
+</p></div><div class="function" id="209"><h3>load_path</h3><pre>load_path(filename)</pre><p>Load font file.  Same as load, but searches for a bitmap font along
+the Python path.
+
+</p><h4>Parameters:</h4><p><code>filename</code> -- Name of font file.
+</p><h4>Returns:</h4><p>A font object.
+</p><h4>Exceptions:</h4><p><code>IOError</code> -- Raised if the file could not be read.
+</p></div><div class="function" id="185"><h3>truetype</h3><pre>truetype(filename, size, index=0)</pre><p>Load a TrueType or OpenType font file, and create a font object.
+This function loads a font object from the given file, and creates
+a font object for a font of the given size.
+</p><p>
+This function requires the _imagingft service.
+
+</p><h4>Parameters:</h4><p><code>filename</code> -- A truetype font file.  Under Windows, if the file
+   is not found in this filename, the loader also looks in Windows
+   <b>fonts</b> directory
+</p><p><code>size</code> -- The requested size, in points.
+</p><p><code>index</code> -- Which font face to load (default is first available face).
+</p><h4>Returns:</h4><p>A font object.
+</p><h4>Exceptions:</h4><p><code>IOError</code> -- Raised if the file could not be read.
+</p></div></body></html>

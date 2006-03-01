@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: //modules/pil/libImaging/Storage.c#2 $
+ * $Id: //modules/pil/libImaging/Storage.c#4 $
  *
  * imaging storage object
  *
@@ -8,25 +8,26 @@
  * large images, provided they fit into the available memory.
  *
  * history:
- * 95-06-15 fl	Created
- * 95-09-12 fl	Updated API, compiles silently under ANSI C++
- * 95-11-26 fl	Compiles silently under Borland 4.5 as well
- * 96-05-05 fl	Correctly test status from Prologue
- * 97-05-12 fl	Increased THRESHOLD (to speed up Tk interface)
- * 97-05-30 fl	Added support for floating point images
- * 97-11-17 fl	Added support for "RGBX" images
- * 98-01-11 fl	Added support for integer images
- * 98-03-05 fl	Exported Prologue/Epilogue functions
- * 98-07-01 fl	Added basic "YCrCb" support
- * 98-07-03 fl	Attach palette in prologue for "P" images
- * 98-07-09 hk	Don't report MemoryError on zero-size images
- * 98-07-12 fl	Change "YCrCb" to "YCbCr" (!)
- * 98-10-26 fl	Added "I;16" and "I;16B" storage modes (experimental)
- * 98-12-29 fl	Fixed allocation bug caused by previous fix
- * 99-02-03 fl	Added "RGBa" and "BGR" modes (experimental)
+ * 1995-06-15 fl   Created
+ * 1995-09-12 fl   Updated API, compiles silently under ANSI C++
+ * 1995-11-26 fl   Compiles silently under Borland 4.5 as well
+ * 1996-05-05 fl   Correctly test status from Prologue
+ * 1997-05-12 fl   Increased THRESHOLD (to speed up Tk interface)
+ * 1997-05-30 fl   Added support for floating point images
+ * 1997-11-17 fl   Added support for "RGBX" images
+ * 1998-01-11 fl   Added support for integer images
+ * 1998-03-05 fl   Exported Prologue/Epilogue functions
+ * 1998-07-01 fl   Added basic "YCrCb" support
+ * 1998-07-03 fl   Attach palette in prologue for "P" images
+ * 1998-07-09 hk   Don't report MemoryError on zero-size images
+ * 1998-07-12 fl   Change "YCrCb" to "YCbCr" (!)
+ * 1998-10-26 fl   Added "I;16" and "I;16B" storage modes (experimental)
+ * 1998-12-29 fl   Fixed allocation bug caused by previous fix
+ * 1999-02-03 fl   Added "RGBa" and "BGR" modes (experimental)
+ * 2001-04-22 fl   Fixed potential memory leak in ImagingCopyInfo
  *
- * Copyright (c) Secret Labs AB 1998-99.
- * Copyright (c) Fredrik Lundh 1995-97.
+ * Copyright (c) 1998-2003 by Secret Labs AB 
+ * Copyright (c) 1995-2003 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -40,11 +41,12 @@
  */
 
 Imaging
-ImagingNewPrologue(const char *mode, unsigned xsize, unsigned ysize)
+ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
+                          int size)
 {
     Imaging im;
 
-    im = (Imaging) calloc(1, sizeof(struct ImagingMemoryInstance));
+    im = (Imaging) calloc(1, size);
     if (!im)
 	return (Imaging) ImagingError_MemoryError();
 
@@ -122,6 +124,14 @@ ImagingNewPrologue(const char *mode, unsigned xsize, unsigned ysize)
         im->linesize = (xsize*3 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
+    } else if (strcmp(mode, "BGR;32") == 0) {
+        /* EXPERIMENTAL */
+        /* 32-bit reversed true colour */
+        im->bands = 1;
+        im->pixelsize = 4;
+        im->linesize = (xsize*4 + 3) & -4;
+        im->type = IMAGING_TYPE_SPECIAL;
+
     } else if (strcmp(mode, "RGBX") == 0) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
@@ -166,6 +176,14 @@ ImagingNewPrologue(const char *mode, unsigned xsize, unsigned ysize)
     }
 
     return im;
+}
+
+Imaging
+ImagingNewPrologue(const char *mode, unsigned xsize, unsigned ysize)
+{
+    return ImagingNewPrologueSubtype(
+        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
+        );
 }
 
 Imaging
@@ -342,6 +360,9 @@ ImagingNew2(const char* mode, Imaging imOut, Imaging imIn)
 void
 ImagingCopyInfo(Imaging destination, Imaging source)
 {
-    if (source->palette)
+    if (source->palette) {
+        if (destination->palette)
+            ImagingPaletteDelete(destination->palette);
 	destination->palette = ImagingPaletteDuplicate(source->palette);
+    }
 }

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/ContainerIO.py#2 $
+# $Id: //modules/pil/PIL/ContainerIO.py#3 $
 #
 # a class to read from a container file
 #
@@ -14,22 +14,39 @@
 # See the README file for information on usage and redistribution.
 #
 
-# --------------------------------------------------------------------
-# Return a restricted file object allowing a user to read and
-# seek/tell an individual file within a container file (for example
-# a TAR file).
+##
+# A file object that provides read access to a part of an existing
+# file (for example a TAR file).
 
 class ContainerIO:
 
-    def __init__(self, fh, offset, length):
-        self.fh = fh
+    ##
+    # Create file object.
+    #
+    # @param file Existing file.
+    # @param offset Start of region, in bytes.
+    # @param length Size of region, in bytes.
+
+    def __init__(self, file, offset, length):
+        self.fh = file
         self.pos = 0
         self.offset = offset
         self.length = length
         self.fh.seek(offset)
 
+    ##
+    # Always false.
+
     def isatty(self):
         return 0
+
+    ##
+    # Move file pointer.
+    #
+    # @param offset Offset in bytes.
+    # @param mode Starting position. Use 0 for beginning of region, 1
+    #    for current offset, and 2 for end of region.  You cannot move
+    #    the pointer outside the defined region.
 
     def seek(self, offset, mode = 0):
         if mode == 1:
@@ -42,8 +59,21 @@ class ContainerIO:
         self.pos = max(0, min(self.pos, self.length))
         self.fh.seek(self.offset + self.pos)
 
+    ##
+    # Get current file pointer.
+    #
+    # @return Offset from start of region, in bytes.
+
     def tell(self):
         return self.pos
+
+    ##
+    # Read data.
+    #
+    # @def read(bytes=0)
+    # @param bytes Number of bytes to read.  If omitted or zero,
+    #     read until end of region.
+    # @return An 8-bit string.
 
     def read(self, n = 0):
         if n:
@@ -55,6 +85,11 @@ class ContainerIO:
         self.pos = self.pos + n
         return self.fh.read(n)
 
+    ##
+    # Read a line of text.
+    #
+    # @return An 8-bit string.
+
     def readline(self):
         s = ""
         while 1:
@@ -65,6 +100,11 @@ class ContainerIO:
             if c == "\n":
                 break
         return s
+
+    ##
+    # Read multiple lines of text.
+    #
+    # @return A list of 8-bit strings.
 
     def readlines(self):
         l = []

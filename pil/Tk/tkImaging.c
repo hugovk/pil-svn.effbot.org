@@ -30,15 +30,21 @@
  * 1996-04-08 fl  Ready for release
  * 1997-05-09 fl  Use command instead of image type
  * 2001-03-18 fl  Initialize alpha layer pointer (struct changed in 8.3)
+ * 2003-04-23 fl  Fixed building for Tk 8.4.1 and later (Jack Jansen)
  *
- * Copyright (c) 1997-2001 by Secret Labs AB
- * Copyright (c) 1995-2001 by Fredrik Lundh
+ * Copyright (c) 1997-2003 by Secret Labs AB
+ * Copyright (c) 1995-2003 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
 
 
 #include <stdlib.h>
+
+/* This is needed for (at least) Tk 8.4.1, otherwise the signature of
+** Tk_PhotoPutBlock changes.
+*/
+#define USE_COMPOSITELESS_PHOTO_PUT_BLOCK
 
 #include "tk.h"
 

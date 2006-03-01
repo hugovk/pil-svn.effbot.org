@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/JpegImagePlugin.py#2 $
+# $Id: //modules/pil/PIL/JpegImagePlugin.py#6 $
 #
 # JPEG (JFIF) file handling
 #
@@ -18,14 +18,16 @@
 # 1998-07-12 fl   Added YCbCr to draft and save methods (0.4)
 # 1998-10-19 fl   Don't hang on files using 16-bit DQT's (0.4.1)
 # 2001-04-16 fl   Extract DPI settings from JFIF files (0.4.2)
+# 2002-07-01 fl   Skip pad bytes before markers; identify Exif files (0.4.3)
+# 2003-04-25 fl   Added experimental EXIF decoder (0.5)
 #
-# Copyright (c) 1997-2001 by Secret Labs AB.
+# Copyright (c) 1997-2003 by Secret Labs AB.
 # Copyright (c) 1995-1996 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4.2"
+__version__ = "0.5"
 
 import array, string
 import Image, ImageFile
@@ -49,9 +51,13 @@ def APP(self, marker):
 
     s = self.fp.read(i16(self.fp.read(2))-2)
 
-    self.app["APP%d" % (marker&15)] = s
+    app = "APP%d" % (marker&15)
+
+    self.app[app] = s # compatibility
+    self.applist.append((app, s))
 
     if marker == 0xFFE0 and s[:4] == "JFIF":
+        # extract JFIF information
         self.info["jfif"] = version = i16(s, 5) # version
         self.info["jfif_version"] = divmod(version, 256)
         # extract JFIF properties
@@ -65,6 +71,12 @@ def APP(self, marker):
                 self.info["dpi"] = jfif_density
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
+    elif marker == 0xFFE1 and s[:5] == "Exif\0":
+        # extract Exif information (incomplete)
+        self.info["exif"] = s # FIXME: value will change
+    elif marker == 0xFFE2 and s[:5] == "FPXR\0":
+        # extract FlashPix information (incomplete)
+        self.info["flashpix"] = s # FIXME: value will change
     elif marker == 0xFFEE and s[:5] == "Adobe":
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
@@ -88,7 +100,7 @@ def SOF(self, marker):
 
     self.bits = ord(s[0])
     if self.bits != 8:
-        raise SyntaxError, "cannot handle %d-bit layers" % self.bits
+        raise SyntaxError("cannot handle %d-bit layers" % self.bits)
 
     self.layers = ord(s[5])
     if self.layers == 1:
@@ -98,7 +110,7 @@ def SOF(self, marker):
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
-        raise SyntaxError, "cannot handle %d-layer images" % self.layers
+        raise SyntaxError("cannot handle %d-layer images" % self.layers)
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
         self.info["progression"] = 1
@@ -120,7 +132,7 @@ def DQT(self, marker):
     s = self.fp.read(i16(self.fp.read(2))-2)
     while len(s):
         if len(s) < 65:
-            raise SyntaxError, "bad quantization table marker"
+            raise SyntaxError("bad quantization table marker")
         v = ord(s[0])
         if v/16 == 0:
             self.quantization[v&15] = array.array("b", s[1:65])
@@ -203,6 +215,9 @@ MARKER = {
 def _accept(prefix):
     return prefix[0] == "\377"
 
+##
+# Image plugin for JPEG and JFIF images.
+
 class JpegImageFile(ImageFile.ImageFile):
 
     format = "JPEG"
@@ -213,7 +228,7 @@ class JpegImageFile(ImageFile.ImageFile):
         s = self.fp.read(1)
 
         if ord(s[0]) != 255:
-            raise SyntaxError, "not an JPEG file"
+            raise SyntaxError("not a JPEG file")
 
         # Create attributes
         self.bits = self.layers = 0
@@ -223,7 +238,8 @@ class JpegImageFile(ImageFile.ImageFile):
         self.huffman_dc = {}
         self.huffman_ac = {}
         self.quantization = {}
-        self.app = {}
+        self.app = {} # compatibility
+        self.applist = []
 
         while 1:
 
@@ -244,8 +260,11 @@ class JpegImageFile(ImageFile.ImageFile):
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
+            elif i == 65535:
+                # padded marker; move on
+                s = "\xff"
             else:
-                raise SyntaxError, "no marker found"
+                raise SyntaxError("no marker found")
 
     def draft(self, mode, size):
 
@@ -292,12 +311,39 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
+    def _getexif(self):
+        # Extract EXIF information.  This method is highly experimental,
+        # and is likely to be replaced with something better in a future
+        # version.
+        import TiffImagePlugin, StringIO
+        def fixup(value):
+            if len(value) == 1:
+                return value[0]
+            return value
+        # The EXIF record consists of a TIFF file embedded in a JPEG
+        # application marker (!).
+        try:
+            data = self.info["exif"]
+        except KeyError:
+            return None
+        file = StringIO.StringIO(data[6:])
+        head = file.read(8)
+        exif = {}
+        # process dictionary
+        info = TiffImagePlugin.ImageFileDirectory(head)
+        info.load(file)
+        for key, value in info.items():
+            exif[key] = fixup(value)
+        # get exif extension
+        file.seek(info[0x8769][0])
+        info = TiffImagePlugin.ImageFileDirectory(head)
+        info.load(file)
+        for key, value in info.items():
+            exif[key] = fixup(value)
+        return exif
 
-def _fetch(dict, key, default = 0):
-    try:
-        return dict[key]
-    except KeyError:
-        return default
+# --------------------------------------------------------------------
+# stuff to save JPEG files
 
 RAWMODE = {
     "1": "L",
@@ -314,17 +360,19 @@ def _save(im, fp, filename):
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError:
-        raise IOError, "cannot write mode %s as JPEG" % im.mode
+        raise IOError("cannot write mode %s as JPEG" % im.mode)
 
-    dpi = _fetch(im.encoderinfo, "dpi", (0, 0))
+    dpi = im.encoderinfo.get("dpi", (0, 0))
 
     # get keyword arguments
-    im.encoderconfig = (_fetch(im.encoderinfo, "quality", 0),
-                        im.encoderinfo.has_key("progressive"),
-                        _fetch(im.encoderinfo, "smooth", 0),
-                        im.encoderinfo.has_key("optimize"),
-                        _fetch(im.encoderinfo, "streamtype", 0),
-                        dpi[0], dpi[1])
+    im.encoderconfig = (
+        im.encoderinfo.get("quality", 0),
+        im.encoderinfo.has_key("progressive"),
+        im.encoderinfo.get("smooth", 0),
+        im.encoderinfo.has_key("optimize"),
+        im.encoderinfo.get("streamtype", 0),
+        dpi[0], dpi[1]
+        )
 
     ImageFile._save(im, fp, [("jpeg", (0,0)+im.size, 0, rawmode)])
 

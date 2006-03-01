@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: //modules/pil/PIL/PcxImagePlugin.py#3 $
+# $Id: //modules/pil/PIL/PcxImagePlugin.py#7 $
 #
 # PCX file handling
 #
@@ -10,19 +10,21 @@
 # Windows 3.
 #
 # history:
-# 95-09-01 fl   Created
-# 96-05-20 fl   Fixed RGB support
-# 97-01-03 fl   Fixed 2-bit and 4-bit support
-# 99-02-03 fl   Fixed 8-bit support (broken in 1.0b1)
-# 99-02-07 fl   Added write support
+# 1995-09-01 fl   Created
+# 1996-05-20 fl   Fixed RGB support
+# 1997-01-03 fl   Fixed 2-bit and 4-bit support
+# 1999-02-03 fl   Fixed 8-bit support (broken in 1.0b1)
+# 1999-02-07 fl   Added write support (0.4)
+# 2002-06-09 fl   Made 2-bit and 4-bit support a bit more robust
+# 2002-07-30 fl   Seek from to current position, not beginning of file (0.5)
 #
-# Copyright (c) Secret Labs AB 1997-98.
-# Copyright (c) Fredrik Lundh 1995-97.
+# Copyright (c) 1997-98 by Secret Labs AB.
+# Copyright (c) 1995-97 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 import Image, ImageFile, ImagePalette
 
@@ -31,6 +33,9 @@ def i16(c):
 
 def _accept(prefix):
     return ord(prefix[0]) == 10 and ord(prefix[1]) in [0, 2, 3, 5]
+
+##
+# Image plugin for Paintbrush images.
 
 class PcxImageFile(ImageFile.ImageFile):
 
@@ -43,7 +48,6 @@ class PcxImageFile(ImageFile.ImageFile):
         s = self.fp.read(128)
         if not _accept(s):
             raise SyntaxError, "not a PCX file"
-
 
         # image
         bbox = i16(s[4:]), i16(s[6:]), i16(s[8:])+1, i16(s[10:])+1
@@ -77,6 +81,7 @@ class PcxImageFile(ImageFile.ImageFile):
                         break
                 if mode == "P":
                     self.palette = ImagePalette.raw("RGB", s[1:])
+            self.fp.seek(128)
 
         elif version == 5 and bits == 8 and planes == 3:
             mode = "RGB"
@@ -88,8 +93,7 @@ class PcxImageFile(ImageFile.ImageFile):
         self.mode = mode
         self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
 
-        self.tile = [("pcx", bbox, 128, rawmode)]
-
+        self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
 
 # --------------------------------------------------------------------
 # save PCX files
