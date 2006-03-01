@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library.
- * $Id: decode.c 1756 2004-03-28 17:15:33Z fredrik $
+ * $Id: decode.c 2505 2005-09-05 16:29:53Z fredrik $
  *
  * standard decoder interfaces for the Imaging library
  *
@@ -33,7 +33,8 @@
 #include "Python.h"
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 #include "Imaging.h"

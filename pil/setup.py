@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 #
 # Setup script for PIL 1.1.5 and later
-# $Id: setup.py 2318 2005-03-11 16:36:32Z fredrik $
+# $Id: setup.py 2582 2005-11-11 21:54:00Z fredrik $
 #
 # Usage: python setup.py install
 #
 
 import glob, os, re, struct, string, sys
+
+# make it possible to run the setup script from another directory
+try:
+    os.chdir(os.path.dirname(sys.argv[0]))
+except OSError:
+    pass
 
 def libinclude(root):
     # map root to (root/lib, root/include)
@@ -48,7 +54,7 @@ HOMEPAGE = "http://www.pythonware.com/products/pil"
 # Core library
 
 IMAGING = [
-    "decode", "encode", "map", "display", "outline", "path"
+    "decode", "encode", "map", "display", "outline", "path",
     ]
 
 LIBIMAGING = [
@@ -117,14 +123,24 @@ class pil_build_ext(build_ext):
         #
         # add platform directories
 
-        if sys.platform == "darwin":
+        if sys.platform == "cygwin":
+            # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
+            add_directory(library_dirs, os.path.join(
+                "/usr/lib", "python%s" % sys.version[:3], "config"
+                ))
+
+        elif sys.platform == "darwin":
             # attempt to make sure we pick freetype2 over other versions
             add_directory(include_dirs, "/sw/include/freetype2")
             add_directory(include_dirs, "/sw/lib/freetype2/include")
             # fink installation directories
             add_directory(library_dirs, "/sw/lib")
             add_directory(include_dirs, "/sw/include")
+            # darwin ports installation directories
+            add_directory(library_dirs, "/opt/local/lib")
+            add_directory(include_dirs, "/opt/local/include")
 
+        add_directory(library_dirs, "/usr/local/lib")
         # FIXME: check /opt/stuff directories here?
 
         prefix = sysconfig.get_config_var("prefix")
@@ -213,7 +229,7 @@ class pil_build_ext(build_ext):
         if find_library_file(self, "freetype"):
             # look for freetype2 include files
             freetype_version = 0
-            for dir in include_dirs:
+            for dir in self.compiler.include_dirs:
                 if os.path.isfile(os.path.join(dir, "ft2build.h")):
                     freetype_version = 21
                     dir = os.path.join(dir, "freetype2")
@@ -315,8 +331,8 @@ class pil_build_ext(build_ext):
                 libraries=[feature.tcl, feature.tk]
                 ))
 
-        if os.path.isfile("_pilmath.c"):
-            exts.append(Extension("_pilmath", ["_pilmath.c"]))
+        if os.path.isfile("_imagingmath.c"):
+            exts.append(Extension("_imagingmath", ["_imagingmath.c"]))
 
         self.extensions[:] = exts
 
@@ -328,7 +344,7 @@ class pil_build_ext(build_ext):
         unsafe_zlib = None
 
         if feature.zlib:
-            unsafe_zlib = self.check_zlib_version(include_dirs)
+            unsafe_zlib = self.check_zlib_version(self.compiler.include_dirs)
 
         self.summary_report(feature, unsafe_zlib)
 
@@ -368,9 +384,11 @@ class pil_build_ext(build_ext):
             print
             print "*** Warning: zlib", unsafe_zlib,
             print "may contain a security vulnerability."
-            print "*** Consider upgrading to zlib 1.1.4 or newer."
-            print "*** See:",
-            print "http://www.gzip.org/zlib/advisory-2002-03-11.txt"
+            print "*** Consider upgrading to zlib 1.2.3 or newer."
+            print "*** See: http://www.kb.cert.org/vuls/id/238678"
+            print "         http://www.kb.cert.org/vuls/id/680620"
+            print "         http://www.gzip.org/zlib/advisory-2002-03-11.txt"
+            print
 
         print "-" * 68
 
@@ -394,7 +412,7 @@ class pil_build_ext(build_ext):
             m = re.match('#define\s+ZLIB_VERSION\s+"([^"]*)"', line)
             if not m:
                 continue
-            if m.group(1) < "1.1.4":
+            if m.group(1) < "1.2.3":
                 return m.group(1)
 
 #
@@ -424,7 +442,7 @@ if __name__ == "__main__":
             ],
         cmdclass = {"build_ext": pil_build_ext},
         description=DESCRIPTION,
-        download_url="http://effbot.org/zone/pil-changes-115.htm",
+        download_url="http://effbot.org/zone/pil-changes-116.htm",
         ext_modules = [Extension("_imaging", ["_imaging.c"])], # dummy
         extra_path = "PIL",
         license="Python (MIT style)",

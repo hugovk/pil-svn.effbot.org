@@ -1,28 +1,29 @@
 #
 # The Python Imaging Library
-# $Id: PSDraw.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id: PSDraw.py 2438 2005-05-25 21:09:48Z Fredrik $
 #
 # simple postscript graphics interface
 #
 # History:
 # 1996-04-20 fl   Created
 # 1999-01-10 fl   Added gsave/grestore to image method
+# 2005-05-04 fl   Fixed floating point issue in image (from Eric Etheridge)
 #
-# Copyright (c) 1997-2003 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1997-2005 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1996 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-##
-# Simple Postscript graphics interface.
-##
-
 import EpsImagePlugin
 import string
 
+##
+# Simple Postscript graphics interface.
+
 class PSDraw:
-    def __init__(self, fp = None):
+
+    def __init__(self, fp=None):
         if not fp:
             import sys
             fp = sys.stdout
@@ -87,8 +88,8 @@ class PSDraw:
         x = float(im.size[0] * 72) / dpi
         y = float(im.size[1] * 72) / dpi
         # max allowed size
-        xmax = box[2] - box[0]
-        ymax = box[3] - box[1]
+        xmax = float(box[2] - box[0])
+        ymax = float(box[3] - box[1])
         if x > xmax:
             y = y * xmax / x; x = xmax
         if y > ymax:

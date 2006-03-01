@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageWin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: ImageWin.py 2545 2005-10-03 10:29:49Z fredrik $
 #
 # a Windows DIB display interface
 #
@@ -208,7 +208,8 @@ class ImageWindow(Window):
         if not isinstance(image, Dib):
             image = Dib(image)
         self.image = image
-        Window.__init__(self, title, width=image.size[0], height=image.size[0])
+        width, height = image.size
+        Window.__init__(self, title, width=width, height=height)
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
         self.image.draw(dc, (x0, y0, x1, y1))

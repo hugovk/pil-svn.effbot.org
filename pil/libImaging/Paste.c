@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Paste.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Paste.c 2409 2005-05-15 09:41:24Z Fredrik $
  *
  * paste image on another image
  *
@@ -298,22 +298,25 @@ fill(Imaging imOut, const void* ink_, int dx, int dy,
     /* fill opaque region */
 
     int x, y;
-    INT32 ink = 0L;
-    memcpy(&ink, ink_, pixelsize);
+    UINT8 ink8 = 0;
+    INT32 ink32 = 0L;
 
-    if (imOut->image8 || ink == 0L) {
+    memcpy(&ink32, ink_, pixelsize);
+    memcpy(&ink8, ink_, sizeof(ink8));
+
+    if (imOut->image8 || ink32 == 0L) {
 
         dx *= pixelsize;
         xsize *= pixelsize;
 	for (y = 0; y < ysize; y++)
-	    memset(imOut->image[y+dy]+dx, (UINT8) ink, xsize);
+	    memset(imOut->image[y+dy]+dx, ink8, xsize);
         
     } else {
 
 	for (y = 0; y < ysize; y++) {
             INT32* out = imOut->image32[y+dy]+dx;
 	    for (x = 0; x < xsize; x++)
-		out[x] = ink;
+		out[x] = ink32;
         }
 
     }
@@ -327,8 +330,11 @@ fill_mask_1(Imaging imOut, const void* ink_, Imaging imMask,
     /* fill with mode "1" mask */
 
     int x, y;
-    INT32 ink = 0L;
-    memcpy(&ink, ink_, pixelsize);
+    UINT8 ink8 = 0;
+    INT32 ink32 = 0L;
+
+    memcpy(&ink32, ink_, pixelsize);
+    memcpy(&ink8, ink_, sizeof(ink8));
 
     if (imOut->image8) {
 
@@ -337,7 +343,7 @@ fill_mask_1(Imaging imOut, const void* ink_, Imaging imMask,
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
                 if (*mask++)
-                    *out = (UINT8) ink;
+                    *out = ink8;
                 out++;
             }
         }
@@ -349,7 +355,7 @@ fill_mask_1(Imaging imOut, const void* ink_, Imaging imMask,
             UINT8* mask = imMask->image8[y+sy]+sx;
             for (x = 0; x < xsize; x++) {
                 if (*mask++)
-                    *out = ink;
+                    *out = ink32;
                 out++;
             }
         }

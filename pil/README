@@ -1,11 +1,11 @@
 
 The Python Imaging Library
-$Id: README 2334 2005-03-25 07:30:42Z fredrik $
+$Id: README 2594 2005-12-11 08:06:51Z fredrik $
 
-Release 1.1.5 (March 28, 2005)
+Release 1.1.6a1 (Dec 11, 2005)
 
 ====================================================================
-The Python Imaging Library 1.1.5
+The Python Imaging Library 1.1.6a1
 ====================================================================
 
 Contents
@@ -93,7 +93,7 @@ QUESTIONS TO PYTHONWARE ADDRESSES.
 
 
 --------------------------------------------------------------------
-News Highlights in 1.1.5:
+News Highlights in 1.1.6a1:
 --------------------------------------------------------------------
 
 + Runs under Python 1.5.2 and newer, including 2.4.  You may need
@@ -161,9 +161,9 @@ Build instructions (all platforms)
 
 0. If you're in a hurry, try this:
 
-        $ gunzip Imaging-1.1.5.tar.gz
-        $ tar xvf Imaging-1.1.5.tar
-        $ cd Imaging-1.1.5
+        $ gunzip Imaging-1.1.6a1.tar.gz
+        $ tar xvf Imaging-1.1.6a1.tar
+        $ cd Imaging-1.1.6a1
         $ python setup.py install
 
    If you prefer to know what you're doing, read on.
@@ -182,9 +182,9 @@ Build instructions (all platforms)
                         http://www.ijg.org/files/jpegsrc.v6b.tar.gz
                         ftp://ftp.uu.net/graphics/jpeg/
 
-   PNG support          zlib (1.1.4 or later is recommended)
+   PNG support          zlib (1.2.3 or later is recommended)
 
-			http://www.gzip.org/zlib/
+                        http://www.gzip.org/zlib/
 
    OpenType/TrueType    freetype2 (2.1.3 or later is recommended)
    support              
@@ -211,23 +211,23 @@ Build instructions (all platforms)
    Python's build support files on your machine.  If you've down-
    loaded a prebuilt package (e.g. a Linux RPM), you probably
    need additional developer packages.  Look for packages named
-   "python-devel" or similar.
+   "python-devel", "py-dev", or similar.
 
 
 4. When you have everything you need, unpack the PIL distribution
-   (the file Imaging-1.1.5.tar.gz) in your Python extensions
+   (the file Imaging-1.1.6a1.tar.gz) in your Python extensions
    directory (if you have one, that is.  If not, feel free to
    unpack it in any other suitable directory).
 
-        $ cd Python-2.3/Extensions # example
-        $ gunzip Imaging-1.1.5.tar.gz
-        $ tar xvf Imaging-1.1.5.tar
+        $ cd Python-2.4/Extensions # example
+        $ gunzip Imaging-1.1.6a1.tar.gz
+        $ tar xvf Imaging-1.1.6a1.tar
 
 
 5. Build the library.  We recommend that you do an in-place build,
    and run the self test before installing.
 
-        $ cd Imaging-1.1.5
+        $ cd Imaging-1.1.6a1
         $ python setup.py build_ext -i
         $ python selftest.py
 
@@ -235,7 +235,7 @@ Build instructions (all platforms)
    that the optional components you need are included.
 
         ----------------------------------------------------------------
-        PIL 1.1.5 BUILD SUMMARY
+        PIL 1.1.6a1 BUILD SUMMARY
         ----------------------------------------------------------------
         *** TKINTER support not available (Tcl/Tk 8.3 libraries needed)
         --- JPEG support ok

@@ -2,7 +2,7 @@
  * THIS IS WORK IN PROGRESS.
  *
  * The Python Imaging Library.
- * $Id: outline.c 1756 2004-03-28 17:15:33Z fredrik $
+ * $Id: outline.c 2505 2005-09-05 16:29:53Z fredrik $
  *
  * "arrow" outline stuff.  the contents of this module
  * will be merged with the path module and the rest of
@@ -21,7 +21,8 @@
 #include "Python.h"
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 #include "Imaging.h"

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Storage.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Storage.c 2542 2005-10-02 21:37:20Z Fredrik $
  *
  * imaging storage object
  *
@@ -26,9 +26,10 @@
  * 1999-02-03 fl   Added "RGBa" and "BGR" modes (experimental)
  * 2001-04-22 fl   Fixed potential memory leak in ImagingCopyInfo
  * 2003-09-26 fl   Added "LA" and "PA" modes (experimental)
+ * 2005-10-02 fl   Added image counter
  *
- * Copyright (c) 1998-2003 by Secret Labs AB 
- * Copyright (c) 1995-2003 by Fredrik Lundh
+ * Copyright (c) 1998-2005 by Secret Labs AB 
+ * Copyright (c) 1995-2005 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -36,6 +37,8 @@
 
 #include "Imaging.h"
 
+
+int ImagingNewCount = 0;
 
 /* --------------------------------------------------------------------
  * Standard image object.
@@ -194,6 +197,8 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
 	free(im);
 	return (Imaging) ImagingError_MemoryError();
     }
+
+    ImagingNewCount++;
 
     return im;
 }

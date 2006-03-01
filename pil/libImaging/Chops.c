@@ -1,16 +1,17 @@
 /* 
  * The Python Imaging Library
- * $Id: Chops.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Chops.c 2506 2005-09-10 14:52:13Z Fredrik $
  *
  * basic channel operations
  *
  * history:
- *	96-03-28 fl:	Created
- *	96-08-13 fl:	Added and/or/xor for "1" images
- *	96-12-14 fl:	Added add_modulo, sub_modulo
+ * 1996-03-28 fl   Created
+ * 1996-08-13 fl   Added and/or/xor for "1" images
+ * 1996-12-14 fl   Added add_modulo, sub_modulo
+ * 2005-09-10 fl   Fixed output values from and/or/xor
  *
- * Copyright (c) Fredrik Lundh 1996.
- * Copyright (c) Secret Labs AB 1997.
+ * Copyright (c) 1996 by Fredrik Lundh.
+ * Copyright (c) 1997 by Secret Labs AB.
  *
  * See the README file for details on usage and redistribution.
  */
@@ -119,19 +120,19 @@ ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset)
 Imaging
 ImagingChopAnd(Imaging imIn1, Imaging imIn2)
 {
-    CHOP2(in1[x] && in2[x], "1");
+    CHOP2((in1[x] && in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
 ImagingChopOr(Imaging imIn1, Imaging imIn2)
 {
-    CHOP2(in1[x] | in2[x], "1");
+    CHOP2((in1[x] || in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
 ImagingChopXor(Imaging imIn1, Imaging imIn2)
 {
-    CHOP2((in1[x] != 0) ^ (in2[x] != 0), "1");
+    CHOP2(((in1[x] != 0) ^ (in2[x] != 0)) ? 255 : 0, "1");
 }
 
 Imaging
