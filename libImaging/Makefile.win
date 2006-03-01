@@ -1,0 +1,90 @@
+#
+# The Python Imaging Library.
+# $Id: Makefile.win,v 1.1 1996/05/09 23:34:53 fredrik Exp $
+#
+# makefile for VC++ 4.X and 5.0
+#
+# This makefile compiles and tests the Imaging core library.
+#
+# To build with the IJG JPEG and ZLIB libraries, you may have
+# to change the JPEGINCLUDE setting.
+#
+# Copyright (c) Fredrik Lundh 1995-96.  All rights reserved.
+# Copyright (c) Secret Labs AB 1996-97.
+#
+# See the README file for information on usage and redistribution.
+#
+
+all: imaging.lib
+
+JPEGINCLUDE=	-I../jpeg-6a
+ZLIBINCLUDE=	-I../zlib
+
+CC=		cl.exe
+CFLAGS=		-W3 -Ox -O2 -c -MD -nologo $(JPEGINCLUDE) $(ZLIBINCLUDE)
+
+OUTLIB=		imaging.lib
+
+OBJS=		Access.obj\
+		Bands.obj\
+		BitDecode.obj\
+		Blend.obj\
+		Chops.obj\
+		Convert.obj\
+		ConvertYCbCr.obj\
+		Copy.obj\
+		Crc32.obj\
+		Crop.obj\
+		Dib.obj\
+		Draw.obj\
+		Effects.obj\
+		EpsEncode.obj\
+		Except.obj\
+		File.obj\
+		Fill.obj\
+		Filter.obj\
+		FliDecode.obj\
+		Geometry.obj\
+		GetBBox.obj\
+		GifDecode.obj\
+		GifEncode.obj\
+		HexDecode.obj\
+		Histo.obj\
+		JpegDecode.obj\
+		JpegEncode.obj\
+		LzwDecode.obj\
+		Matrix.obj\
+		MspDecode.obj\
+		Negative.obj\
+		Offset.obj\
+		Pack.obj\
+		PackDecode.obj\
+		Palette.obj\
+		Paste.obj\
+		Quant.obj\
+		QuantHash.obj\
+		QuantHeap.obj\
+		PcdDecode.obj\
+		PcxDecode.obj\
+		PcxEncode.obj\
+		Point.obj\
+		RawDecode.obj\
+		RawEncode.obj\
+		Storage.obj\
+		SunRleDecode.obj\
+		TgaRleDecode.obj\
+		Unpack.obj\
+		UnpackYCC.obj\
+		XbmDecode.obj\
+		XbmEncode.obj\
+		ZipDecode.obj\
+		ZipEncode.obj
+
+$(OUTLIB):	$(OBJS)
+		lib -out:$(OUTLIB) $(OBJS)
+
+coretest.exe: coretest.c $(OUTLIB)
+	$(CPP) -MD -o coretest.exe coretest.c $(OUTLIB)
+
+test:
+	coretest

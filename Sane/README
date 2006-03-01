@@ -1,0 +1,11 @@
+
+The SANE module provides an interface to the SANE scanner and frame
+grabber interface for Linux.  This module was contributed by Andrew
+Kuchling.
+
+The most recent release can be found at:
+ftp://starship.skyport.net/pub/crew/amk/sane/
+
+To build this module, add the following line to Setup.in:
+
+_sane Sane/_sanemodule.c -IlibImaging -L/usr/local/lib/sane/ -lsane-dll

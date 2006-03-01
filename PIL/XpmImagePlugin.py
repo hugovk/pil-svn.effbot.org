@@ -1,0 +1,126 @@
+#
+# The Python Imaging Library.
+# $Id$
+#
+# XPM File handling
+#
+# History:
+#	96-12-29 fl	Created
+#
+# Copyright (c) Secret Labs AB 1997.
+# Copyright (c) Fredrik Lundh 1996.
+#
+# See the README file for information on usage and redistribution.
+#
+
+
+__version__ = "0.1"
+
+
+import regex, string
+import Image, ImageFile, ImagePalette
+
+# XPM header
+xpm_head = regex.compile("\"\([0-9]*\) \([0-9]*\) \([0-9]*\) \([0-9]*\)")
+
+
+def _accept(prefix):
+    return prefix[:9] == "/* XPM */"
+
+
+class XpmImageFile(ImageFile.ImageFile):
+
+    format = "XPM"
+    format_description = "X11 Pixel Map"
+
+    def _open(self):
+
+	if not _accept(self.fp.read(9)):
+	    raise SyntaxError, "not an XPM file"
+
+	# skip forward to next string
+	while 1:
+	    s = self.fp.readline()
+	    if not s:
+		raise SyntaxError, "broken XPM file"
+	    if xpm_head.match(s) > 0:
+		break
+
+	self.size = (string.atoi(xpm_head.group(1)),
+		     string.atoi(xpm_head.group(2)))
+
+	pal = string.atoi(xpm_head.group(3))
+	bpp = string.atoi(xpm_head.group(4))
+
+	if pal > 256 or bpp != 1:
+	    raise ValueError, "cannot read this XPM file"
+
+	#
+	# load palette description
+
+	palette = ["\0\0\0"] * 256
+
+	for i in range(pal):
+
+	    s = self.fp.readline()
+	    if s[-2:] == '\r\n':
+		s = s[:-2]
+	    elif s[-1:] in '\r\n':
+		s = s[:-1]
+
+	    c = ord(s[1])
+	    s = string.split(s[2:-2])
+
+	    for i in range(0, len(s), 2):
+
+		if s[i] == "c":
+
+		    # process colour key
+		    rgb = s[i+1]
+		    if rgb == "None":
+			self.info["transparency"] = c
+		    elif rgb[0] == "#":
+			# FIXME: handle colour names (see ImagePalette.py)
+			rgb = string.atoi(rgb[1:], 16)
+			palette[c] = chr((rgb >> 16) & 255) +\
+				     chr((rgb >> 8) & 255) +\
+				     chr(rgb & 255)
+		    else:
+			# unknown colour
+			raise ValueError, "cannot read this XPM file"
+		    break
+
+	    else:
+
+		# missing colour key
+		raise ValueError, "cannot read this XPM file"
+
+	self.mode = "P"
+	self.palette = ImagePalette.raw("RGB", string.join(palette, ""))
+
+	self.tile = [("raw", (0, 0)+self.size, self.fp.tell(), ("P", 0, 1))]
+
+    def load_read(self, bytes):
+
+	#
+	# load all image data in one chunk
+
+	xsize, ysize = self.size
+
+	s = [None] * ysize
+
+	for i in range(ysize):
+	    s[i] = string.ljust(self.fp.readline()[1:xsize+1], xsize)
+
+	self.fp = None
+
+	return string.join(s, "")
+
+#
+# Registry
+
+Image.register_open("XPM", XpmImageFile, _accept)
+
+Image.register_extension("XPM", ".xpm")
+
+Image.register_mime("XPM", "image/xpm")

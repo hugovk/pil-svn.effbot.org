@@ -1,0 +1,188 @@
+The _sane_ module is an Python interface to the SANE (Scanning is Now
+Easy) library, which provides access to various raster scanning
+devices such as flatbed scanners and digital cameras.  For more
+information about SANE, consult the SANE Web site at
+http://www.mostang.com/sane/ .  Note that this
+documentation doesn't duplicate all the information in the SANE
+documentation, which you must also consult to get a complete
+understanding.
+
+Send comments, questions, and bug reports concerning this module to
+amk1@erols.com, or possibly to image-sig@python.org .
+
+The module exports two object types, a bunch of constants, and two
+functions.  
+
+get_devices()
+        Return a list of 4-tuples containing the available scanning
+devices.  Each tuple contains 4 strings: the device name, suitable for
+passing to _open()_; the device's vendor; the model; and the type of
+device, such as 'virtual device' or 'video camera'.
+
+>>> import sane ; sane.get_devices()
+[('qcam:0x378', 'Connectix', 'B&W QuickCam', 'video camera'), 
+ ('pnm:0', 'Noname', 'PNM file reader', 'virtual device')]
+
+open(devicename)
+	Open a device, given a string containing its name.  SANE
+devices have names like _"qcam:0x378"_ or _"pnm:0"_.  If the attempt
+to open the device fails, a _sane.error_ exception will be raised.  If
+there are no problems, a SaneDev object will be returned.
+
+
+SaneDev objects
+===============
+
+The basic process of scanning an image consists of getting a SaneDev
+object for the device, setting various parameters, starting the scan,
+and then reading the image data.  Images are composed of one or more
+frames; greyscale and one-pass colour scanners return a single frame
+containing all the image data, but 3-pass scanners will usually return
+3 frames, one for each of the red, green, blue channels.
+
+Methods:
+
+fileno()
+	Returns a file descriptor for the scanning device.  This
+method's existence means that SaneDev objects can be used by the
+select module.
+
+get_parameters()
+  Return a tuple containing information about the current settings of
+the device and the current frame: (format, last_frame,
+pixels_per_line, lines, depth, bytes_per_line).
+
+	format -- 'L' for greyscale image, 'RGB' for RGB image, or
+	          one of 'R', 'G', 'B' if the image is a single
+                  channel of an RGB image (from PIL's point of view,
+                  this is equivalent to 'L').
+	last_frame -- A Boolean value, which is true if this is the
+                  last frame of the image, and false otherwise.
+	pixels_per_line -- Width of the frame.
+	lines -- Height of the frame.
+	depth -- Depth of the image, measured in bits.  SANE will only
+allow using 8, 16, or 24-bit depths.
+	bytes_per_line -- Bytes required to store a single line of
+data, as computed from pixels_per_line and depth.
+
+start()
+	Start a scan.  This function must be called before the
+_snap()_ method can be used.
+	
+cancel()
+	Cancel a scan already in progress.
+
+snap()
+	Snap a single frame of data, returning a PIL Image object
+containing the data.  If the scanner is one that requires several
+frames to return all the image data, it's the caller's responsibility
+to call the _start()_ and _snap()_ methods again for the next frame,
+and to combine the frames into a single image afterwards.
+
+close()
+	Closes the object.
+
+Attributes:
+
+SaneDev objects have a few fixed attributes which are always
+available, and a larger collection of attributes which vary depending
+on the device.  For example, the _pnm:0_ device takes a PNM file and
+simulates a scanner using the image data; a SaneDev object
+representing the _pnm:0_ device therefore has a _filename_ attribute
+which can be changed to specify the filename, _contrast_ and
+_brightness_ attributes to modify the returned image, and so forth.
+
+For an option like _filename_ and a SaneDev object _obj_,
+_obj.opt_filename_ returns the SaneOption object for the option, and
+_obj.filename_ returns the option's current value.  The current value
+may be an integer, floating-point value, or string, depending on the
+nature of the option.
+
+optlist
+	A list containing the _py_name_ values for all the options supported by this device.
+
+>>> import sane ; s=sane.open('pnm:0') ; s.optlist
+['filename', 'brightness', 'contrast', 'grayify', 
+ 'three_pass', 'hand_scanner', 'default_enhancements']
+
+SaneOption objects
+==================
+
+SANE's option handling is its most elaborate subsystem, intended to
+allow automatically generating dialog boxes and prompts for user
+configuration of the scanning device.  The SaneOption object can be
+used to get a human-readable name and description for an option, the
+units to use, and what the legal values are.  No information about the
+current value of the option is available; for that, read the
+corresponding attribute of a SaneDev object.
+
+This documentation does not explain all the details of SANE's option
+handling; consult the SANE documentation for all the details.
+
+Methods:
+
+is_active() 
+	Returns true if the option is active.
+
+is_settable() 
+	Returns true if the option can be set under software
+control.
+
+Attributes:
+
+cap
+	An integer containing various flags about the object's
+capabilities; whether it's active, whether it's settable, etc.  Also
+available as the _capability_ attribute.
+
+constraint
+	The constraint placed on the value of this option.  If it's
+_None_, there are essentially no constraint of the value.  It may also
+be a list of integers or strings, in which case the value *must* be
+one of the possibilities in the list.  Numeric values may have a
+3-tuple as the constraint; this 3-tuple contains _(minimum, maximum,
+increment)_, and the value must be in the defined range.
+
+desc
+	A lengthy description of what the option does; it may be shown
+to the user for clarification.
+
+index
+	An integer giving the option's index in the option list.
+
+name
+	A short name for the option.
+
+py_name 
+	The option's name, as a legal Python identifier.  The name
+attribute may contain the '-' character, so it will be converted to
+'_' for the py_name attribute.
+
+size
+For a string-valued option, this is the maximum length allowed. 
+
+title
+A single-line string that can be used as a title string.
+	
+type
+A constant giving the type of this option: will be one of the following constants found in the SANE module:
+	TYPE_BOOL
+	TYPE_INT
+	TYPE_FIXED
+	TYPE_STRING
+	TYPE_BUTTON
+	TYPE_GROUP
+
+unit
+	For numeric-valued options, this is a constant representing
+the unit used for this option.  It will be one of the following
+constants found in the SANE module:
+   UNIT_NONE
+   UNIT_PIXEL
+   UNIT_BIT
+   UNIT_MM
+   UNIT_DPI
+   UNIT_PERCENT
+
+
+
