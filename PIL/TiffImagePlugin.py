@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: TiffImagePlugin.py 2277 2005-02-07 20:26:46Z fredrik $
+# $Id: TiffImagePlugin.py 2630 2006-02-12 23:41:33Z fredrik $
 #
 # TIFF file handling
 #
@@ -31,19 +31,31 @@
 # 2003-09-26 fl   Added RGBa support
 # 2004-02-24 fl   Added DPI support; fixed rational write support
 # 2005-02-07 fl   Added workaround for broken Corel Draw 10 files
+# 2006-01-09 fl   Added support for float/double tags (from Russell Nelson)
 #
-# Copyright (c) 1997-2005 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1997-2006 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-1997 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "1.3.4"
+__version__ = "1.3.5"
 
 import Image, ImageFile
 import ImagePalette
 
-import string
+import array, string, sys
+
+try:
+    if sys.byteorder == "little":
+        byteorder = "II"
+    else:
+        byteorder = "MM"
+except AttributeError:
+    if ord(array.array("i",[1]).tostring()[0]):
+        byteorder = "II"
+    else:
+        byteorder = "MM"
 
 #
 # --------------------------------------------------------------------
@@ -260,6 +272,20 @@ class ImageFileDirectory:
             l.append((self.i32(data, i), self.i32(data, i+4)))
         return tuple(l)
     load_dispatch[5] = (8, load_rational)
+
+    def load_float(self, data):
+        a = array.array("f", data)
+        if self.prefix != byteorder:
+            a.byteswap()
+        return tuple(a)
+    load_dispatch[11] = (4, load_float)
+
+    def load_double(self, data):
+        a = array.array("d", data)
+        if self.prefix != byteorder:
+            a.byteswap()
+        return tuple(a)
+    load_dispatch[12] = (8, load_double)
 
     def load_undefined(self, data):
         # Untyped data

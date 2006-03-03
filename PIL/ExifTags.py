@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ExifTags.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id: ExifTags.py 2631 2006-02-12 23:41:52Z fredrik $
 #
 # EXIF tags
 #
@@ -13,6 +13,9 @@
 # This module provides constants and clear-text names for various
 # well-known EXIF tags.
 ##
+
+##
+# Maps EXIF tags to tag names.
 
 TAGS = {
 
@@ -119,6 +122,9 @@ TAGS = {
     0xa302: "CFAPattern",
 
 }
+
+##
+# Maps EXIF GSP tags to tag names.
 
 GPSTAGS = {
     0: "GPSVersionID",

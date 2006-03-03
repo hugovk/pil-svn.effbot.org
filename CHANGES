@@ -1,5 +1,5 @@
 The Python Imaging Library
-$Id: CHANGES 2593 2005-12-11 08:01:55Z fredrik $
+$Id: CHANGES 2651 2006-03-03 23:22:37Z fredrik $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Douglas Bagnall, Larry Bates,
@@ -12,16 +12,32 @@ Markus Gritsch, Daniel Haertle, Greg Hamilton, Mark Hammond, Bernhard
 Herzog, Rob Hooft, Bob Ippolito, Jack Jansen, Bill Janssen, Edward
 Jones, Richard Jones, Håkan Karlsson, Robert Kern, David Kirtley, Bob
 Klimek, Matthias Klose, Andrew Kuchling, Magnus Källström, Victor
-Lacina, Ben Last, Hamish Lawson, Andrew MacIntyre, Gordon McMillan,
-Skip Montanaro, Fredrik Nehr, Luciano Nocera, Piet van Oostrum,
-Richard Oudkerk, Paul Pharr, Andres Polit, Eric Raymond, Victor Reijs,
-Bertil Reinhammar, Nicholas Riley, Don Rozenberg, Toby Sargeant, Barry
-Scott, Les Schaffer, Joel Shprentz, Klamer Shutte, Gene Skonicki, Niki
+Lacina, Ben Last, Hamish Lawson, Andrew MacIntyre, Jan Matejek, Naveen
+Michaud- Agrawal, Gordon McMillan, Skip Montanaro, Fredrik Nehr,
+Russell Nelson, Luciano Nocera, Piet van Oostrum, Richard Oudkerk,
+Paul Pharr, Andres Polit, Eric Raymond, Victor Reijs, Bertil
+Reinhammar, Nicholas Riley, Don Rozenberg, Toby Sargeant, Barry Scott,
+Les Schaffer, Joel Shprentz, Klamer Shutte, Gene Skonicki, Niki
 Spahiev, D. Alan Stewart, Perry Stoll, Paul Svensson, Ulrik Svensson,
 Miki Tebeka, Ivan Tkatchev, Rune Uhlin, Dmitry Vasiliev, Sasha Voynow,
 Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
 
 *** Changes from release 1.1.5 to 1.1.6 ***
+
+(1.1.6a2 snapshot released)
+
++ Added float/double support to the TIFF loader (from Russell
+  Nelson).
+
++ Fixed broken use of realloc() in path.c (from Jan Matejek)
+
++ Added save support for Spider images (from William Baxter).
+
++ Fixed broken 'paste' and 'resize' operations in pildriver
+  (from Bill Janssen).
+
++ Added support for duplex scanning to the Sane interface (Abel
+  Deuring).
 
 (1.1.6a1 snapshot released)
 

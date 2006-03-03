@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: path.c 2505 2005-09-05 16:29:53Z fredrik $
+ * $Id: path.c 2646 2006-03-03 23:09:50Z fredrik $
  *
  * 2D path utilities
  *
@@ -299,7 +299,7 @@ path_compact(PyPathObject* self, PyObject* args)
     self->count = j;
 
     /* shrink coordinate array */
-    realloc(self->xy, 2 * self->count * sizeof(double));
+    self->xy = realloc(self->xy, 2 * self->count * sizeof(double));
 
     return Py_BuildValue("i", i); /* number of removed vertices */
 }
