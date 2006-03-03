@@ -56,7 +56,7 @@ def testimage():
     >>> im = Image.open("Images/lena.ppm")
     >>> print im.im # internal image attribute
     None
-    >>> im.load()
+    >>> a = im.load()
     >>> type(im.im)
     <type 'ImagingCore'>
 

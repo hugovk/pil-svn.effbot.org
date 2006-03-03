@@ -90,6 +90,31 @@ settable:  %s\n""" % (self.py_name, curValue,
         return s
 
         
+class _SaneIterator:
+    """ intended for ADF scans.
+    """
+    
+    def __init__(self, device):
+        self.device = device
+    
+    def __iter__(self):
+        return self
+    
+    def __del__(self):
+        self.device.cancel()
+    
+    def next(self):
+        try:
+            self.device.start()
+        except error, v:
+            if v == 'Document feeder out of documents':
+                raise StopIteration
+            else:
+                raise
+        return self.device.snap(1)
+    
+    
+
 class SaneDev:
     """Class representing a SANE device.
     Methods:
@@ -204,7 +229,7 @@ class SaneDev:
         "Cancel an in-progress scanning operation"
         return self.dev.cancel()
 
-    def snap(self):
+    def snap(self, no_cancel=0):
         "Snap a picture, returning a PIL image object with the results"
         (mode, last_frame,
          (xsize, ysize), depth, bytes_per_line) = self.get_parameters()
@@ -215,13 +240,16 @@ class SaneDev:
         else:
             raise ValueError('got unknown "mode" from self.get_parameters()')
         im=Image.new(format, (xsize,ysize))
-        self.dev.snap( im.im.id )
+        self.dev.snap( im.im.id, no_cancel )
         return im
 
     def scan(self):
         self.start()
         return self.snap()
 
+    def multi_scan(self):
+        return _SaneIterator(self)
+    
     def arr_snap(self, multipleOf=1):
         """Snap a picture, returning a numarray object with the results.
         By default the resulting array has the same number of pixels per

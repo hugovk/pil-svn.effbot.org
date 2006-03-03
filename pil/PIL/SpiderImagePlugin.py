@@ -5,6 +5,7 @@
 #
 # History:
 # 2004-08-02    Created BB
+# 2006-03-02    added save method
 #
 # Copyright (c) 2004 by Health Research Inc. (HRI) RENSSELAER, NY 12144.
 # Copyright (c) 2004 by William Baxter.
@@ -25,7 +26,7 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# http://www.wadsworth.org/spider_doc/spider/docs/master.html
+# http://www.wadsworth.org/spider_doc/spider/docs/spider.html
 #
 # Details about the Spider image format:
 # http://www.wadsworth.org/spider_doc/spider/docs/image_doc.html
@@ -84,8 +85,6 @@ def isSpiderImage(filename):
         hdrlen = isSpiderHeader(t)
     return hdrlen
 
-##
-# Image plugin for the SPIDER format.
 
 class SpiderImageFile(ImageFile.ImageFile):
 
@@ -166,23 +165,96 @@ def loadImageSeries(filelist=None):
     return imglist
 
 # --------------------------------------------------------------------
+# For saving images in Spider format
+
+def makeSpiderHeader(im):
+    nsam,nrow = im.size
+    lenbyt = nsam * 4  # There are labrec records in the header
+    labrec = 1024 / lenbyt
+    if 1024%lenbyt != 0: labrec += 1
+    labbyt = labrec * lenbyt
+    hdr = []
+    nvalues = labbyt / 4
+    for i in range(nvalues):
+        hdr.append(0.0)
+
+    if len(hdr) < 23:
+        return []
+
+    # NB these are Fortran indices
+    hdr[1]  = 1.0           # nslice (=1 for an image)
+    hdr[2]  = float(nrow)   # number of rows per slice
+    hdr[5]  = 1.0           # iform for 2D image
+    hdr[12] = float(nsam)   # number of pixels per line
+    hdr[13] = float(labrec) # number of records in file header
+    hdr[22] = float(labbyt) # total number of bytes in header
+    hdr[23] = float(lenbyt) # record length in bytes
+
+    # adjust for Fortran indexing
+    hdr = hdr[1:]
+    hdr.append(0.0)
+    # pack binary data into a string
+    hdrstr = []
+    for v in hdr:
+        hdrstr.append(struct.pack('f',v))
+    return hdrstr
+
+def _save(im, fp, filename):
+    if im.mode[0] != "F":
+        im = im.convert('F')
+
+    hdr = makeSpiderHeader(im)
+    if len(hdr) < 256:
+        raise IOError, "Error creating Spider header"
+
+    # write the SPIDER header
+    try:
+        fp = open(filename, 'wb')
+    except:
+        raise IOError, "Unable to open %s for writing" % filename
+    fp.writelines(hdr)
+
+    rawmode = "F;32NF"  #32-bit native floating point
+    ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode,0,1))])
+
+    fp.close()
+
+def _save_spider(im, fp, filename):
+    # get the filename extension and register it with Image
+    fn, ext = os.path.splitext(filename)
+    Image.register_extension("SPIDER", ext)
+    _save(im, fp, filename)
+
+# --------------------------------------------------------------------
 
 Image.register_open("SPIDER", SpiderImageFile)
+Image.register_save("SPIDER", _save_spider)
 
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print "Syntax: python SpiderImagePlugin.py imagefile"
-        sys.exit(1)
+        print "Syntax: python SpiderImagePlugin.py Spiderimage [outfile]"
+        sys.exit()
 
     filename = sys.argv[1]
+    if not isSpiderImage(filename):
+        print "input image must be in Spider format"
+        sys.exit()
 
-    #Image.register_open("SPIDER", SpiderImageFile)
+    outfile = ""
+    if len(sys.argv[1:]) > 1:
+        outfile = sys.argv[2]
+
     im = Image.open(filename)
     print "image: " + str(im)
-
     print "format: " + str(im.format)
     print "size: " + str(im.size)
     print "mode: " + str(im.mode)
     print "max, min: ",
     print im.getextrema()
+
+    if outfile != "":
+        # perform some image operation
+        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        print "saving a flipped version of %s as %s " % (os.path.basename(filename), outfile)
+        im.save(outfile, "SPIDER")

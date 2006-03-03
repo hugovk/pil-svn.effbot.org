@@ -77,17 +77,26 @@ start()
 cancel()
    Cancel a scan already in progress.
 
-snap()
+snap(no_cancel=0)
    Snap a single frame of data, returning a PIL Image object
-   containing the data.  If the scanner is one that requires several
-   frames to return all the image data, it's the caller's responsibility
-   to call the _start()_ and _snap()_ methods again for the next frame,
-   and to combine the frames into a single image afterwards.
+   containing the data. If no_cancel is false, the Sane library function
+   sane_cancel is called after the scan. This is reasonable in most cases,
+   but may cause backends for duplex ADF scanners to drop the backside image, 
+   when snap() is called for the front side image. If no_cancel is true,
+   cancel() should be called manually, after all scans are finished.
 
 scan()
    This is just a shortcut for s.start(); s.snap()
    Returns a PIL image
 
+multi_scan()
+   This method returns an iterator. It is intended to be used for 
+   scanning with an automatic document feeder. The next() method of the 
+   iterator tries to start a scan. If this is successful, it returns a
+   PIL Image object, like scan(); if the document feeder runs out of 
+   paper, it raises StopIteration, thereby signaling that the sequence
+   is ran out of items.
+   
 arr_snap(multipleOf=1)
    same as snap, but the result is a NumArray object. (Not that
    num_array must be installed already at compilation time, otherwise

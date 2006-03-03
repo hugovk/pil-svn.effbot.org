@@ -387,10 +387,12 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
       INT16 i16;
     } 
   endian;
+  PyObject *pyNoCancel = NULL;
+  int noCancel = 0;
     
   endian.i16 = 1;
   
-  if (!PyArg_ParseTuple(args, "i", &L))
+  if (!PyArg_ParseTuple(args, "i|O", &L, &pyNoCancel))
     return NULL;
   if (self->h==NULL)
     {
@@ -398,6 +400,9 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
       return NULL;
     }
   im=(Imaging)L;
+  
+  if (pyNoCancel)
+    noCancel = PyObject_IsTrue(pyNoCancel);
 
   st=SANE_STATUS_GOOD; px=py=0;
   /* xxx not yet implemented
@@ -852,7 +857,19 @@ SaneDev_snap(SaneDevObject *self, PyObject *args)
             }
         }
     }
-  sane_cancel(self->h);
+  /* enforce SANE_STATUS_EOF. Can be necessary for ADF scans for some backends */
+  do {
+       st = sane_read(self->h, buffer, READSIZE, &len);
+     }
+  while (st == SANE_STATUS_GOOD);
+  if (st != SANE_STATUS_EOF)
+    {
+      sane_cancel(self->h);
+      return PySane_Error(st);
+    }
+  
+  if (!noCancel)
+    sane_cancel(self->h);
   Py_INCREF(Py_None);
   return Py_None;
 }
