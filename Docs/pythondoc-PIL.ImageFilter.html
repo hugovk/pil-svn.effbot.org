@@ -93,56 +93,48 @@
 <dl>
 <dt><b>BLUR</b> (class)  [<a href='#PIL.ImageFilter.BLUR-class'>#</a>]</dt>
 <dd>
-<p>Blur filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.CONTOUR-class' name='PIL.ImageFilter.CONTOUR-class'>The CONTOUR Class</a></h2>
 <dl>
 <dt><b>CONTOUR</b> (class)  [<a href='#PIL.ImageFilter.CONTOUR-class'>#</a>]</dt>
 <dd>
-<p>Contour filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.DETAIL-class' name='PIL.ImageFilter.DETAIL-class'>The DETAIL Class</a></h2>
 <dl>
 <dt><b>DETAIL</b> (class)  [<a href='#PIL.ImageFilter.DETAIL-class'>#</a>]</dt>
 <dd>
-<p>Detail filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.EDGE_ENHANCE-class' name='PIL.ImageFilter.EDGE_ENHANCE-class'>The EDGE_ENHANCE Class</a></h2>
 <dl>
 <dt><b>EDGE_ENHANCE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE-class'>#</a>]</dt>
 <dd>
-<p>Edge enhancement filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.EDGE_ENHANCE_MORE-class' name='PIL.ImageFilter.EDGE_ENHANCE_MORE-class'>The EDGE_ENHANCE_MORE Class</a></h2>
 <dl>
 <dt><b>EDGE_ENHANCE_MORE</b> (class)  [<a href='#PIL.ImageFilter.EDGE_ENHANCE_MORE-class'>#</a>]</dt>
 <dd>
-<p>Stronger edge enhancement filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.EMBOSS-class' name='PIL.ImageFilter.EMBOSS-class'>The EMBOSS Class</a></h2>
 <dl>
 <dt><b>EMBOSS</b> (class)  [<a href='#PIL.ImageFilter.EMBOSS-class'>#</a>]</dt>
 <dd>
-<p>Embossing filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.FIND_EDGES-class' name='PIL.ImageFilter.FIND_EDGES-class'>The FIND_EDGES Class</a></h2>
 <dl>
 <dt><b>FIND_EDGES</b> (class)  [<a href='#PIL.ImageFilter.FIND_EDGES-class'>#</a>]</dt>
 <dd>
-<p>Edge-finding filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.Kernel-class' name='PIL.ImageFilter.Kernel-class'>The Kernel Class</a></h2>
 <dl>
 <dt><b>Kernel(size, kernel, **options)</b> (class) [<a href='#PIL.ImageFilter.Kernel-class'>#</a>]</dt>
 <dd>
-<p>Convolution filter kernel.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.Kernel.__init__-method' name='PIL.ImageFilter.Kernel.__init__-method'><b>__init__(size, kernel, **options)</b></a> [<a href='#PIL.ImageFilter.Kernel.__init__-method'>#</a>]</dt>
 <dd>
@@ -155,23 +147,19 @@ In the current version, kernels can only be applied to
 </p><dl>
 <dt><i>size</i></dt>
 <dd>
-Kernel size, given as (width, height).  In
-   the current version, this must be (3,3) or (5,5).</dd>
+</dd>
 <dt><i>kernel</i></dt>
 <dd>
-A sequence containing kernel weights.</dd>
+</dd>
 <dt><i>**options</i></dt>
 <dd>
-Optional keyword arguments.</dd>
+</dd>
 <dt><i>scale=</i></dt>
 <dd>
-Scale factor.  If given, the result for each
-   pixel is divided by this value.  The default is the sum
-   of the kernel weights.</dd>
+</dd>
 <dt><i>offset=</i></dt>
 <dd>
-Offset.  If given, this value is added to the
-   result, after it has been divided by the scale factor.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -179,16 +167,13 @@ Offset.  If given, this value is added to the
 <dl>
 <dt><b>MaxFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MaxFilter-class'>#</a>]</dt>
 <dd>
-<p>Max filter.  Picks the largest pixel value in a window with the
-given size.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.MaxFilter.__init__-method' name='PIL.ImageFilter.MaxFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MaxFilter.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create a max filter.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The kernel size, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -196,16 +181,13 @@ The kernel size, in pixels.</dd>
 <dl>
 <dt><b>MedianFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MedianFilter-class'>#</a>]</dt>
 <dd>
-<p>Median filter.  Picks the median pixel value in a window with the
-given size.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.MedianFilter.__init__-method' name='PIL.ImageFilter.MedianFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MedianFilter.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create a median filter.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The kernel size, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -213,16 +195,13 @@ The kernel size, in pixels.</dd>
 <dl>
 <dt><b>MinFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.MinFilter-class'>#</a>]</dt>
 <dd>
-<p>Min filter.  Picks the lowest pixel value in a window with the given
-size.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.MinFilter.__init__-method' name='PIL.ImageFilter.MinFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.MinFilter.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create a min filter.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The kernel size, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -230,18 +209,13 @@ The kernel size, in pixels.</dd>
 <dl>
 <dt><b>ModeFilter(size=3)</b> (class) [<a href='#PIL.ImageFilter.ModeFilter-class'>#</a>]</dt>
 <dd>
-<p>Mode filter.  Picks the most frequent pixel value in a box with the
-given size.  Pixel values that occur only once or twice are ignored;
-if no pixel value occurs more than twice, the original pixel value
-is preserved.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.ModeFilter.__init__-method' name='PIL.ImageFilter.ModeFilter.__init__-method'><b>__init__(size=3)</b></a> [<a href='#PIL.ImageFilter.ModeFilter.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create a mode filter.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The kernel size, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -249,21 +223,16 @@ The kernel size, in pixels.</dd>
 <dl>
 <dt><b>RankFilter(size, rank)</b> (class) [<a href='#PIL.ImageFilter.RankFilter-class'>#</a>]</dt>
 <dd>
-<p>Rank filter.</p>
 </dd>
 <dt><a id='PIL.ImageFilter.RankFilter.__init__-method' name='PIL.ImageFilter.RankFilter.__init__-method'><b>__init__(size, rank)</b></a> [<a href='#PIL.ImageFilter.RankFilter.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create a rank filter.  The rank filter sorts all pixels in
-a window of the given size, and returns the rank'th value.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The kernel size, in pixels.</dd>
+</dd>
 <dt><i>rank</i></dt>
 <dd>
-What pixel value to pick.  Use 0 for a min filter,
-   size*size/2 for a median filter, size*size-1 for a max filter,
-   etc.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -271,21 +240,18 @@ What pixel value to pick.  Use 0 for a min filter,
 <dl>
 <dt><b>SHARPEN</b> (class)  [<a href='#PIL.ImageFilter.SHARPEN-class'>#</a>]</dt>
 <dd>
-<p>Sharpening filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.SMOOTH-class' name='PIL.ImageFilter.SMOOTH-class'>The SMOOTH Class</a></h2>
 <dl>
 <dt><b>SMOOTH</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH-class'>#</a>]</dt>
 <dd>
-<p>Smoothing filter.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFilter.SMOOTH_MORE-class' name='PIL.ImageFilter.SMOOTH_MORE-class'>The SMOOTH_MORE Class</a></h2>
 <dl>
 <dt><b>SMOOTH_MORE</b> (class)  [<a href='#PIL.ImageFilter.SMOOTH_MORE-class'>#</a>]</dt>
 <dd>
-<p>Stronger smoothing filter.</p>
 </dd>
 </dl>
 </body></html>

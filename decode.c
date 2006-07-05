@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library.
- * $Id: decode.c 2505 2005-09-05 16:29:53Z fredrik $
+ * $Id: decode.c 2751 2006-06-18 19:50:45Z fredrik $
  *
  * standard decoder interfaces for the Imaging library
  *
@@ -68,7 +68,7 @@ PyImaging_DecoderNew(int contextsize)
 
     ImagingDecoderType.ob_type = &PyType_Type;
 
-    decoder = PyObject_NEW(ImagingDecoderObject, &ImagingDecoderType);
+    decoder = PyObject_New(ImagingDecoderObject, &ImagingDecoderType);
     if (decoder == NULL)
 	return NULL;
 
@@ -102,7 +102,7 @@ _dealloc(ImagingDecoderObject* decoder)
     free(decoder->state.buffer);
     free(decoder->state.context);
     Py_XDECREF(decoder->lock);
-    PyObject_DEL(decoder);
+    PyObject_Del(decoder);
 }
 
 static PyObject* 

@@ -1,4 +1,4 @@
-# $Id: selftest.py 2387 2005-05-05 21:38:45Z Fredrik $
+# $Id: selftest.py 2652 2006-03-03 23:27:51Z fredrik $
 # minimal sanity check
 
 import sys

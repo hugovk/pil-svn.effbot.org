@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: map.c 2319 2005-03-11 16:41:26Z fredrik $
+ * $Id: map.c 2751 2006-06-18 19:50:45Z fredrik $
  *
  * standard memory mapping interface for the Imaging library
  *
@@ -22,7 +22,8 @@
 #include "Python.h"
 
 #if PY_VERSION_HEX < 0x01060000
-#define PyObject_DEL(op) PyMem_DEL((op))
+#define PyObject_New PyObject_NEW
+#define PyObject_Del PyMem_DEL
 #endif
 
 #include "Imaging.h"
@@ -60,7 +61,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
 
     ImagingMapperType.ob_type = &PyType_Type;
 
-    mapper = PyObject_NEW(ImagingMapperObject, &ImagingMapperType);
+    mapper = PyObject_New(ImagingMapperObject, &ImagingMapperType);
     if (mapper == NULL)
 	return NULL;
 
@@ -81,7 +82,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
         NULL);
     if (mapper->hFile == (HANDLE)-1) {
         PyErr_SetString(PyExc_IOError, "cannot open file");
-        PyObject_DEL(mapper);
+        PyObject_Del(mapper);
         return NULL;
     }
 
@@ -92,7 +93,7 @@ PyImaging_MapperNew(const char* filename, int readonly)
     if (mapper->hMap == (HANDLE)-1) {
 	CloseHandle(mapper->hFile);
         PyErr_SetString(PyExc_IOError, "cannot map file");
-        PyObject_DEL(mapper);
+        PyObject_Del(mapper);
         return NULL;
     }
 
@@ -120,7 +121,7 @@ mapping_dealloc(ImagingMapperObject* mapper)
     mapper->base = 0;
     mapper->hMap = mapper->hFile = (HANDLE)-1;
 #endif
-    PyObject_DEL(mapper);
+    PyObject_Del(mapper);
 }
 
 /* -------------------------------------------------------------------- */

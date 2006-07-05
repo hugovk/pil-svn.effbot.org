@@ -1,11 +1,10 @@
-
 The Python Imaging Library
-$Id: README 2649 2006-03-03 23:10:23Z fredrik $
+$Id: README 2750 2006-06-18 19:50:35Z fredrik $
 
-Release 1.1.6a2 (March 03, 2006)
+Release 1.1.6b1 (June 20, 2006)
 
 ====================================================================
-The Python Imaging Library 1.1.6a2
+The Python Imaging Library 1.1.6b1
 ====================================================================
 
 Contents
@@ -15,7 +14,6 @@ Contents
 + Support Options
   - Commercial support
   - Free support
-+ News Highlights
 + Software License
 + Build instructions (all platforms)
   - Additional notes for Mac OS X
@@ -93,38 +91,6 @@ QUESTIONS TO PYTHONWARE ADDRESSES.
 
 
 --------------------------------------------------------------------
-News Highlights in 1.1.6a2:
---------------------------------------------------------------------
-
-+ Runs under Python 1.5.2 and newer, including 2.4.  You may need
-  additional libraries to build under 1.5.2; see instructions below.
-
-+ New build procedure.  The setup.py file now configures and builds
-  the core library as well as the bindings, in one step.
-
-+ Added stub drivers for BUFR, FITS, GRIB, HDF5, and WMF files.
-  Stub drivers can identify the file format, but relies on
-  application-provided drivers to read or write images in that
-  format.
-
-+ Added experimental "LA" mode support. An "LA" image is an "L"
-  image with an attached transparency layer.
-
-+ Added "RankFilter", "MinFilter", "MedianFilter", and "MaxFilter"
-  classes to the ImageFilter module.
-
-+ Improved support for applications using multiple threads on
-  systems with multiple processors and/or hyperthreading processors.
-
-+ Added EXIF GPSInfo read support for JPEG files.
-
-+ Lots of bug fixes and performance tweaks.
-
-For detailed information on these and other changes, see the CHANGES
-documents.
-
-
---------------------------------------------------------------------
 Software License
 --------------------------------------------------------------------
 
@@ -159,11 +125,13 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Build instructions (all platforms)
 --------------------------------------------------------------------
 
+For a list of changes in this release, see the CHANGES document.
+
 0. If you're in a hurry, try this:
 
-        $ gunzip Imaging-1.1.6a2.tar.gz
-        $ tar xvf Imaging-1.1.6a2.tar
-        $ cd Imaging-1.1.6a2
+        $ gunzip Imaging-1.1.6b1.tar.gz
+        $ tar xvf Imaging-1.1.6b1.tar
+        $ cd Imaging-1.1.6b1
         $ python setup.py install
 
    If you prefer to know what you're doing, read on.
@@ -192,7 +160,9 @@ Build instructions (all platforms)
                         http://freetype.sourceforge.net  
 
    If you have a recent Linux version, the libraries provided with
-   the operating system usually work just fine.
+   the operating system usually work just fine.  If some library is
+   missing, installing a prebuilt version (jpeg-devel, zlib-devel,
+   etc) is usually easier than building from source.
 
    If you're using Mac OS X, you can use the 'fink' tool to install
    missing libraries (also see the Mac OS X section below).
@@ -206,6 +176,9 @@ Build instructions (all platforms)
 
        http://www.python.org/sigs/distutils-sig/download.html
 
+   For newer releases, the distutils library is included in the
+   Python standard library.
+
 
 3. If you didn't build Python from sources, make sure you have
    Python's build support files on your machine.  If you've down-
@@ -215,19 +188,19 @@ Build instructions (all platforms)
 
 
 4. When you have everything you need, unpack the PIL distribution
-   (the file Imaging-1.1.6a2.tar.gz) in your Python extensions
+   (the file Imaging-1.1.6b1.tar.gz) in your Python extensions
    directory (if you have one, that is.  If not, feel free to
    unpack it in any other suitable directory).
 
         $ cd Python-2.4/Extensions # example
-        $ gunzip Imaging-1.1.6a2.tar.gz
-        $ tar xvf Imaging-1.1.6a2.tar
+        $ gunzip Imaging-1.1.6b1.tar.gz
+        $ tar xvf Imaging-1.1.6b1.tar
 
 
 5. Build the library.  We recommend that you do an in-place build,
    and run the self test before installing.
 
-        $ cd Imaging-1.1.6a2
+        $ cd Imaging-1.1.6b1
         $ python setup.py build_ext -i
         $ python selftest.py
 
@@ -235,7 +208,7 @@ Build instructions (all platforms)
    that the optional components you need are included.
 
         ----------------------------------------------------------------
-        PIL 1.1.6a2 BUILD SUMMARY
+        PIL 1.1.6b1 BUILD SUMMARY
         ----------------------------------------------------------------
         *** TKINTER support not available (Tcl/Tk 8.3 libraries needed)
         --- JPEG support ok

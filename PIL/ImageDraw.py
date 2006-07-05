@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageDraw.py 2437 2005-05-25 20:56:41Z Fredrik $
+# $Id: ImageDraw.py 2756 2006-06-19 06:07:18Z fredrik $
 #
 # drawing interface operations
 #
@@ -22,9 +22,10 @@
 # 2004-08-26 fl   Made Draw() a factory function, added getdraw() support
 # 2004-09-04 fl   Added width support to line primitive
 # 2004-09-10 fl   Added font mode handling
+# 2006-06-19 fl   Added font bearing support (getmask2)
 #
-# Copyright (c) 1997-2004 by Secret Labs AB
-# Copyright (c) 1996-2004 by Fredrik Lundh
+# Copyright (c) 1997-2006 by Secret Labs AB
+# Copyright (c) 1996-2006 by Fredrik Lundh
 #
 # See the README file for information on usage and redistribution.
 #
@@ -259,10 +260,14 @@ class ImageDraw:
             ink = fill
         if ink is not None:
             try:
-                mask = font.getmask(text, self.fontmode)
-            except TypeError:
-                mask = font.getmask(text)
-            self.draw.draw_bitmap(xy, mask, ink)
+                mask, offset = font.getmask2(text, self.fontmode)
+		xy = xy[0] + offset[0], xy[1] + offset[1]
+            except AttributeError:
+		try:
+		    mask = font.getmask(text, self.fontmode)
+		except TypeError:
+		    mask = font.getmask(text)
+	    self.draw.draw_bitmap(xy, mask, ink)
 
     ##
     # Get the size of a given string, in pixels.

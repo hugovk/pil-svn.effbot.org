@@ -24,16 +24,16 @@ becomes white (255).
 </p><dl>
 <dt><i>image</i></dt>
 <dd>
-The image to process.</dd>
+</dd>
 <dt><i>cutoff</i></dt>
 <dd>
-How many percent to cut off from the histogram.</dd>
+</dd>
 <dt><i>ignore</i></dt>
 <dd>
-The background pixel value (use None for no background).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.colorize-function' name='PIL.ImageOps.colorize-function'><b>colorize(image, black, white)</b></a> [<a href='#PIL.ImageOps.colorize-function'>#</a>]</dt>
@@ -46,86 +46,78 @@ colour, and all white pixels to the second colour.
 </p><dl>
 <dt><i>image</i></dt>
 <dd>
-The image to colourize.</dd>
+</dd>
 <dt><i>black</i></dt>
 <dd>
-The colour to use for black input pixels.</dd>
+</dd>
 <dt><i>white</i></dt>
 <dd>
-The colour to use for white input pixels.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.crop-function' name='PIL.ImageOps.crop-function'><b>crop(image, border=0)</b></a> [<a href='#PIL.ImageOps.crop-function'>#</a>]</dt>
 <dd>
-<p>Remove border from image.  The same amount of pixels are removed
-from all four sides.  This function works on all image modes.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to crop.</dd>
+</dd>
 <dt><i>border</i></dt>
 <dd>
-The number of pixels to remove.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.deform-function' name='PIL.ImageOps.deform-function'><b>deform(image, deformer, resample=Image.BILINEAR)</b></a> [<a href='#PIL.ImageOps.deform-function'>#</a>]</dt>
 <dd>
-<p>Deform the image.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to deform.</dd>
+</dd>
 <dt><i>deformer</i></dt>
 <dd>
-A deformer object.</dd>
+</dd>
 <dt><i>resample</i></dt>
 <dd>
-What resampling filter to use.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.equalize-function' name='PIL.ImageOps.equalize-function'><b>equalize(image, mask=None)</b></a> [<a href='#PIL.ImageOps.equalize-function'>#</a>]</dt>
 <dd>
-<p>Equalize the image histogram.  This function applies a non-linear
-mapping to the input image, in order to create a uniform
-distribution of grayscale values in the output image.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to equalize.</dd>
+</dd>
 <dt><i>mask</i></dt>
 <dd>
-An optional mask.  If given, only the pixels selected by
-    the mask are included in the analysis.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.expand-function' name='PIL.ImageOps.expand-function'><b>expand(image, border=0, fill=0)</b></a> [<a href='#PIL.ImageOps.expand-function'>#</a>]</dt>
 <dd>
-<p>Add border to the image</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to expand.</dd>
+</dd>
 <dt><i>border</i></dt>
 <dd>
-Border width, in pixels.</dd>
+</dd>
 <dt><i>fill</i></dt>
 <dd>
-Pixel fill value (a colour value).  Default is 0 (black).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.fit-function' name='PIL.ImageOps.fit-function'><b>fit(image, size, method=Image.NEAREST, bleed=0.0, centering=(0.5, 0.5))</b></a> [<a href='#PIL.ImageOps.fit-function'>#</a>]</dt>
@@ -138,108 +130,91 @@ The <b>fit</b> function was contributed by Kevin Cazabon.
 </p><dl>
 <dt><i>size</i></dt>
 <dd>
-The requested output size in pixels, given as a
-    (width, height) tuple.</dd>
+</dd>
 <dt><i>method</i></dt>
 <dd>
-What resampling method to use.  Default is Image.NEAREST.</dd>
+</dd>
 <dt><i>bleed</i></dt>
 <dd>
-Remove a border around the outside of the image (from all
-    four edges.  The value is a decimal percentage (use 0.01 for one
-    percent).  The default value is 0 (no border).</dd>
+</dd>
 <dt><i>centering</i></dt>
 <dd>
-Control the cropping position.  Use (0.5, 0.5) for
-    center cropping (e.g. if cropping the width, take 50% off of the
-    left side, and therefore 50% off the right side).  (0.0, 0.0)
-    will crop from the top left corner (i.e. if cropping the width,
-    take all of the crop off of the right side, and if cropping the
-    height, take all of it off the bottom).  (1.0, 0.0) will crop
-    from the bottom left corner, etc. (i.e. if cropping the width,
-    take all of the crop off the left side, and if cropping the height
-    take none from the top, and therefore all off the bottom).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.flip-function' name='PIL.ImageOps.flip-function'><b>flip(image)</b></a> [<a href='#PIL.ImageOps.flip-function'>#</a>]</dt>
 <dd>
-<p>Flip the image vertically (top to bottom).</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to flip.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.grayscale-function' name='PIL.ImageOps.grayscale-function'><b>grayscale(image)</b></a> [<a href='#PIL.ImageOps.grayscale-function'>#</a>]</dt>
 <dd>
-<p>Convert the image to grayscale.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to convert.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.invert-function' name='PIL.ImageOps.invert-function'><b>invert(image)</b></a> [<a href='#PIL.ImageOps.invert-function'>#</a>]</dt>
 <dd>
-<p>Invert (negate) the image.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to invert.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.mirror-function' name='PIL.ImageOps.mirror-function'><b>mirror(image)</b></a> [<a href='#PIL.ImageOps.mirror-function'>#</a>]</dt>
 <dd>
-<p>Flip image horizontally (left to right).</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to mirror.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.posterize-function' name='PIL.ImageOps.posterize-function'><b>posterize(image, bits)</b></a> [<a href='#PIL.ImageOps.posterize-function'>#</a>]</dt>
 <dd>
-<p>Reduce the number of bits for each colour channel.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to posterize.</dd>
+</dd>
 <dt><i>bits</i></dt>
 <dd>
-The number of bits to keep for each channel (1-8).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageOps.solarize-function' name='PIL.ImageOps.solarize-function'><b>solarize(image, threshold=128)</b></a> [<a href='#PIL.ImageOps.solarize-function'>#</a>]</dt>
 <dd>
-<p>Invert all pixel values above a threshold.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The image to posterize.</dd>
+</dd>
 <dt><i>threshold</i></dt>
 <dd>
-All pixels above this greyscale level are inverted.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An image.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>

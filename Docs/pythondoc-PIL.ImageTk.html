@@ -21,7 +21,6 @@ directory.
 </dd>
 <dt><a id='PIL.ImageTk.getimage-function' name='PIL.ImageTk.getimage-function'><b>getimage(photo)</b></a> [<a href='#PIL.ImageTk.getimage-function'>#</a>]</dt>
 <dd>
-<p>Copies the contents of a PhotoImage to a PIL image memory.</p>
 </dd>
 <dt><b>PhotoImage(image=None, size=None, **options)</b> (class) [<a href='#PIL.ImageTk.PhotoImage-class'>#</a>]</dt>
 <dd>
@@ -33,8 +32,6 @@ directory.
 <dl>
 <dt><b>BitmapImage(image=None, **options)</b> (class) [<a href='#PIL.ImageTk.BitmapImage-class'>#</a>]</dt>
 <dd>
-<p>Create a Tkinter-compatible bitmap image.  This can be used
-everywhere Tkinter expects an image object.</p>
 </dd>
 <dt><a id='PIL.ImageTk.BitmapImage.__init__-method' name='PIL.ImageTk.BitmapImage.__init__-method'><b>__init__(image=None, **options)</b></a> [<a href='#PIL.ImageTk.BitmapImage.__init__-method'>#</a>]</dt>
 <dd>
@@ -50,36 +47,31 @@ specify colours.
 </p><dl>
 <dt><i>image</i></dt>
 <dd>
-A PIL image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.BitmapImage.__str__-method' name='PIL.ImageTk.BitmapImage.__str__-method'><b>__str__()</b></a> [<a href='#PIL.ImageTk.BitmapImage.__str__-method'>#</a>]</dt>
 <dd>
-<p>Get the Tkinter bitmap image identifier.  This method is
-automatically called by Tkinter whenever a BitmapImage object
-is passed to a Tkinter method.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A Tkinter bitmap image identifier (a string).</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.BitmapImage.height-method' name='PIL.ImageTk.BitmapImage.height-method'><b>height()</b></a> [<a href='#PIL.ImageTk.BitmapImage.height-method'>#</a>]</dt>
 <dd>
-<p>Get the height of the image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-The height, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.BitmapImage.width-method' name='PIL.ImageTk.BitmapImage.width-method'><b>width()</b></a> [<a href='#PIL.ImageTk.BitmapImage.width-method'>#</a>]</dt>
 <dd>
-<p>Get the width of the image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-The width, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -87,9 +79,6 @@ The width, in pixels.</dd>
 <dl>
 <dt><b>PhotoImage(image=None, size=None, **options)</b> (class) [<a href='#PIL.ImageTk.PhotoImage-class'>#</a>]</dt>
 <dd>
-<p>Creates a Tkinter-compatible photo image.  This can be used
-everywhere Tkinter expects an image object.  If the image is an RGBA
-image, pixels having alpha 0 are treated as transparent.</p>
 </dd>
 <dt><a id='PIL.ImageTk.PhotoImage.__init__-method' name='PIL.ImageTk.PhotoImage.__init__-method'><b>__init__(image=None, size=None, **options)</b></a> [<a href='#PIL.ImageTk.PhotoImage.__init__-method'>#</a>]</dt>
 <dd>
@@ -101,66 +90,51 @@ the photo image object.
 </p><dl>
 <dt><i>image</i></dt>
 <dd>
-Either a PIL image, or a mode string.  If a
-   mode string is used, a size must also be given.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-If the first argument is a mode string, this
-   defines the size of the image.</dd>
+</dd>
 <dt><i>file=</i></dt>
 <dd>
-A filename to load the image from (using
-   Image.open(file)).</dd>
+</dd>
 <dt><i>data=</i></dt>
 <dd>
-An 8-bit string containing image data (as
-   loaded from an image file).</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.PhotoImage.__str__-method' name='PIL.ImageTk.PhotoImage.__str__-method'><b>__str__()</b></a> [<a href='#PIL.ImageTk.PhotoImage.__str__-method'>#</a>]</dt>
 <dd>
-<p>Get the Tkinter photo image identifier.  This method is
-automatically called by Tkinter whenever a PhotoImage object is
-passed to a Tkinter method.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A Tkinter photo image identifier (a string).</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.PhotoImage.height-method' name='PIL.ImageTk.PhotoImage.height-method'><b>height()</b></a> [<a href='#PIL.ImageTk.PhotoImage.height-method'>#</a>]</dt>
 <dd>
-<p>Get the height of the image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-The height, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.PhotoImage.paste-method' name='PIL.ImageTk.PhotoImage.paste-method'><b>paste(im, box=None)</b></a> [<a href='#PIL.ImageTk.PhotoImage.paste-method'>#</a>]</dt>
 <dd>
-<p>Paste a PIL image into the photo image.  Note that this can
-be very slow if the photo image is displayed.</p>
 <dl>
 <dt><i>im</i></dt>
 <dd>
-A PIL image.  The size must match the target region.
-   If the mode does not match, the image is converted to the
-   mode of the bitmap image.</dd>
+</dd>
 <dt><i>box</i></dt>
 <dd>
-A 4-tuple defining the left, upper, right, and
-   lower pixel coordinate.  If None is given instead of a
-   tuple, all of the image is assumed.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageTk.PhotoImage.width-method' name='PIL.ImageTk.PhotoImage.width-method'><b>width()</b></a> [<a href='#PIL.ImageTk.PhotoImage.width-method'>#</a>]</dt>
 <dd>
-<p>Get the width of the image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-The width, in pixels.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>

@@ -47,22 +47,17 @@ call the <b>palette</b> method upon certain events from Windows.
 </p></dd>
 <dt><a id='PIL.ImageWin.Dib.__init__-method' name='PIL.ImageWin.Dib.__init__-method'><b>__init__(image, size=None)</b></a> [<a href='#PIL.ImageWin.Dib.__init__-method'>#</a>]</dt>
 <dd>
-<p>Create Windows bitmap.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-Either a PIL image, or a mode string.  If a
-   mode string is used, a size must also be given.  The
-   mode can be one of &quot;1&quot;, &quot;L&quot;, &quot;P&quot;, or &quot;RGB&quot;.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-If the first argument is a mode string, this
-   defines the size of the image.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageWin.Dib.expose-method' name='PIL.ImageWin.Dib.expose-method'><b>expose(handle)</b></a> [<a href='#PIL.ImageWin.Dib.expose-method'>#</a>]</dt>
 <dd>
-<p>Copy the bitmap contents to a device context.</p>
 <dl>
 <dt><i>handle</i></dt>
 <dd>
@@ -75,7 +70,6 @@ Device context (HDC), cast to a Python integer,
 </dd>
 <dt><a id='PIL.ImageWin.Dib.fromstring-method' name='PIL.ImageWin.Dib.fromstring-method'><b>fromstring(buffer)</b></a> [<a href='#PIL.ImageWin.Dib.fromstring-method'>#</a>]</dt>
 <dd>
-<p>Load display memory contents from string buffer.</p>
 <dl>
 <dt><i>buffer</i></dt>
 <dd>
@@ -86,21 +80,16 @@ A string buffer containing display data (usually
 </dd>
 <dt><a id='PIL.ImageWin.Dib.paste-method' name='PIL.ImageWin.Dib.paste-method'><b>paste(im, box=None)</b></a> [<a href='#PIL.ImageWin.Dib.paste-method'>#</a>]</dt>
 <dd>
-<p>Paste a PIL image into the bitmap image.</p>
 <dl>
 <dt><i>im</i></dt>
 <dd>
-A PIL image.  The size must match the target region.
-   If the mode does not match, the image is converted to the
-   mode of the bitmap image.</dd>
+</dd>
 <dt><i>box</i></dt>
 <dd>
-A 4-tuple defining the left, upper, right, and
-   lower pixel coordinate.  If None is given instead of a
-   tuple, all of the image is assumed.</dd>
+</dd>
 </dl><br />
 </dd>
-<dt><a id='PIL.ImageWin.Dib.query_palette-method' name='PIL.ImageWin.Dib.query_palette-method'><b>query_palette(dc)</b></a> [<a href='#PIL.ImageWin.Dib.query_palette-method'>#</a>]</dt>
+<dt><a id='PIL.ImageWin.Dib.query_palette-method' name='PIL.ImageWin.Dib.query_palette-method'><b>query_palette(handle)</b></a> [<a href='#PIL.ImageWin.Dib.query_palette-method'>#</a>]</dt>
 <dd>
 <p>Installs the palette associated with the image in the
 given device context.
@@ -112,23 +101,20 @@ palette entries were changed, and the image should be
 redrawn.
 
 </p><dl>
-<dt><i>dc</i></dt>
+<dt><i>handle</i></dt>
 <dd>
-Device context (HDC), cast to a Python integer,
-    or an HDC or HWND instance.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-A true value if one or more entries were changed
-   (this indicates that the image should be redrawn).</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageWin.Dib.tostring-method' name='PIL.ImageWin.Dib.tostring-method'><b>tostring()</b></a> [<a href='#PIL.ImageWin.Dib.tostring-method'>#</a>]</dt>
 <dd>
-<p>Copy display memory contents to string buffer.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A string buffer containing display data.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -144,14 +130,12 @@ images under Windows 95/98, NT, 2000 and later.
 <dl>
 <dt><b>ImageWindow(image, title=&quot;PIL&quot;)</b> (class) [<a href='#PIL.ImageWin.ImageWindow-class'>#</a>]</dt>
 <dd>
-<p>Create an image window which displays the given image.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageWin.Window-class' name='PIL.ImageWin.Window-class'>The Window Class</a></h2>
 <dl>
 <dt><b>Window(title=&quot;PIL&quot;, width=None, height=None)</b> (class) [<a href='#PIL.ImageWin.Window-class'>#</a>]</dt>
 <dd>
-<p>Create a Window with the given title size.</p>
 </dd>
 </dl>
 </body></html>
