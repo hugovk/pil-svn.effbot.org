@@ -1,5 +1,5 @@
 The Python Imaging Library
-$Id: CHANGES 2651 2006-03-03 23:22:37Z fredrik $
+$Id: CHANGES 2759 2006-06-19 13:31:12Z fredrik $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Douglas Bagnall, Larry Bates,
@@ -19,10 +19,30 @@ Paul Pharr, Andres Polit, Eric Raymond, Victor Reijs, Bertil
 Reinhammar, Nicholas Riley, Don Rozenberg, Toby Sargeant, Barry Scott,
 Les Schaffer, Joel Shprentz, Klamer Shutte, Gene Skonicki, Niki
 Spahiev, D. Alan Stewart, Perry Stoll, Paul Svensson, Ulrik Svensson,
-Miki Tebeka, Ivan Tkatchev, Rune Uhlin, Dmitry Vasiliev, Sasha Voynow,
-Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
+Miki Tebeka, Ivan Tkatchev, Adam Twardoch, Rune Uhlin, Dmitry
+Vasiliev, Sasha Voynow, Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
 
 *** Changes from release 1.1.5 to 1.1.6 ***
+
+(1.1.6b1 snapshot released)
+
++ Added 'expand' option to the Image 'rotate' option.  If true, the
+  output image is made large enough to hold the entire rotated image.
+
++ Changed the ImageDraw 'line' method to always draw the last pixel in
+  a polyline, independent of line angle.
+
++ Fixed bearing calculation and clipping in the ImageFont truetype
+  renderer; this could lead to clipped text, or crashes in the low-
+  level _imagingft module.  (based on input from Adam Twardoch and
+  others).
+
++ Added ImageQt wrapper module, for converting PIL Image objects to
+  QImage objects in an efficient way.
+
++ Fixed 'getmodebands' to return the number of bands also for "PA"
+  and "LA" modes.  Added 'getmodebandnames' helper that return the
+  band names.
 
 (1.1.6a2 snapshot released)
 

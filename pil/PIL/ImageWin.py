@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageWin.py 2545 2005-10-03 10:29:49Z fredrik $
+# $Id: ImageWin.py 2662 2006-03-21 22:41:02Z fredrik $
 #
 # a Windows DIB display interface
 #
@@ -115,18 +115,18 @@ class Dib:
     # palette entries were changed, and the image should be
     # redrawn.
     #
-    # @param dc Device context (HDC), cast to a Python integer,
+    # @param handle Device context (HDC), cast to a Python integer,
     #     or an HDC or HWND instance.
     # @return A true value if one or more entries were changed
     #    (this indicates that the image should be redrawn).
 
-    def query_palette(self, dc):
+    def query_palette(self, handle):
         if isinstance(handle, HWND):
-            dc = self.image.getdc(handle)
+            handle = self.image.getdc(handle)
             try:
-                result = self.image.query_palette(dc)
+                result = self.image.query_palette(handle)
             finally:
-                self.image.releasedc(handle, dc)
+                self.image.releasedc(handle, handle)
         else:
             result = self.image.query_palette(handle)
         return result

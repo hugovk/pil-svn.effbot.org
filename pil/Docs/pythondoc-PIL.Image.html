@@ -20,59 +20,44 @@ a constant alpha.
 </p><dl>
 <dt><i>im1</i></dt>
 <dd>
-The first image.</dd>
+</dd>
 <dt><i>im2</i></dt>
 <dd>
-The second image.  Must have the same mode and size as
-   the first image.</dd>
+</dd>
 <dt><i>alpha</i></dt>
 <dd>
-The interpolation alpha factor.  If alpha is 0.0, a
-   copy of the first image is returned. If alpha is 1.0, a copy of
-   the second image is returned. There are no restrictions on the
-   alpha value. If necessary, the result is clipped to fit into
-   the allowed output range.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.composite-function' name='PIL.Image.composite-function'><b>composite(image1, image2, mask)</b></a> [<a href='#PIL.Image.composite-function'>#</a>]</dt>
 <dd>
-<p>Creates a new image by interpolating between two input images,
-using the mask as alpha.</p>
 <dl>
 <dt><i>image1</i></dt>
 <dd>
-The first image.</dd>
+</dd>
 <dt><i>image2</i></dt>
 <dd>
-The second image.  Must have the same mode and
-   size as the first image.</dd>
+</dd>
 <dt><i>mask</i></dt>
 <dd>
-A mask image.  This image can can have mode
-   &quot;1&quot;, &quot;L&quot;, or &quot;RGBA&quot;, and must have the same size as the
-   other two images.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.eval-function' name='PIL.Image.eval-function'><b>eval(image, function)</b></a> [<a href='#PIL.Image.eval-function'>#</a>]</dt>
 <dd>
-<p>Applies the function (which should take one argument) to each pixel
-in the given image. If the image has more than one band, the same
-function is applied to each band. Note that the function is
-evaluated once for each possible pixel value, so you cannot use
-random components or other generators.</p>
 <dl>
 <dt><i>image</i></dt>
 <dd>
-The input image.</dd>
+</dd>
 <dt><i>function</i></dt>
 <dd>
-A function object, taking one integer argument.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.frombuffer-function' name='PIL.Image.frombuffer-function'><b>frombuffer(mode, size, data, decoder_name=&quot;raw&quot;, *args)</b></a> [<a href='#PIL.Image.frombuffer-function'>#</a>]</dt>
@@ -94,23 +79,22 @@ If you have an entire image file in a string, wrap it in a
 </p><dl>
 <dt><i>mode</i></dt>
 <dd>
-The image mode.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-The image size.</dd>
+</dd>
 <dt><i>data</i></dt>
 <dd>
-An 8-bit string or other buffer object containing raw
-    data for the given mode.</dd>
+</dd>
 <dt><i>decoder_name</i></dt>
 <dd>
-What decoder to use.</dd>
+</dd>
 <dt><i>*args</i></dt>
 <dd>
-Additional parameters for the given decoder.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.fromstring-function' name='PIL.Image.fromstring-function'><b>fromstring(mode, size, data, decoder_name=&quot;raw&quot;, *args)</b></a> [<a href='#PIL.Image.fromstring-function'>#</a>]</dt>
@@ -130,25 +114,25 @@ If you have an entire image in a string, wrap it in a
 </p><dl>
 <dt><i>mode</i></dt>
 <dd>
-The image mode.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-The image size.</dd>
+</dd>
 <dt><i>data</i></dt>
 <dd>
-An 8-bit string containing raw data for the given mode.</dd>
+</dd>
 <dt><i>decoder_name</i></dt>
 <dd>
-What decoder to use.</dd>
+</dd>
 <dt><i>*args</i></dt>
 <dd>
-Additional parameters for the given decoder.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
-<dt><a id='PIL.Image.getmodebands-function' name='PIL.Image.getmodebands-function'><b>getmodebands(mode)</b></a> [<a href='#PIL.Image.getmodebands-function'>#</a>]</dt>
+<dt><a id='PIL.Image.getmodebandnames-function' name='PIL.Image.getmodebandnames-function'><b>getmodebandnames(mode)</b></a> [<a href='#PIL.Image.getmodebandnames-function'>#</a>]</dt>
 <dd>
 <p>Gets a list of individual band names.  Given a mode, this function
 returns a tuple containing the names of individual bands (use
@@ -158,44 +142,51 @@ band.
 </p><dl>
 <dt><i>mode</i></dt>
 <dd>
-Input mode.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-A tuple containing band names.  The length of the tuple
-    gives the number of bands in an image of the given mode.</dd>
+</dd>
 <dt>Raises <b>KeyError</b>:</dt><dd>
-If the input mode was not a standard mode.</dd>
+</dd>
+</dl><br />
+</dd>
+<dt><a id='PIL.Image.getmodebands-function' name='PIL.Image.getmodebands-function'><b>getmodebands(mode)</b></a> [<a href='#PIL.Image.getmodebands-function'>#</a>]</dt>
+<dd>
+<dl>
+<dt><i>mode</i></dt>
+<dd>
+</dd>
+<dt>Returns:</dt>
+<dd>
+</dd>
+<dt>Raises <b>KeyError</b>:</dt><dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.getmodebase-function' name='PIL.Image.getmodebase-function'><b>getmodebase(mode)</b></a> [<a href='#PIL.Image.getmodebase-function'>#</a>]</dt>
 <dd>
-<p>Gets the &quot;base&quot; mode for given mode.  This function returns &quot;L&quot; for
-images that contain grayscale data, and &quot;RGB&quot; for images that
-contain color data.</p>
 <dl>
 <dt><i>mode</i></dt>
 <dd>
-Input mode.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-&quot;L&quot; or &quot;RGB&quot;.</dd>
+</dd>
 <dt>Raises <b>KeyError</b>:</dt><dd>
-If the input mode was not a standard mode.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.getmodetype-function' name='PIL.Image.getmodetype-function'><b>getmodetype(mode)</b></a> [<a href='#PIL.Image.getmodetype-function'>#</a>]</dt>
 <dd>
-<p>Gets the storage type mode.  Given a mode, this function returns a
-single-layer mode suitable for storing individual bands.</p>
 <dl>
 <dt><i>mode</i></dt>
 <dd>
-Input mode.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-&quot;L&quot;, &quot;I&quot;, or &quot;F&quot;.</dd>
+</dd>
 <dt>Raises <b>KeyError</b>:</dt><dd>
-If the input mode was not a standard mode.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><b>Image()</b> (class) [<a href='#PIL.Image.Image-class'>#</a>]</dt>
@@ -205,66 +196,48 @@ If the input mode was not a standard mode.</dd>
 </dd>
 <dt><a id='PIL.Image.init-function' name='PIL.Image.init-function'><b>init()</b></a> [<a href='#PIL.Image.init-function'>#</a>]</dt>
 <dd>
-<p>Explicitly initializes the Python Imaging Library.  This function
-loads all available file format drivers.</p>
 </dd>
 <dt><a id='PIL.Image.isDirectory-function' name='PIL.Image.isDirectory-function'><b>isDirectory(f)</b></a> [<a href='#PIL.Image.isDirectory-function'>#</a>]</dt>
 <dd>
-<p>(Internal) Checks if an object is a string, and that it points to a
-directory.</p>
 </dd>
 <dt><a id='PIL.Image.isImageType-function' name='PIL.Image.isImageType-function'><b>isImageType(t)</b></a> [<a href='#PIL.Image.isImageType-function'>#</a>]</dt>
 <dd>
-<p>(Internal) Checks if an object is an image object.</p>
 </dd>
 <dt><a id='PIL.Image.isStringType-function' name='PIL.Image.isStringType-function'><b>isStringType(t)</b></a> [<a href='#PIL.Image.isStringType-function'>#</a>]</dt>
 <dd>
-<p>(Internal) Checks if an object is a string.  If the current
-Python version supports Unicode, this checks for both 8-bit
-and Unicode strings.</p>
 </dd>
 <dt><a id='PIL.Image.isTupleType-function' name='PIL.Image.isTupleType-function'><b>isTupleType(t)</b></a> [<a href='#PIL.Image.isTupleType-function'>#</a>]</dt>
 <dd>
-<p>(Internal) Checks if an object is a tuple.</p>
 </dd>
 <dt><a id='PIL.Image.merge-function' name='PIL.Image.merge-function'><b>merge(mode, bands)</b></a> [<a href='#PIL.Image.merge-function'>#</a>]</dt>
 <dd>
-<p>Creates a new image from a number of single-band images.</p>
 <dl>
 <dt><i>mode</i></dt>
 <dd>
-The mode to use for the output image.</dd>
+</dd>
 <dt><i>bands</i></dt>
 <dd>
-A sequence containing one single-band image for
-    each band in the output image.  All bands must have the
-    same size.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.new-function' name='PIL.Image.new-function'><b>new(mode, size, color=0)</b></a> [<a href='#PIL.Image.new-function'>#</a>]</dt>
 <dd>
-<p>Creates a new image with the given mode and size.</p>
 <dl>
 <dt><i>mode</i></dt>
 <dd>
-The mode to use for the new image.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-A 2-tuple, containing (width, height) in pixels.</dd>
+</dd>
 <dt><i>color</i></dt>
 <dd>
-What colour to use for the image.  Default is black.
-   If given, this should be a single integer or floating point value
-   for single-band modes, and a tuple for multi-band modes (one value
-   per band).  When creating RGB images, you can also use colour
-   strings as supported by the ImageColor module.  If the colour is
-   None, the image is not initialised.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.open-function' name='PIL.Image.open-function'><b>open(file, mode=&quot;r&quot;)</b></a> [<a href='#PIL.Image.open-function'>#</a>]</dt>
@@ -284,73 +257,62 @@ A filename (string) or a file object.  The file object
 </dd>
 <dt><i>mode</i></dt>
 <dd>
-The mode.  If given, this argument must be &quot;r&quot;.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 <dt>Raises <b>IOError</b>:</dt><dd>
-If the file cannot be found, or the image cannot be
-   opened and identified.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.preinit-function' name='PIL.Image.preinit-function'><b>preinit()</b></a> [<a href='#PIL.Image.preinit-function'>#</a>]</dt>
 <dd>
-<p>Explicitly loads standard file format drivers.</p>
 </dd>
 <dt><a id='PIL.Image.register_extension-function' name='PIL.Image.register_extension-function'><b>register_extension(id, extension)</b></a> [<a href='#PIL.Image.register_extension-function'>#</a>]</dt>
 <dd>
-<p>Registers an image extension.  This function should not be
-used in application code.</p>
 <dl>
 <dt><i>id</i></dt>
 <dd>
-An image format identifier.</dd>
+</dd>
 <dt><i>extension</i></dt>
 <dd>
-An extension used for this format.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.register_mime-function' name='PIL.Image.register_mime-function'><b>register_mime(id, mimetype)</b></a> [<a href='#PIL.Image.register_mime-function'>#</a>]</dt>
 <dd>
-<p>Registers an image MIME type.  This function should not be used
-in application code.</p>
 <dl>
 <dt><i>id</i></dt>
 <dd>
-An image format identifier.</dd>
+</dd>
 <dt><i>mimetype</i></dt>
 <dd>
-The image MIME type for this format.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.register_open-function' name='PIL.Image.register_open-function'><b>register_open(id, factory, accept=None)</b></a> [<a href='#PIL.Image.register_open-function'>#</a>]</dt>
 <dd>
-<p>Register an image file plugin.  This function should not be used
-in application code.</p>
 <dl>
 <dt><i>id</i></dt>
 <dd>
-An image format identifier.</dd>
+</dd>
 <dt><i>factory</i></dt>
 <dd>
-An image file factory method.</dd>
+</dd>
 <dt><i>accept</i></dt>
 <dd>
-An optional function that can be used to quickly
-   reject images having another format.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.register_save-function' name='PIL.Image.register_save-function'><b>register_save(id, driver)</b></a> [<a href='#PIL.Image.register_save-function'>#</a>]</dt>
 <dd>
-<p>Registers an image save function.  This function should not be
-used in application code.</p>
 <dl>
 <dt><i>id</i></dt>
 <dd>
-An image format identifier.</dd>
+</dd>
 <dt><i>driver</i></dt>
 <dd>
-A function to save images in this format.</dd>
+</dd>
 </dl><br />
 </dd>
 </dl>
@@ -358,9 +320,6 @@ A function to save images in this format.</dd>
 <dl>
 <dt><b>Image()</b> (class) [<a href='#PIL.Image.Image-class'>#</a>]</dt>
 <dd>
-<p>This class represents an image object.  To create Image objects, use
-the appropriate factory functions.  There's hardly ever any reason
-to call the Image constructor directly.</p>
 </dd>
 <dt><a id='PIL.Image.Image.convert-method' name='PIL.Image.Image.convert-method'><b>convert(mode, matrix=None)</b></a> [<a href='#PIL.Image.Image.convert-method'>#</a>]</dt>
 <dd>
@@ -384,24 +343,21 @@ thresholds, use the <a class="link" href="#PIL.Image.Image.point-method"><b>poin
 </p><dl>
 <dt><i>mode</i></dt>
 <dd>
-The requested mode.</dd>
+</dd>
 <dt><i>matrix</i></dt>
 <dd>
-An optional conversion matrix.  If given, this
-   should be 4- or 16-tuple containing floating point values.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.copy-method' name='PIL.Image.Image.copy-method'><b>copy()</b></a> [<a href='#PIL.Image.Image.copy-method'>#</a>]</dt>
 <dd>
-<p>Copies this image. Use this method if you wish to paste things
-into an image, but still retain the original.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.crop-method' name='PIL.Image.Image.crop-method'><b>crop(box=None)</b></a> [<a href='#PIL.Image.Image.crop-method'>#</a>]</dt>
@@ -418,10 +374,10 @@ copy.
 </p><dl>
 <dt><i>The</i></dt>
 <dd>
-crop rectangle, as a (left, upper, right, lower)-tuple.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.draft-method' name='PIL.Image.Image.draft-method'><b>draft(mode, size)</b></a> [<a href='#PIL.Image.Image.draft-method'>#</a>]</dt>
@@ -438,10 +394,10 @@ the image has already been loaded, this method has no effect.
 </p><dl>
 <dt><i>mode</i></dt>
 <dd>
-The requested mode.</dd>
+</dd>
 <dt><i>size</i></dt>
 <dd>
-The requested size.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.filter-method' name='PIL.Image.Image.filter-method'><b>filter(filter)</b></a> [<a href='#PIL.Image.Image.filter-method'>#</a>]</dt>
@@ -452,10 +408,10 @@ available filters, see the <b>ImageFilter</b> module.
 </p><dl>
 <dt><i>filter</i></dt>
 <dd>
-Filter kernel.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.fromstring-method' name='PIL.Image.Image.fromstring-method'><b>fromstring(data, decoder_name=&quot;raw&quot;, *args)</b></a> [<a href='#PIL.Image.Image.fromstring-method'>#</a>]</dt>
@@ -474,33 +430,26 @@ For example, <b>getbands</b> on an RGB image returns ("R", "G", "B").
 </p><dl>
 <dt>Returns:</dt>
 <dd>
-A tuple containing band names.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getbbox-method' name='PIL.Image.Image.getbbox-method'><b>getbbox()</b></a> [<a href='#PIL.Image.Image.getbbox-method'>#</a>]</dt>
 <dd>
-<p>Calculates the bounding box of the non-zero regions in the
-image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-The bounding box is returned as a 4-tuple defining the
-   left, upper, right, and lower pixel coordinate. If the image
-   is completely empty, this method returns None.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getcolors-method' name='PIL.Image.Image.getcolors-method'><b>getcolors(maxcolors=256)</b></a> [<a href='#PIL.Image.Image.getcolors-method'>#</a>]</dt>
 <dd>
-<p>Returns a list of colors used in this image.</p>
 <dl>
 <dt><i>maxcolors</i></dt>
 <dd>
-Maximum number of colors.  If this number is
-   exceeded, this method returns None.  The default limit is
-   256 colors.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An unsorted list of (count, pixel) values.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getdata-method' name='PIL.Image.Image.getdata-method'><b>getdata(band=None)</b></a> [<a href='#PIL.Image.Image.getdata-method'>#</a>]</dt>
@@ -518,66 +467,53 @@ printing), use <b>list(im.getdata())</b>.
 </p><dl>
 <dt><i>band</i></dt>
 <dd>
-What band to return.  The default is to return
-   all bands.  To return a single band, pass in the index
-   value (e.g. 0 to get the &quot;R&quot; band from an &quot;RGB&quot; image).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-A sequence-like object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getextrema-method' name='PIL.Image.Image.getextrema-method'><b>getextrema()</b></a> [<a href='#PIL.Image.Image.getextrema-method'>#</a>]</dt>
 <dd>
-<p>Gets the the minimum and maximum pixel values for each band in
-the image.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-For a single-band image, a 2-tuple containing the
-   minimum and maximum pixel value.  For a multi-band image,
-   a tuple containing one 2-tuple for each band.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getim-method' name='PIL.Image.Image.getim-method'><b>getim()</b></a> [<a href='#PIL.Image.Image.getim-method'>#</a>]</dt>
 <dd>
-<p>Returns a PyCObject that points to the internal image memory.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A PyCObject object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getpalette-method' name='PIL.Image.Image.getpalette-method'><b>getpalette()</b></a> [<a href='#PIL.Image.Image.getpalette-method'>#</a>]</dt>
 <dd>
-<p>Returns the image palette as a list.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A list of color values [r, g, b, ...], or None if the
-   image has no palette.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getpixel-method' name='PIL.Image.Image.getpixel-method'><b>getpixel(xy)</b></a> [<a href='#PIL.Image.Image.getpixel-method'>#</a>]</dt>
 <dd>
-<p>Returns the pixel value at a given position.</p>
 <dl>
 <dt><i>xy</i></dt>
 <dd>
-The coordinate, given as (x, y).</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-The pixel value.  If the image is a multi-layer image,
-   this method returns a tuple.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.getprojection-method' name='PIL.Image.Image.getprojection-method'><b>getprojection()</b></a> [<a href='#PIL.Image.Image.getprojection-method'>#</a>]</dt>
 <dd>
-<p>Returns the horizontal and vertical projection.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-Two sequences, indicating where there are non-zero
-    pixels along the X-axis and the Y-axis, respectively.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.histogram-method' name='PIL.Image.Image.histogram-method'><b>histogram(mask=None)</b></a> [<a href='#PIL.Image.Image.histogram-method'>#</a>]</dt>
@@ -599,22 +535,18 @@ bi-level image (mode "1") or a greyscale image ("L").
 </p><dl>
 <dt><i>mask</i></dt>
 <dd>
-An optional mask.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-A list containing pixel counts.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.load-method' name='PIL.Image.Image.load-method'><b>load()</b></a> [<a href='#PIL.Image.Image.load-method'>#</a>]</dt>
 <dd>
-<p>Allocates storage for the image and loads the pixel data.  In
-normal cases, you don't need to call this method, since the
-Image class automatically loads an opened image when it is
-accessed for the first time.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-An image access object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.offset-method' name='PIL.Image.Image.offset-method'><b>offset(xoffset, yoffset=None)</b></a> [<a href='#PIL.Image.Image.offset-method'>#</a>]</dt>
@@ -629,14 +561,13 @@ function in the <b>ImageChops</b> module.
 </p><dl>
 <dt><i>xoffset</i></dt>
 <dd>
-The horizontal distance.</dd>
+</dd>
 <dt><i>yoffset</i></dt>
 <dd>
-The vertical distance.  If omitted, both
-   distances are set to the same value.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.paste-method' name='PIL.Image.Image.paste-method'><b>paste(im, box=None, mask=None)</b></a> [<a href='#PIL.Image.Image.paste-method'>#</a>]</dt>
@@ -670,7 +601,7 @@ both source image and mask.
 </p><dl>
 <dt><i>im</i></dt>
 <dd>
-Source image or pixel value (integer or tuple).</dd>
+</dd>
 <dt><i>box</i></dt>
 <dd>
 <p>An optional 4-tuple giving the region to paste into.
@@ -684,44 +615,32 @@ Source image or pixel value (integer or tuple).</dd>
 </p></dd>
 <dt><i>mask</i></dt>
 <dd>
-An optional mask image.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.point-method' name='PIL.Image.Image.point-method'><b>point(lut, mode=None)</b></a> [<a href='#PIL.Image.Image.point-method'>#</a>]</dt>
 <dd>
-<p>Maps this image through a lookup table or function.</p>
 <dl>
 <dt><i>lut</i></dt>
 <dd>
-A lookup table, containing 256 values per band in the
-   image. A function can be used instead, it should take a single
-   argument. The function is called once for each possible pixel
-   value, and the resulting table is applied to all bands of the
-   image.</dd>
+</dd>
 <dt><i>mode</i></dt>
 <dd>
-Output mode (default is same as input).  In the
-   current version, this can only be used if the source image
-   has mode &quot;L&quot; or &quot;P&quot;, and the output has mode &quot;1&quot;.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.putalpha-method' name='PIL.Image.Image.putalpha-method'><b>putalpha(alpha)</b></a> [<a href='#PIL.Image.Image.putalpha-method'>#</a>]</dt>
 <dd>
-<p>Adds or replaces the alpha layer in this image.  If the image
-does not have an alpha layer, it's converted to &quot;LA&quot; or &quot;RGBA&quot;.
-The new layer must be either &quot;L&quot; or &quot;1&quot;.</p>
 <dl>
 <dt><i>im</i></dt>
 <dd>
-The new alpha layer.  This can either be an &quot;L&quot; or &quot;1&quot;
-   image having the same size as this image, or an integer or
-   other color value.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.putdata-method' name='PIL.Image.Image.putdata-method'><b>putdata(data, scale=1.0, offset=0.0)</b></a> [<a href='#PIL.Image.Image.putdata-method'>#</a>]</dt>
@@ -735,27 +654,21 @@ the sequence values: <b>pixel = value*scale + offset</b>.
 </p><dl>
 <dt><i>data</i></dt>
 <dd>
-A sequence object.</dd>
+</dd>
 <dt><i>scale</i></dt>
 <dd>
-An optional scale value.  The default is 1.0.</dd>
+</dd>
 <dt><i>offset</i></dt>
 <dd>
-An optional offset value.  The default is 0.0.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.putpalette-method' name='PIL.Image.Image.putpalette-method'><b>putpalette(data)</b></a> [<a href='#PIL.Image.Image.putpalette-method'>#</a>]</dt>
 <dd>
-<p>Attaches a palette to this image.  The image must be a &quot;P&quot; or
-&quot;L&quot; image, and the palette sequence must contain 768 integer
-values, where each group of three values represent the red,
-green, and blue values for the corresponding pixel
-index. Instead of an integer sequence, you can use an 8-bit
-string.</p>
 <dl>
 <dt><i>data</i></dt>
 <dd>
-A palette sequence (either a list or a string).</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.putpixel-method' name='PIL.Image.Image.putpixel-method'><b>putpixel(xy, value)</b></a> [<a href='#PIL.Image.Image.putpixel-method'>#</a>]</dt>
@@ -771,20 +684,18 @@ instead.
 </p><dl>
 <dt><i>xy</i></dt>
 <dd>
-The pixel coordinate, given as (x, y).</dd>
+</dd>
 <dt><i>value</i></dt>
 <dd>
-The pixel value.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.resize-method' name='PIL.Image.Image.resize-method'><b>resize(size, filter=NEAREST)</b></a> [<a href='#PIL.Image.Image.resize-method'>#</a>]</dt>
 <dd>
-<p>Returns a resized copy of this image.</p>
 <dl>
 <dt><i>size</i></dt>
 <dd>
-The requested size in pixels, as a 2-tuple:
-   (width, height).</dd>
+</dd>
 <dt><i>filter</i></dt>
 <dd>
 An optional resampling filter.  This can be
@@ -797,18 +708,15 @@ An optional resampling filter.  This can be
 </dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.rotate-method' name='PIL.Image.Image.rotate-method'><b>rotate(angle, filter=NEAREST)</b></a> [<a href='#PIL.Image.Image.rotate-method'>#</a>]</dt>
 <dd>
-<p>Returns a rotated copy of this image.  This method returns a
-copy of this image, rotated the given number of degrees counter
-clockwise around its centre.</p>
 <dl>
 <dt><i>angle</i></dt>
 <dd>
-In degrees counter clockwise.</dd>
+</dd>
 <dt><i>filter</i></dt>
 <dd>
 An optional resampling filter.  This can be
@@ -820,7 +728,7 @@ An optional resampling filter.  This can be
 </dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.save-method' name='PIL.Image.Image.save-method'><b>save(file, format=None, **options)</b></a> [<a href='#PIL.Image.Image.save-method'>#</a>]</dt>
@@ -842,25 +750,20 @@ methods, and be opened in binary mode.
 </p><dl>
 <dt><i>file</i></dt>
 <dd>
-File name or file object.</dd>
+</dd>
 <dt><i>format</i></dt>
 <dd>
-Optional format override.  If omitted, the
-   format to use is determined from the filename extension.
-   If a file object was used instead of a filename, this
-   parameter should always be used.</dd>
+</dd>
 <dt><i>**options</i></dt>
 <dd>
-Extra parameters to the image writer.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-None</dd>
+</dd>
 <dt>Raises <b>KeyError</b>:</dt><dd>
-If the output format could not be determined
-   from the file name.  Use the format option to solve this.</dd>
+</dd>
 <dt>Raises <b>IOError</b>:</dt><dd>
-If the file could not be written.  The file
-   may have been created, and may contain partial data.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.seek-method' name='PIL.Image.Image.seek-method'><b>seek(frame)</b></a> [<a href='#PIL.Image.Image.seek-method'>#</a>]</dt>
@@ -876,10 +779,9 @@ formats only allows you to seek to the next frame.
 </p><dl>
 <dt><i>frame</i></dt>
 <dd>
-Frame number, starting at 0.</dd>
+</dd>
 <dt>Raises <b>EOFError</b>:</dt><dd>
-If the call attempts to seek beyond the end
-    of the sequence.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.show-method' name='PIL.Image.Image.show-method'><b>show(title=None)</b></a> [<a href='#PIL.Image.Image.show-method'>#</a>]</dt>
@@ -896,30 +798,23 @@ the standard BMP display utility to show it (usually Paint).
 </p><dl>
 <dt><i>title</i></dt>
 <dd>
-Optional title to use for the image window,
-   where possible.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.split-method' name='PIL.Image.Image.split-method'><b>split()</b></a> [<a href='#PIL.Image.Image.split-method'>#</a>]</dt>
 <dd>
-<p>Split this image into individual bands. This method returns a
-tuple of individual image bands from an image. For example,
-splitting an &quot;RGB&quot; image creates three new images each
-containing a copy of one of the original bands (red, green,
-blue).</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-A tuple containing bands.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.tell-method' name='PIL.Image.Image.tell-method'><b>tell()</b></a> [<a href='#PIL.Image.Image.tell-method'>#</a>]</dt>
 <dd>
-<p>Returns the current frame number.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-Frame number, starting with 0.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.thumbnail-method' name='PIL.Image.Image.thumbnail-method'><b>thumbnail(size, resample=NEAREST)</b></a> [<a href='#PIL.Image.Image.thumbnail-method'>#</a>]</dt>
@@ -942,7 +837,7 @@ method to a <a class="link" href="#PIL.Image.Image.copy-method"><b>copy</b></a> 
 </p><dl>
 <dt><i>size</i></dt>
 <dd>
-Requested size.</dd>
+</dd>
 <dt><i>resample</i></dt>
 <dd>
 Optional resampling filter.  This can be one
@@ -953,38 +848,34 @@ Optional resampling filter.  This can be one
 </dd>
 <dt>Returns:</dt>
 <dd>
-None</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.tobitmap-method' name='PIL.Image.Image.tobitmap-method'><b>tobitmap(name=&quot;image&quot;)</b></a> [<a href='#PIL.Image.Image.tobitmap-method'>#</a>]</dt>
 <dd>
-<p>Returns the image converted to an X11 bitmap.  This method
-only works for mode &quot;1&quot; images.</p>
 <dl>
 <dt><i>name</i></dt>
 <dd>
-The name prefix to use for the bitmap variables.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-A string containing an X11 bitmap.</dd>
+</dd>
 <dt>Raises <b>ValueError</b>:</dt><dd>
-If the mode is not &quot;1&quot;</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.tostring-method' name='PIL.Image.Image.tostring-method'><b>tostring(encoder_name=&quot;raw&quot;, *args)</b></a> [<a href='#PIL.Image.Image.tostring-method'>#</a>]</dt>
 <dd>
-<p>Returns a string containing pixel data.</p>
 <dl>
 <dt><i>encoder_name</i></dt>
 <dd>
-What encoder to use.  The default is to
-   use the standard &quot;raw&quot; encoder.</dd>
+</dd>
 <dt><i>*args</i></dt>
 <dd>
-Extra arguments to the encoder.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
-An 8-bit string.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.transform-method' name='PIL.Image.Image.transform-method'><b>transform(size, method, data, resample=NEAREST)</b></a> [<a href='#PIL.Image.Image.transform-method'>#</a>]</dt>
@@ -996,7 +887,7 @@ to the new image using the given transform.
 </p><dl>
 <dt><i>size</i></dt>
 <dd>
-The output size.</dd>
+</dd>
 <dt><i>method</i></dt>
 <dd>
 The transformation method.  This is one of
@@ -1008,7 +899,7 @@ The transformation method.  This is one of
 </dd>
 <dt><i>data</i></dt>
 <dd>
-Extra data to the transformation method.</dd>
+</dd>
 <dt><i>resample</i></dt>
 <dd>
 Optional resampling filter.  It can be one of
@@ -1020,12 +911,11 @@ Optional resampling filter.  It can be one of
 </dd>
 <dt>Returns:</dt>
 <dd>
-An Image object.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.Image.Image.transpose-method' name='PIL.Image.Image.transpose-method'><b>transpose(method)</b></a> [<a href='#PIL.Image.Image.transpose-method'>#</a>]</dt>
 <dd>
-<p>Returns a flipped or rotated copy of this image.</p>
 <dl>
 <dt><i>method</i></dt>
 <dd>
@@ -1036,12 +926,6 @@ One of <b>FLIP_LEFT_RIGHT</b>, <b>FLIP_TOP_BOTTOM</b>,
 </dd>
 <dt><a id='PIL.Image.Image.verify-method' name='PIL.Image.Image.verify-method'><b>verify()</b></a> [<a href='#PIL.Image.Image.verify-method'>#</a>]</dt>
 <dd>
-<p>Verifies the contents of a file. For data read from a file, this
-method attempts to determine if the file is broken, without
-actually decoding the image data.  If this method finds any
-problems, it raises suitable exceptions.  If you need to load
-the image after using this method, you must reopen the image
-file.</p>
 </dd>
 </dl>
 </body></html>

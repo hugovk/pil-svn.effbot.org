@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: _imaging.c 2546 2005-10-03 11:17:34Z fredrik $
+ * $Id: _imaging.c 2746 2006-06-18 17:33:46Z fredrik $
  *
  * the imaging library bindings
  *
@@ -64,9 +64,10 @@
  * 2004-09-17 fl   Added getcolors
  * 2004-10-04 fl   Added modefilter
  * 2005-10-02 fl   Added access proxy
+ * 2006-06-18 fl   Always draw last point in polyline
  *
- * Copyright (c) 1997-2005 by Secret Labs AB 
- * Copyright (c) 1995-2005 by Fredrik Lundh
+ * Copyright (c) 1997-2006 by Secret Labs AB 
+ * Copyright (c) 1995-2006 by Fredrik Lundh
  *
  * See the README file for information on usage and redistribution.
  */
@@ -2304,14 +2305,35 @@ _draw_lines(ImagingDrawObject* self, PyObject* args)
     if (n < 0)
 	return NULL;
 
-    for (i = 0; i < n-1; i++) {
-	double *p = &xy[i+i];
-	if (ImagingDrawWideLine(self->image->image, (int) p[0], (int) p[1],
-                                (int) p[2], (int) p[3], &ink, width,
-                                self->blend) < 0) {
-	    free(xy);
-	    return NULL;
-	}
+    if (width <= 1) {
+        double *p = NULL;
+	for (i = 0; i < n-1; i++) {
+            p = &xy[i+i];
+            if (ImagingDrawLine(
+                    self->image->image,
+                    (int) p[0], (int) p[1], (int) p[2], (int) p[3],
+                    &ink, self->blend) < 0) {
+                free(xy);
+                return NULL;
+            }
+        }
+        if (p) /* draw last point */
+            ImagingDrawPoint(
+                    self->image->image,
+                    (int) p[2], (int) p[3],
+                    &ink, self->blend
+                );
+    } else {
+        for (i = 0; i < n-1; i++) {
+            double *p = &xy[i+i];
+            if (ImagingDrawWideLine(
+                    self->image->image,
+                    (int) p[0], (int) p[1], (int) p[2], (int) p[3],
+                    &ink, width, self->blend) < 0) {
+                free(xy);
+                return NULL;
+            }
+        }
     }
 
     free(xy);

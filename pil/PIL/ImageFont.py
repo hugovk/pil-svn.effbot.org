@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageFont.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: ImageFont.py 2756 2006-06-19 06:07:18Z fredrik $
 #
 # PIL raster font management
 #
@@ -127,13 +127,16 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getsize(self, text):
-        return self.font.getsize(text)
+        return self.font.getsize(text)[0]
 
-    def getmask(self, text, mode="", fill=Image.core.fill):
-        size = self.font.getsize(text)
+    def getmask(self, text, mode=""):
+	return self.getmask2(text, mode)[0]
+
+    def getmask2(self, text, mode="", fill=Image.core.fill):
+        size, offset = self.font.getsize(text)
         im = fill("L", size, 0)
         self.font.render(text, im.id, mode=="1")
-        return im
+        return im, offset
 
 ##
 # Wrapper that creates a transposed font from any existing font

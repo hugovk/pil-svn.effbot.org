@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageOps.py 2395 2005-05-07 09:16:06Z Fredrik $
+# $Id: ImageOps.py 2760 2006-06-19 13:31:40Z fredrik $
 #
 # standard image operations
 #
@@ -50,7 +50,7 @@ def _color(color, mode):
 def _lut(image, lut):
     if image.mode == "P":
         # FIXME: apply to lookup table, not image data
-        raise NotImplemented, "mode P support coming soon"
+        raise NotImplementedError("mode P support coming soon")
     elif image.mode in ("L", "RGB"):
         if image.mode == "RGB" and len(lut) == 256:
             lut = lut + lut + lut
@@ -181,7 +181,8 @@ def crop(image, border=0):
 # Deform the image.
 #
 # @param image The image to deform.
-# @param deformer A deformer object.
+# @param deformer A deformer object.  Any object that implements a
+#     <b>getmesh</b> method can be used.
 # @param resample What resampling filter to use.
 # @return An image.
 

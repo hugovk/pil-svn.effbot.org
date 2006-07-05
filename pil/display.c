@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: display.c 2576 2005-11-07 22:37:04Z fredrik $
+ * $Id: display.c 2751 2006-06-18 19:50:45Z fredrik $
  *
  * display support
  *
@@ -51,7 +51,7 @@ _new(const char* mode, int xsize, int ysize)
 {
     ImagingDisplayObject *display;
 
-    display = PyObject_NEW(ImagingDisplayObject, &ImagingDisplayType);
+    display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL)
 	return NULL;
 
@@ -69,7 +69,7 @@ _delete(ImagingDisplayObject* display)
 {
     if (display->dib)
 	ImagingDeleteDIB(display->dib);
-    PyObject_DEL(display);
+    PyObject_Del(display);
 }
 
 static PyObject* 

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Draw.c 2435 2005-05-25 20:44:35Z Fredrik $
+ * $Id: Draw.c 2745 2006-06-18 17:27:41Z fredrik $
  *
  * a simple drawing package for the Imaging library
  *
@@ -21,8 +21,8 @@
  * 2004-09-04 fl  Support simple wide lines (no joins)
  * 2005-05-25 fl  Fixed line width calculation
  *
- * Copyright (c) 1996-2005 by Fredrik Lundh
- * Copyright (c) 1997-2005 by Secret Labs AB.
+ * Copyright (c) 1996-2006 by Fredrik Lundh
+ * Copyright (c) 1997-2006 by Secret Labs AB.
  *
  * See the README file for information on usage and redistribution.
  */
@@ -43,14 +43,14 @@
 #define INK32(ink) (*(INT32*)ink)
 
 /* like (a * b + 127) / 255), but much faster on most platforms */
-#define	MULDIV255(a, b, tmp)\
-     	(tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
+#define MULDIV255(a, b, tmp)\
+        (tmp = (a) * (b) + 128, ((((tmp) >> 8) + (tmp)) >> 8))
 
-#define	BLEND(mask, in1, in2, tmp1, tmp2)\
-	(MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
+#define BLEND(mask, in1, in2, tmp1, tmp2)\
+        (MULDIV255(in1, 255 - mask, tmp1) + MULDIV255(in2, mask, tmp2))
 
 /* -------------------------------------------------------------------- */
-/* Primitives								*/
+/* Primitives                                                           */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -65,14 +65,14 @@ static inline void
 point8(Imaging im, int x, int y, int ink)
 {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize)
-	im->image8[y][x] = (UINT8) ink;
+        im->image8[y][x] = (UINT8) ink;
 }
 
 static inline void
 point32(Imaging im, int x, int y, int ink)
 {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize)
-	im->image32[y][x] = ink;
+        im->image32[y][x] = ink;
 }
 
 static inline void
@@ -95,17 +95,17 @@ hline8(Imaging im, int x0, int y0, int x1, int ink)
     int tmp;
 
     if (y0 >= 0 && y0 < im->ysize) {
-	if (x0 > x1)
-	    tmp = x0, x0 = x1, x1 = tmp;
-	if (x0 < 0)
-	    x0 = 0;
-	else if (x0 >= im->xsize)
-	    return;
-	if (x1 < 0)
-	    return;
-	else if (x1 >= im->xsize)
-	    x1 = im->xsize-1;
-	if (x0 <= x1)
+        if (x0 > x1)
+            tmp = x0, x0 = x1, x1 = tmp;
+        if (x0 < 0)
+            x0 = 0;
+        else if (x0 >= im->xsize)
+            return;
+        if (x1 < 0)
+            return;
+        else if (x1 >= im->xsize)
+            x1 = im->xsize-1;
+        if (x0 <= x1)
             memset(im->image8[y0] + x0, (UINT8) ink, x1 - x0 + 1);
     }
 }
@@ -117,18 +117,18 @@ hline32(Imaging im, int x0, int y0, int x1, int ink)
     INT32* p;
 
     if (y0 >= 0 && y0 < im->ysize) {
-	if (x0 > x1)
-	    tmp = x0, x0 = x1, x1 = tmp;
-	if (x0 < 0)
-	    x0 = 0;
-	else if (x0 >= im->xsize)
-	    return;
-	if (x1 < 0)
-	    return;
-	else if (x1 >= im->xsize)
-	    x1 = im->xsize-1;
+        if (x0 > x1)
+            tmp = x0, x0 = x1, x1 = tmp;
+        if (x0 < 0)
+            x0 = 0;
+        else if (x0 >= im->xsize)
+            return;
+        if (x1 < 0)
+            return;
+        else if (x1 >= im->xsize)
+            x1 = im->xsize-1;
         p = im->image32[y0];
-	while (x0 <= x1)
+        while (x0 <= x1)
             p[x0++] = ink;
     }
 }
@@ -140,17 +140,17 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink)
     unsigned int tmp1, tmp2;
 
     if (y0 >= 0 && y0 < im->ysize) {
-	if (x0 > x1)
-	    tmp = x0, x0 = x1, x1 = tmp;
-	if (x0 < 0)
-	    x0 = 0;
-	else if (x0 >= im->xsize)
-	    return;
-	if (x1 < 0)
-	    return;
-	else if (x1 >= im->xsize)
-	    x1 = im->xsize-1;
-	if (x0 <= x1) {
+        if (x0 > x1)
+            tmp = x0, x0 = x1, x1 = tmp;
+        if (x0 < 0)
+            x0 = 0;
+        else if (x0 >= im->xsize)
+            return;
+        if (x1 < 0)
+            return;
+        else if (x1 >= im->xsize)
+            x1 = im->xsize-1;
+        if (x0 <= x1) {
             UINT8* out = (UINT8*) im->image[y0]+x0*4;
             UINT8* in = (UINT8*) &ink;
             while (x0 <= x1) {
@@ -173,65 +173,68 @@ line8(Imaging im, int x0, int y0, int x1, int y1, int ink)
     /* normalize coordinates */
     dx = x1-x0;
     if (dx < 0)
-	dx = -dx, xs = -1;
+        dx = -dx, xs = -1;
     else
-	xs = 1;
+        xs = 1;
     dy = y1-y0;
     if (dy < 0)
-	dy = -dy, ys = -1;
+        dy = -dy, ys = -1;
     else
-	ys = 1;
+        ys = 1;
 
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0)
 
-	/* vertical */
-	for (i = 0; i < dy; i++) {
-	    point8(im, x0, y0, ink);
-	    y0 += ys;
-	}
+        /* vertical */
+        for (i = 0; i < dy; i++) {
+            point8(im, x0, y0, ink);
+            y0 += ys;
+        }
 
     else if (dy == 0)
 
-	/* horizontal */
-	hline8(im, x0, y0, x1, ink);
+        /* horizontal */
+        for (i = 0; i < dx; i++) {
+            point8(im, x0, y0, ink);
+            x0 += xs;
+        }
 
     else if (dx > dy) {
 
-	/* bresenham, horizontal slope */
-	n = dx;
-	dy += dy;
-	e = dy - dx;
-	dx += dx;
+        /* bresenham, horizontal slope */
+        n = dx;
+        dy += dy;
+        e = dy - dx;
+        dx += dx;
 
-	for (i = 0; i < n; i++) {
-	    point8(im, x0, y0, ink);
-	    if (e >= 0) {
-		y0 += ys;
-		e -= dx;
-	    }
-	    e += dy;
-	    x0 += xs;
-	}
+        for (i = 0; i < n; i++) {
+            point8(im, x0, y0, ink);
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
+        }
 
     } else {
 
-	/* bresenham, vertical slope */
-	n = dy;
-	dx += dx;
-	e = dx - dy;
-	dy += dy;
+        /* bresenham, vertical slope */
+        n = dy;
+        dx += dx;
+        e = dx - dy;
+        dy += dy;
 
-	for (i = 0; i < n; i++) {
-	    point8(im, x0, y0, ink);
-	    if (e >= 0) {
-		x0 += xs;
-		e -= dy;
-	    }
-	    e += dx;
-	    y0 += ys;
-	}
+        for (i = 0; i < n; i++) {
+            point8(im, x0, y0, ink);
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
+        }
 
     }
 }
@@ -246,65 +249,68 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink)
     /* normalize coordinates */
     dx = x1-x0;
     if (dx < 0)
-	dx = -dx, xs = -1;
+        dx = -dx, xs = -1;
     else
-	xs = 1;
+        xs = 1;
     dy = y1-y0;
     if (dy < 0)
-	dy = -dy, ys = -1;
+        dy = -dy, ys = -1;
     else
-	ys = 1;
+        ys = 1;
 
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0)
 
-	/* vertical */
-	for (i = 0; i < dy; i++) {
-	    point32(im, x0, y0, ink);
-	    y0 += ys;
-	}
+        /* vertical */
+        for (i = 0; i < dy; i++) {
+            point32(im, x0, y0, ink);
+            y0 += ys;
+        }
 
     else if (dy == 0)
 
-	/* horizontal */
-	hline32(im, x0, y0, x1, ink);
+        /* horizontal */
+        for (i = 0; i < dx; i++) {
+            point32(im, x0, y0, ink);
+            x0 += xs;
+        }
 
     else if (dx > dy) {
 
-	/* bresenham, horizontal slope */
-	n = dx;
-	dy += dy;
-	e = dy - dx;
-	dx += dx;
+        /* bresenham, horizontal slope */
+        n = dx;
+        dy += dy;
+        e = dy - dx;
+        dx += dx;
 
-	for (i = 0; i < n; i++) {
-	    point32(im, x0, y0, ink);
-	    if (e >= 0) {
-		y0 += ys;
-		e -= dx;
-	    }
-	    e += dy;
-	    x0 += xs;
-	}
+        for (i = 0; i < n; i++) {
+            point32(im, x0, y0, ink);
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
+        }
 
     } else {
 
-	/* bresenham, vertical slope */
-	n = dy;
-	dx += dx;
-	e = dx - dy;
-	dy += dy;
+        /* bresenham, vertical slope */
+        n = dy;
+        dx += dx;
+        e = dx - dy;
+        dy += dy;
 
-	for (i = 0; i < n; i++) {
-	    point32(im, x0, y0, ink);
-	    if (e >= 0) {
-		x0 += xs;
-		e -= dy;
-	    }
-	    e += dx;
-	    y0 += ys;
-	}
+        for (i = 0; i < n; i++) {
+            point32(im, x0, y0, ink);
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
+        }
 
     }
 }
@@ -319,65 +325,68 @@ line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink)
     /* normalize coordinates */
     dx = x1-x0;
     if (dx < 0)
-	dx = -dx, xs = -1;
+        dx = -dx, xs = -1;
     else
-	xs = 1;
+        xs = 1;
     dy = y1-y0;
     if (dy < 0)
-	dy = -dy, ys = -1;
+        dy = -dy, ys = -1;
     else
-	ys = 1;
+        ys = 1;
 
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0)
 
-	/* vertical */
-	for (i = 0; i < dy; i++) {
-	    point32rgba(im, x0, y0, ink);
-	    y0 += ys;
-	}
+        /* vertical */
+        for (i = 0; i < dy; i++) {
+            point32rgba(im, x0, y0, ink);
+            y0 += ys;
+        }
 
     else if (dy == 0)
 
-	/* horizontal */
-	hline32rgba(im, x0, y0, x1, ink);
+        /* horizontal */
+        for (i = 0; i < dx; i++) {
+            point32rgba(im, x0, y0, ink);
+            x0 += xs;
+        }
 
     else if (dx > dy) {
 
-	/* bresenham, horizontal slope */
-	n = dx;
-	dy += dy;
-	e = dy - dx;
-	dx += dx;
+        /* bresenham, horizontal slope */
+        n = dx;
+        dy += dy;
+        e = dy - dx;
+        dx += dx;
 
-	for (i = 0; i < n; i++) {
-	    point32rgba(im, x0, y0, ink);
-	    if (e >= 0) {
-		y0 += ys;
-		e -= dx;
-	    }
-	    e += dy;
-	    x0 += xs;
-	}
+        for (i = 0; i < n; i++) {
+            point32rgba(im, x0, y0, ink);
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
+        }
 
     } else {
 
-	/* bresenham, vertical slope */
-	n = dy;
-	dx += dx;
-	e = dx - dy;
-	dy += dy;
+        /* bresenham, vertical slope */
+        n = dy;
+        dx += dx;
+        e = dx - dy;
+        dy += dy;
 
-	for (i = 0; i < n; i++) {
-	    point32rgba(im, x0, y0, ink);
-	    if (e >= 0) {
-		x0 += xs;
-		e -= dy;
-	    }
-	    e += dx;
-	    y0 += ys;
-	}
+        for (i = 0; i < n; i++) {
+            point32rgba(im, x0, y0, ink);
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
+        }
 
     }
 }
@@ -403,47 +412,47 @@ polygon8(Imaging im, int n, Edge *e, int ink, int eofill)
     float y;
 
     if (n <= 0)
-	return 0;
+        return 0;
 
     /* Find upper and lower polygon boundary (within image) */
 
     ymin = e[0].ymin;
     ymax = e[0].ymax;
     for (i = 1; i < n; i++) {
-	if (e[i].ymin < ymin) ymin = e[i].ymin;
-	if (e[i].ymax > ymax) ymax = e[i].ymax;
+        if (e[i].ymin < ymin) ymin = e[i].ymin;
+        if (e[i].ymax > ymax) ymax = e[i].ymax;
     }
 
     if (ymin < 0)
-	ymin = 0;
+        ymin = 0;
     if (ymax >= im->ysize)
-	ymax = im->ysize-1;
+        ymax = im->ysize-1;
 
     /* Process polygon edges */
 
     xx = malloc(n * sizeof(float));
     if (!xx)
-	return -1;
+        return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5F;
-	for (i = j = 0; i < n; i++) 
-	    if (y >= e[i].ymin && y <= e[i].ymax) {
-		if (e[i].d == 0)
-		    hline8(im, e[i].xmin, ymin, e[i].xmax, ink);
-		else
-		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+        y = ymin+0.5F;
+        for (i = j = 0; i < n; i++) 
+            if (y >= e[i].ymin && y <= e[i].ymax) {
+                if (e[i].d == 0)
+                    hline8(im, e[i].xmin, ymin, e[i].xmax, ink);
+                else
+                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
             }
-	if (j == 2) {
+        if (j == 2) {
             if (xx[0] < xx[1])
                 hline8(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
             else
                 hline8(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-	} else {
-	    qsort(xx, j, sizeof(float), x_cmp);
-	    for (i = 0; i < j-1 ; i += 2)
-		hline8(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
-	}
+        } else {
+            qsort(xx, j, sizeof(float), x_cmp);
+            for (i = 0; i < j-1 ; i += 2)
+                hline8(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
+        }
     }
 
     free(xx);
@@ -460,48 +469,48 @@ polygon32(Imaging im, int n, Edge *e, int ink, int eofill)
     float y;
 
     if (n <= 0)
-	return 0;
+        return 0;
 
     /* Find upper and lower polygon boundary (within image) */
 
     ymin = e[0].ymin;
     ymax = e[0].ymax;
     for (i = 1; i < n; i++) {
-	if (e[i].ymin < ymin) ymin = e[i].ymin;
-	if (e[i].ymax > ymax) ymax = e[i].ymax;
+        if (e[i].ymin < ymin) ymin = e[i].ymin;
+        if (e[i].ymax > ymax) ymax = e[i].ymax;
     }
 
     if (ymin < 0)
-	ymin = 0;
+        ymin = 0;
     if (ymax >= im->ysize)
-	ymax = im->ysize-1;
+        ymax = im->ysize-1;
 
     /* Process polygon edges */
 
     xx = malloc(n * sizeof(float));
     if (!xx)
-	return -1;
+        return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5F;
-	for (i = j = 0; i < n; i++) {
-	    if (y >= e[i].ymin && y <= e[i].ymax) {
-		if (e[i].d == 0)
-		    hline32(im, e[i].xmin, ymin, e[i].xmax, ink);
-		else
-		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+        y = ymin+0.5F;
+        for (i = j = 0; i < n; i++) {
+            if (y >= e[i].ymin && y <= e[i].ymax) {
+                if (e[i].d == 0)
+                    hline32(im, e[i].xmin, ymin, e[i].xmax, ink);
+                else
+                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
             }
         }
-	if (j == 2) {
+        if (j == 2) {
             if (xx[0] < xx[1])
                 hline32(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
             else
                 hline32(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-	} else {
-	    qsort(xx, j, sizeof(float), x_cmp);
-	    for (i = 0; i < j-1 ; i += 2)
+        } else {
+            qsort(xx, j, sizeof(float), x_cmp);
+            for (i = 0; i < j-1 ; i += 2)
                 hline32(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
-	}
+        }
     }
 
     free(xx);
@@ -518,48 +527,48 @@ polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill)
     float y;
 
     if (n <= 0)
-	return 0;
+        return 0;
 
     /* Find upper and lower polygon boundary (within image) */
 
     ymin = e[0].ymin;
     ymax = e[0].ymax;
     for (i = 1; i < n; i++) {
-	if (e[i].ymin < ymin) ymin = e[i].ymin;
-	if (e[i].ymax > ymax) ymax = e[i].ymax;
+        if (e[i].ymin < ymin) ymin = e[i].ymin;
+        if (e[i].ymax > ymax) ymax = e[i].ymax;
     }
 
     if (ymin < 0)
-	ymin = 0;
+        ymin = 0;
     if (ymax >= im->ysize)
-	ymax = im->ysize-1;
+        ymax = im->ysize-1;
 
     /* Process polygon edges */
 
     xx = malloc(n * sizeof(float));
     if (!xx)
-	return -1;
+        return -1;
 
     for (;ymin <= ymax; ymin++) {
-	y = ymin+0.5F;
-	for (i = j = 0; i < n; i++) {
-	    if (y >= e[i].ymin && y <= e[i].ymax) {
-		if (e[i].d == 0)
-		    hline32rgba(im, e[i].xmin, ymin, e[i].xmax, ink);
-		else
-		    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
+        y = ymin+0.5F;
+        for (i = j = 0; i < n; i++) {
+            if (y >= e[i].ymin && y <= e[i].ymax) {
+                if (e[i].d == 0)
+                    hline32rgba(im, e[i].xmin, ymin, e[i].xmax, ink);
+                else
+                    xx[j++] = (y-e[i].y0) * e[i].dx + e[i].x0;
             }
         }
-	if (j == 2) {
+        if (j == 2) {
             if (xx[0] < xx[1])
                 hline32rgba(im, CEIL(xx[0]-0.5), ymin, FLOOR(xx[1]+0.5), ink);
             else
                 hline32rgba(im, CEIL(xx[1]-0.5), ymin, FLOOR(xx[0]+0.5), ink);
-	} else {
-	    qsort(xx, j, sizeof(float), x_cmp);
-	    for (i = 0; i < j-1 ; i += 2)
+        } else {
+            qsort(xx, j, sizeof(float), x_cmp);
+            for (i = 0; i < j-1 ; i += 2)
                 hline32rgba(im, CEIL(xx[i]-0.5), ymin, FLOOR(xx[i+1]+0.5), ink);
-	}
+        }
     }
 
     free(xx);
@@ -573,24 +582,24 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1)
     /* printf("edge %d %d %d %d\n", x0, y0, x1, y1); */
 
     if (x0 <= x1)
-	e->xmin = x0, e->xmax = x1;
+        e->xmin = x0, e->xmax = x1;
     else
-	e->xmin = x1, e->xmax = x0;
+        e->xmin = x1, e->xmax = x0;
 
     if (y0 <= y1)
-	e->ymin = y0, e->ymax = y1;
+        e->ymin = y0, e->ymax = y1;
     else
-	e->ymin = y1, e->ymax = y0;
+        e->ymin = y1, e->ymax = y0;
     
     if (y0 == y1) {
-	e->d = 0;
-	e->dx = 0.0;
+        e->d = 0;
+        e->dx = 0.0;
     } else {
-	e->dx = ((float)(x1-x0)) / (y1-y0);
-	if (y0 == e->ymin)
-	    e->d = 1;
-	else
-	    e->d = -1;
+        e->dx = ((float)(x1-x0)) / (y1-y0);
+        if (y0 == e->ymin)
+            e->d = 1;
+        else
+            e->d = -1;
     }
 
     e->x0 = x0;
@@ -609,7 +618,7 @@ DRAW draw32 = { point32, hline32, line32, polygon32 };
 DRAW draw32rgba = { point32rgba, hline32rgba, line32rgba, polygon32rgba };
 
 /* -------------------------------------------------------------------- */
-/* Interface								*/
+/* Interface                                                            */
 /* -------------------------------------------------------------------- */
 
 #define DRAWINIT()\
@@ -617,7 +626,7 @@ DRAW draw32rgba = { point32rgba, hline32rgba, line32rgba, polygon32rgba };
         draw = &draw8;\
         ink = INK8(ink_);\
     } else {\
-        draw = (op) ? &draw32rgba : &draw32;\
+        draw = (op) ? &draw32rgba : &draw32;    \
         ink = INK32(ink_);\
     }
 
@@ -692,7 +701,7 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
 
 int
 ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
-		     const void* ink_, int fill, int op)
+                     const void* ink_, int fill, int op)
 {
     int y;
     int tmp;
@@ -702,7 +711,7 @@ ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
     DRAWINIT();
 
     if (y0 > y1)
-	tmp = y0, y0 = y1, y1 = tmp;
+        tmp = y0, y0 = y1, y1 = tmp;
 
     if (fill) {
 
@@ -716,16 +725,16 @@ ImagingDrawRectangle(Imaging im, int x0, int y0, int x1, int y1,
         else if (y1 > im->ysize)
             y1 = im->ysize;
 
-	for (y = y0; y <= y1; y++)
-	    draw->hline(im, x0, y, x1, ink);
+        for (y = y0; y <= y1; y++)
+            draw->hline(im, x0, y, x1, ink);
 
     } else {
 
-	/* outline */
-	draw->line(im, x0, y0, x1, y0, ink);
-	draw->line(im, x1, y0, x1, y1, ink);
-	draw->line(im, x1, y1, x0, y1, ink);
-	draw->line(im, x0, y1, x0, y0, ink);
+        /* outline */
+        draw->line(im, x0, y0, x1, y0, ink);
+        draw->line(im, x1, y0, x1, y1, ink);
+        draw->line(im, x1, y1, x0, y1, ink);
+        draw->line(im, x0, y1, x0, y0, ink);
 
     }
 
@@ -741,34 +750,34 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_,
     INT32 ink;
 
     if (count <= 0)
-	return 0;
+        return 0;
 
     DRAWINIT();
 
     if (fill) {
 
-	/* Build edge list */
-	Edge* e = malloc(count * sizeof(Edge));
-	if (!e) {
-	    ImagingError_MemoryError();
-	    return -1;
-	}
-	for (i = n = 0; i < count-1; i++)
-	    add_edge(&e[n++], xy[i+i], xy[i+i+1], xy[i+i+2], xy[i+i+3]);
-	if (xy[i+i] != xy[0] || xy[i+i+1] != xy[1])
-	    add_edge(&e[n++], xy[i+i], xy[i+i+1], xy[0], xy[1]);
-	draw->polygon(im, n, e, ink, 0);
-	free(e);
+        /* Build edge list */
+        Edge* e = malloc(count * sizeof(Edge));
+        if (!e) {
+            ImagingError_MemoryError();
+            return -1;
+        }
+        for (i = n = 0; i < count-1; i++)
+            add_edge(&e[n++], xy[i+i], xy[i+i+1], xy[i+i+2], xy[i+i+3]);
+        if (xy[i+i] != xy[0] || xy[i+i+1] != xy[1])
+            add_edge(&e[n++], xy[i+i], xy[i+i+1], xy[0], xy[1]);
+        draw->polygon(im, n, e, ink, 0);
+        free(e);
 
     } else {
 
-	/* Outline */
-	for (i = 0; i < count-1; i++)
-	    draw->line(im, xy[i+i], xy[i+i+1], xy[i+i+2], xy[i+i+3], ink);
-	draw->line(im, xy[i+i], xy[i+i+1], xy[0], xy[1], ink);
+        /* Outline */
+        for (i = 0; i < count-1; i++)
+            draw->line(im, xy[i+i], xy[i+i+1], xy[i+i+2], xy[i+i+3], ink);
+        draw->line(im, xy[i+i], xy[i+i+1], xy[0], xy[1], ink);
 
     }
-	
+        
     return 0;
 }
 
@@ -814,12 +823,12 @@ ellipse(Imaging im, int x0, int y0, int x1, int y1,
     cy = (y0 + y1) / 2;
 
     while (end < start)
-	end += 360;
+        end += 360;
 
     if (mode != ARC && fill) {
 
         /* Build edge list */
-	Edge* e = malloc((end - start + 3) * sizeof(Edge));
+        Edge* e = malloc((end - start + 3) * sizeof(Edge));
         if (!e) {
             ImagingError_MemoryError();
             return -1;
@@ -939,7 +948,7 @@ ImagingOutlineNew(void)
 
     outline = calloc(1, sizeof(struct ImagingOutlineInstance));
     if (!outline)
-	return (ImagingOutline) ImagingError_MemoryError();
+        return (ImagingOutline) ImagingError_MemoryError();
 
     outline->edges = NULL;
     outline->count = outline->size = 0;
@@ -953,7 +962,7 @@ void
 ImagingOutlineDelete(ImagingOutline outline)
 {
     if (!outline)
-	return;
+        return;
 
     if (outline->edges)
         free(outline->edges);

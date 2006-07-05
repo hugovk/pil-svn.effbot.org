@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: Image.py 2651 2006-03-03 23:22:37Z fredrik $
+# $Id: Image.py 2759 2006-06-19 13:31:12Z fredrik $
 #
 # the Image class wrapper
 #
@@ -15,7 +15,7 @@
 # 2002-03-15 fl   PIL release 1.1.3
 # 2003-05-10 fl   PIL release 1.1.4
 # 2005-03-28 fl   PIL release 1.1.5
-# 2006-03-03 fl   PIL release 1.1.6a2
+# 2006-06-20 fl   PIL release 1.1.6b1
 #
 # Copyright (c) 1997-2006 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-2006 by Fredrik Lundh.
@@ -23,7 +23,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-VERSION = "1.1.6a2-20060303"
+VERSION = "1.1.6b1"
 
 try:
     import warnings
@@ -65,7 +65,9 @@ except ImportError, v:
             RuntimeWarning
             )
 
+import ImageMode
 import ImagePalette
+
 import os, string, sys
 
 # type stuff
@@ -164,6 +166,8 @@ EXTENSION = {}
 # Modes supported by this version
 
 _MODEINFO = {
+    # NOTE: this table will be removed in future versions.  use
+    # getmode* functions or ImageMode descriptors instead.
 
     # official modes
     "1": ("L", "L", ("1",)),
@@ -200,12 +204,7 @@ _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16B")
 # @exception KeyError If the input mode was not a standard mode.
 
 def getmodebase(mode):
-    # corresponding "base" mode (grayscale or colour)
-    if mode == "LA":
-        return "L"
-    if mode == "PA":
-        return "RGB"
-    return _MODEINFO[mode][0]
+    return ImageMode.getmode(mode).basemode
 
 ##
 # Gets the storage type mode.  Given a mode, this function returns a
@@ -216,12 +215,7 @@ def getmodebase(mode):
 # @exception KeyError If the input mode was not a standard mode.
 
 def getmodetype(mode):
-    # storage type (per band)
-    if mode == "LA":
-        return "L"
-    if mode == "PA":
-        return "L"
-    return _MODEINFO[mode][1]
+    return ImageMode.getmode(mode).basetype
 
 ##
 # Gets a list of individual band names.  Given a mode, this function
@@ -234,13 +228,18 @@ def getmodetype(mode):
 #     gives the number of bands in an image of the given mode.
 # @exception KeyError If the input mode was not a standard mode.
 
+def getmodebandnames(mode):
+    return ImageMode.getmode(mode).bands
+
+##
+# Gets the number of individual bands for this mode.
+#
+# @param mode Input mode.
+# @return The number of bands in this mode.
+# @exception KeyError If the input mode was not a standard mode.
+
 def getmodebands(mode):
-    # return list of subcomponents
-    if mode == "LA":
-        return "L", "A"
-    if mode == "PA":
-        return "P", "A"
-    return len(_MODEINFO[mode][2])
+    return len(ImageMode.getmode(mode).bands)
 
 # --------------------------------------------------------------------
 # Helpers
@@ -761,7 +760,7 @@ class Image:
     def getbands(self):
         "Get band names"
 
-        return _MODEINFO[self.mode][2]
+        return ImageMode.getmode(self.mode).bands
 
     ##
     # Calculates the bounding box of the non-zero regions in the
@@ -1028,7 +1027,6 @@ class Image:
             im = im.im
 
         self.load()
-
         if self.readonly:
             self._copy()
 
@@ -1084,7 +1082,6 @@ class Image:
         "Set alpha layer"
 
         self.load()
-
         if self.readonly:
             self._copy()
 
@@ -1142,7 +1139,10 @@ class Image:
     def putdata(self, data, scale=1.0, offset=0.0):
         "Put data from a sequence object into an image."
 
-        self.load() # hmm...
+        self.load()
+        if self.readonly:
+            self._copy()
+
         self.im.putdata(data, scale, offset)
 
     ##
@@ -1188,6 +1188,9 @@ class Image:
         "Set pixel value"
 
         self.load()
+        if self.readonly:
+            self._copy()
+
         return self.im.putpixel(xy, value)
 
     ##
@@ -1240,10 +1243,42 @@ class Image:
     #    (cubic spline interpolation in a 4x4 environment).
     #    If omitted, or if the image has mode "1" or "P", it is
     #    set <b>NEAREST</b>.
+    # @param expand Optional expansion flag.  If true, expands the output
+    #    image to make it large enough to hold the entire rotated image.
+    #    If false or omitted, make the output image the same size as the
+    #    input image.
     # @return An Image object.
 
-    def rotate(self, angle, resample=NEAREST):
+    def rotate(self, angle, resample=NEAREST, expand=0):
         "Rotate image.  Angle given as degrees counter-clockwise."
+
+	if expand:
+	    import math
+	    angle = -angle * math.pi / 180
+	    matrix = [
+		 math.cos(angle), math.sin(angle), 0.0,
+		-math.sin(angle), math.cos(angle), 0.0
+		 ]
+	    def transform(x, y, (a, b, c, d, e, f)=matrix):
+		return a*x + b*y + c, d*x + e*y + f
+
+	    # calculate output size
+	    w, h = self.size
+	    xx = []
+	    yy = []
+	    for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
+		x, y = transform(x, y)
+		xx.append(x)
+		yy.append(y)
+	    w = int(math.ceil(max(xx)) - math.floor(min(xx)))
+	    h = int(math.ceil(max(yy)) - math.floor(min(yy)))
+
+	    # adjust center
+	    x, y = transform(w / 2.0, h / 2.0)
+	    matrix[2] = self.size[0] / 2.0 - x
+	    matrix[5] = self.size[1] / 2.0 - y
+
+	    return self.transform((w, h), AFFINE, matrix)
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
             raise ValueError("unknown resampling filter")
@@ -1913,8 +1948,6 @@ def _showxv(image, title=None, command=None):
 
     if os.name == "nt":
         format = "BMP"
-        if not command:
-            command = "start"
     elif sys.platform == "darwin":
         format = "JPEG"
         if not command:
@@ -1939,11 +1972,12 @@ def _showxv(image, title=None, command=None):
         file = image._dump(format=format)
 
     if os.name == "nt":
-        os.system("%s %s" % (command, file))
-        # FIXME: this leaves temporary files around...
+        command = "start /wait %s && del /f %s" % (file, file)
     elif sys.platform == "darwin":
         # on darwin open returns immediately resulting in the temp
         # file removal while app is opening
-        os.system("(%s %s; sleep 20; rm -f %s)&" % (command, file, file))
+        command = "(%s %s; sleep 20; rm -f %s)&" % (command, file, file)
     else:
-        os.system("(%s %s; rm -f %s)&" % (command, file, file))
+        command = "(%s %s; rm -f %s)&" % (command, file, file)
+
+    os.system(command)

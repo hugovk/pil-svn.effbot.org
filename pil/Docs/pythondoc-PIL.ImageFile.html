@@ -15,9 +15,6 @@
 </dd>
 <dt><a id='PIL.ImageFile._safe_read-function' name='PIL.ImageFile._safe_read-function'><b>_safe_read(fp, size)</b></a> [<a href='#PIL.ImageFile._safe_read-function'>#</a>]</dt>
 <dd>
-<p>Reads large blocks in a safe way.  Unlike fp.read(n), this function
-doesn't trust the user.  If the requested size is larger than
-SAFEBLOCK, the file is read block by block.</p>
 <dl>
 <dt><i>fp</i></dt>
 <dd>
@@ -25,7 +22,7 @@ File handle.  Must implement a <b>read</b> method.
 </dd>
 <dt><i>size</i></dt>
 <dd>
-Number of bytes to read.</dd>
+</dd>
 <dt>Returns:</dt>
 <dd>
 A string containing up to <i>size</i> bytes of data.
@@ -34,17 +31,16 @@ A string containing up to <i>size</i> bytes of data.
 </dd>
 <dt><a id='PIL.ImageFile._save-function' name='PIL.ImageFile._save-function'><b>_save(im, fp, tile)</b></a> [<a href='#PIL.ImageFile._save-function'>#</a>]</dt>
 <dd>
-<p>(Helper) Save image body to file.</p>
 <dl>
 <dt><i>im</i></dt>
 <dd>
-Image object.</dd>
+</dd>
 <dt><i>fp</i></dt>
 <dd>
-File object.</dd>
+</dd>
 <dt><i>tile</i></dt>
 <dd>
-Tile list.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><b>ImageFile(fp=None, filename=None)</b> (class) [<a href='#PIL.ImageFile.ImageFile-class'>#</a>]</dt>
@@ -74,43 +70,35 @@ Tile list.</dd>
 <dl>
 <dt><b>ImageFile(fp=None, filename=None)</b> (class) [<a href='#PIL.ImageFile.ImageFile-class'>#</a>]</dt>
 <dd>
-<p>Base class for image file handlers.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFile.Parser-class' name='PIL.ImageFile.Parser-class'>The Parser Class</a></h2>
 <dl>
 <dt><b>Parser</b> (class)  [<a href='#PIL.ImageFile.Parser-class'>#</a>]</dt>
 <dd>
-<p>Incremental image parser.  This class implements the standard
-feed/close consumer interface.</p>
 </dd>
 <dt><a id='PIL.ImageFile.Parser.close-method' name='PIL.ImageFile.Parser.close-method'><b>close()</b></a> [<a href='#PIL.ImageFile.Parser.close-method'>#</a>]</dt>
 <dd>
-<p>(Consumer) Close the stream.</p>
 <dl>
 <dt>Returns:</dt>
 <dd>
-An image object.</dd>
+</dd>
 <dt>Raises <b>IOError</b>:</dt><dd>
-If the parser failed to parse the image file.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageFile.Parser.feed-method' name='PIL.ImageFile.Parser.feed-method'><b>feed(data)</b></a> [<a href='#PIL.ImageFile.Parser.feed-method'>#</a>]</dt>
 <dd>
-<p>(Consumer) Feed data to the parser.</p>
 <dl>
 <dt><i>data</i></dt>
 <dd>
-A string buffer.</dd>
+</dd>
 <dt>Raises <b>IOError</b>:</dt><dd>
-If the parser failed to parse the image file.</dd>
+</dd>
 </dl><br />
 </dd>
 <dt><a id='PIL.ImageFile.Parser.reset-method' name='PIL.ImageFile.Parser.reset-method'><b>reset()</b></a> [<a href='#PIL.ImageFile.Parser.reset-method'>#</a>]</dt>
 <dd>
-<p>(Consumer) Reset the parser.  Note that you can only call this
-method immediately after you've created a parser; parser
-instances cannot be reused.</p>
 </dd>
 </dl>
 <h2><a id='PIL.ImageFile.StubImageFile-class' name='PIL.ImageFile.StubImageFile-class'>The StubImageFile Class</a></h2>
@@ -124,7 +112,6 @@ certain format, but relies on external code to load the file.
 </p></dd>
 <dt><a id='PIL.ImageFile.StubImageFile._load-method' name='PIL.ImageFile.StubImageFile._load-method'><b>_load()</b></a> [<a href='#PIL.ImageFile.StubImageFile._load-method'>#</a>]</dt>
 <dd>
-<p>(Hook) Find actual image loader.</p>
 </dd>
 </dl>
 </body></html>

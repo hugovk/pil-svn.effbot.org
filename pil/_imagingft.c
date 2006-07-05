@@ -1,6 +1,6 @@
 /*
  * PIL FreeType Driver
- * $Id: _imagingft.c 2505 2005-09-05 16:29:53Z fredrik $
+ * $Id: _imagingft.c 2756 2006-06-19 06:07:18Z fredrik $
  *
  * a FreeType 2.X driver for PIL
  *
@@ -12,8 +12,9 @@
  * 2003-09-27 fl  Added charmap encoding support
  * 2004-05-15 fl  Fixed compilation for FreeType 2.1.8
  * 2004-09-10 fl  Added support for monochrome bitmaps
+ * 2006-06-18 fl  Fixed glyph bearing calculation
  *
- * Copyright (c) 1998-2004 by Secret Labs AB
+ * Copyright (c) 1998-2006 by Secret Labs AB
  */
 
 #include "Python.h"
@@ -33,12 +34,12 @@
 #include <freetype/freetype.h>
 #endif
 
-#if defined(PY_VERSION_HEX) && PY_VERSION_HEX < 0x01060000
+#if PY_VERSION_HEX < 0x01060000
 #define PyObject_New PyObject_NEW
 #define PyObject_Del PyMem_DEL
 #endif
 
-#if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x01060000
+#if PY_VERSION_HEX >= 0x01060000
 #if PY_VERSION_HEX  < 0x02020000 || defined(Py_USING_UNICODE)
 /* defining this enables unicode support (default under 1.6a1 and later) */
 #define HAVE_UNICODE
@@ -123,9 +124,9 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
         return NULL;
     }
 
-    self = PyObject_NEW(FontObject, &Font_Type);
+    self = PyObject_New(FontObject, &Font_Type);
     if (!self)
-	return NULL;
+        return NULL;
 
     error = FT_New_Face(library, filename, index, &self->face);
 
@@ -140,7 +141,7 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (error) {
-        PyObject_DEL(self);
+        PyObject_Del(self);
         return geterror(error);
     }
 
@@ -176,8 +177,12 @@ font_getsize(FontObject* self, PyObject* args)
 {
     int i, x;
     FT_ULong ch;
+    FT_Face face;
+    int xoffset;
+    FT_Bool kerning = FT_HAS_KERNING(self->face);
+    FT_UInt last_index = 0;
 
-    /* calculate size for a given string */
+    /* calculate size and bearing for a given string */
 
     PyObject* string;
     if (!PyArg_ParseTuple(args, "O:getsize", &string))
@@ -192,19 +197,88 @@ font_getsize(FontObject* self, PyObject* args)
         return NULL;
     }
 
+    face = NULL;
+    xoffset = 0;
+
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
         int index, error;
-        index = FT_Get_Char_Index(self->face, ch);
-        error = FT_Load_Glyph(self->face, index, FT_LOAD_DEFAULT);
+        face = self->face;
+        index = FT_Get_Char_Index(face, ch);
+        if (kerning && last_index && index) {
+            FT_Vector delta;
+            FT_Get_Kerning(self->face, last_index, index, ft_kerning_default,
+                           &delta);
+            x += delta.x;
+        }
+        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
         if (error)
             return geterror(error);
-        x += self->face->glyph->metrics.horiAdvance;
+        if (i == 0)
+            xoffset = face->glyph->metrics.horiBearingX;
+        x += face->glyph->metrics.horiAdvance;
+        last_index = index;
+    }
+
+    if (face) {
+        int offset;
+        /* left bearing */
+        if (xoffset < 0)
+            x -= xoffset;
+        else
+            xoffset = 0;
+        /* right bearing */
+        offset = face->glyph->metrics.horiAdvance -
+            face->glyph->metrics.width -
+            face->glyph->metrics.horiBearingX;
+        if (offset < 0)
+            x -= offset;
     }
 
     return Py_BuildValue(
-        "ii", PIXEL(x),
-        PIXEL(self->face->size->metrics.height)
+        "(ii)(ii)",
+        PIXEL(x), PIXEL(self->face->size->metrics.height),
+        PIXEL(xoffset), 0
         );
+}
+
+static PyObject*
+font_getabc(FontObject* self, PyObject* args)
+{
+    FT_ULong ch;
+    FT_Face face;
+    double a, b, c;
+
+    /* calculate ABC values for a given string */
+
+    PyObject* string;
+    if (!PyArg_ParseTuple(args, "O:getabc", &string))
+        return NULL;
+
+#if defined(HAVE_UNICODE)
+    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
+#else
+    if (!PyString_Check(string)) {
+#endif
+        PyErr_SetString(PyExc_TypeError, "expected string");
+        return NULL;
+    }
+
+    if (font_getchar(string, 0, &ch)) {
+        int index, error;
+        face = self->face;
+        index = FT_Get_Char_Index(face, ch);
+        error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
+        if (error)
+            return geterror(error);
+        a = face->glyph->metrics.horiBearingX / 64.0;
+        b = face->glyph->metrics.width / 64.0;
+        c = (face->glyph->metrics.horiAdvance - 
+             face->glyph->metrics.horiBearingX -
+             face->glyph->metrics.width) / 64.0;
+    } else
+        a = b = c = 0.0;
+
+    return Py_BuildValue("ddd", a, b, c);
 }
 
 static PyObject*
@@ -215,9 +289,10 @@ font_render(FontObject* self, PyObject* args)
     int index, error, ascender;
     int load_flags;
     unsigned char *source;
-    
     FT_ULong ch;
     FT_GlyphSlot glyph;
+    FT_Bool kerning = FT_HAS_KERNING(self->face);
+    FT_UInt last_index = 0;
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
@@ -243,25 +318,39 @@ font_render(FontObject* self, PyObject* args)
         load_flags |= FT_LOAD_TARGET_MONO;
 
     for (x = i = 0; font_getchar(string, i, &ch); i++) {
+        if (i == 0 && self->face->glyph->metrics.horiBearingX < 0)
+            x = PIXEL(self->face->glyph->metrics.horiBearingX);
         index = FT_Get_Char_Index(self->face, ch);
+        if (kerning && last_index && index) {
+            FT_Vector delta;
+            FT_Get_Kerning(self->face, last_index, index, ft_kerning_default,
+                           &delta);
+            x += delta.x >> 6;
+        }
         error = FT_Load_Glyph(self->face, index, load_flags);
         if (error)
             return geterror(error);
         glyph = self->face->glyph;
         if (mask) {
             /* use monochrome mask (on palette images, etc) */
+            int xx, x0, x1;
             source = (unsigned char*) glyph->bitmap.buffer;
             ascender = PIXEL(self->face->size->metrics.ascender);
+            xx = x + glyph->bitmap_left;
+            x0 = 0;
+            x1 = glyph->bitmap.width;
+            if (xx < 0)
+                x0 = -xx;
+            if (xx + x1 > im->xsize)
+                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int xx = PIXEL(x) + glyph->bitmap_left;
                 int yy = y + ascender - glyph->bitmap_top;
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
-                    int i, j, m;
                     unsigned char *target = im->image8[yy] + xx;
-                    m = 128;
-                    for (i = j = 0; j < glyph->bitmap.width; j++) {
-                        if (source[i] & m)
+                    int i, j, m = 128;
+                    for (i = j = 0; j < x1; j++) {
+                        if (j >= x0 && (source[i] & m))
                             target[j] = 255;
                         if (!(m >>= 1)) {
                             m = 128;
@@ -273,23 +362,32 @@ font_render(FontObject* self, PyObject* args)
             }
         } else {
             /* use antialiased rendering */
+            int xx, x0, x1;
             source = (unsigned char*) glyph->bitmap.buffer;
             ascender = PIXEL(self->face->size->metrics.ascender);
+            xx = x + glyph->bitmap_left;
+            x0 = 0;
+            x1 = glyph->bitmap.width;
+            if (xx < 0)
+                x0 = -xx;
+            if (xx + x1 > im->xsize)
+                x1 = im->xsize - xx;
             for (y = 0; y < glyph->bitmap.rows; y++) {
-                int xx = PIXEL(x) + glyph->bitmap_left;
                 int yy = y + ascender - glyph->bitmap_top;
                 if (yy >= 0 && yy < im->ysize) {
                     /* blend this glyph into the buffer */
                     int i;
                     unsigned char *target = im->image8[yy] + xx;
-                    for (i = 0; i < glyph->bitmap.width; i++)
+                    for (i = x0; i < x1; i++) {
                         if (target[i] < source[i])
                             target[i] = source[i];
+                    }
                 }
                 source += glyph->bitmap.pitch;
             }
         }
-        x += glyph->metrics.horiAdvance;
+        x += PIXEL(glyph->metrics.horiAdvance);
+        last_index = index;
     }
 
     Py_INCREF(Py_None);
@@ -300,12 +398,13 @@ static void
 font_dealloc(FontObject* self)
 {
     FT_Done_Face(self->face);
-    PyObject_DEL(self);
+    PyObject_Del(self);
 }
 
 static PyMethodDef font_methods[] = {
     {"render", (PyCFunction) font_render, METH_VARARGS},
     {"getsize", (PyCFunction) font_getsize, METH_VARARGS},
+    {"getabc", (PyCFunction) font_getabc, METH_VARARGS},
     {NULL, NULL}
 };
 

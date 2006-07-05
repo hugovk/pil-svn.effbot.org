@@ -124,9 +124,11 @@ PIL/ImageFont.py
 PIL/ImageGL.py
 PIL/ImageGrab.py
 PIL/ImageMath.py
+PIL/ImageMode.py
 PIL/ImageOps.py
 PIL/ImagePalette.py
 PIL/ImagePath.py
+PIL/ImageQt.py
 PIL/ImageSequence.py
 PIL/ImageStat.py
 PIL/ImageTk.py
