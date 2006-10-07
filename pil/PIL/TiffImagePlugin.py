@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: TiffImagePlugin.py 2630 2006-02-12 23:41:33Z fredrik $
+# $Id: TiffImagePlugin.py 2803 2006-07-31 19:18:57Z fredrik $
 #
 # TIFF file handling
 #
@@ -152,7 +152,7 @@ OPEN_INFO = {
     (8, 1, 1, (8,8,8), ()): ("LAB", "LAB"),
 }
 
-PREFIXES = ["MM\000\052", "II\052\000"]
+PREFIXES = ["MM\000\052", "II\052\000", "II\xBC\000"]
 
 def _accept(prefix):
     return prefix[:4] in PREFIXES
@@ -520,6 +520,9 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def _setup(self):
         "Setup this image object based on current tags"
+
+        if self.tag.has_key(0xBC01):
+            raise IOError, "Windows Media Photo files not yet supported"
 
         getscalar = self.tag.getscalar
 

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageFont.py 2756 2006-06-19 06:07:18Z fredrik $
+# $Id: ImageFont.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # PIL raster font management
 #
@@ -130,7 +130,7 @@ class FreeTypeFont:
         return self.font.getsize(text)[0]
 
     def getmask(self, text, mode=""):
-	return self.getmask2(text, mode)[0]
+        return self.getmask2(text, mode)[0]
 
     def getmask2(self, text, mode="", fill=Image.core.fill):
         size, offset = self.font.getsize(text)

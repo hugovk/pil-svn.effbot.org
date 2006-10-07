@@ -44,4 +44,3 @@ def getmode(mode):
         _modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
         _modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
     return _modes[mode]
-

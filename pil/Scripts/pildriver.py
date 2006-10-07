@@ -40,7 +40,7 @@ of its upper-left-hand corner and displays the cropped portion.
 30 degrees, and saves the result as rotated.png (in PNG format).
 """
 # by Eric S. Raymond <esr@thyrsus.com>
-# $Id: pildriver.py 2648 2006-03-03 23:10:14Z fredrik $
+# $Id: pildriver.py 2813 2006-10-07 10:11:35Z fredrik $
 
 # TO DO:
 # 1. Add PILFont capabilities, once that's documented.
@@ -99,7 +99,7 @@ class PILDriver:
         if hasattr(self, 'format'):     # If it's an image, do a real copy
             dup = self.stack[0].copy()
         else:
-             dup = self.stack[0]
+            dup = self.stack[0]
         self.stack = [dup] + self.stack
 
     def do_swap(self):

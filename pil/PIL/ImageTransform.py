@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageTransform.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: ImageTransform.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # transform wrappers
 #
@@ -89,6 +89,3 @@ class QuadTransform(Transform):
 
 class MeshTransform(Transform):
     method = Image.MESH
-
-
-

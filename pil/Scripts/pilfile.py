@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: pilfile.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: pilfile.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # a utility to identify image files
 #
@@ -92,4 +92,3 @@ for file in globfix(args):
         if not quiet:
             print file, "failed:", "unexpected error"
             traceback.print_exc(file=sys.stdout)
-

@@ -1,4 +1,4 @@
-# $Id: selftest.py 2652 2006-03-03 23:27:51Z fredrik $
+# $Id: selftest.py 2813 2006-10-07 10:11:35Z fredrik $
 # minimal sanity check
 
 import sys
@@ -159,4 +159,3 @@ if __name__ == "__main__":
         print "*** %s tests of %d failed." % status
     else:
         print "%s tests passed." % status[1]
-
