@@ -1,10 +1,10 @@
 The Python Imaging Library
-$Id: README 2750 2006-06-18 19:50:35Z fredrik $
+$Id: README 2816 2006-10-07 15:28:20Z fredrik $
 
-Release 1.1.6b1 (June 20, 2006)
+Release 1.1.6b2 (October 7, 2006)
 
 ====================================================================
-The Python Imaging Library 1.1.6b1
+The Python Imaging Library 1.1.6b2
 ====================================================================
 
 Contents
@@ -129,9 +129,9 @@ For a list of changes in this release, see the CHANGES document.
 
 0. If you're in a hurry, try this:
 
-        $ gunzip Imaging-1.1.6b1.tar.gz
-        $ tar xvf Imaging-1.1.6b1.tar
-        $ cd Imaging-1.1.6b1
+        $ gunzip Imaging-1.1.6b2.tar.gz
+        $ tar xvf Imaging-1.1.6b2.tar
+        $ cd Imaging-1.1.6b2
         $ python setup.py install
 
    If you prefer to know what you're doing, read on.
@@ -188,19 +188,19 @@ For a list of changes in this release, see the CHANGES document.
 
 
 4. When you have everything you need, unpack the PIL distribution
-   (the file Imaging-1.1.6b1.tar.gz) in your Python extensions
+   (the file Imaging-1.1.6b2.tar.gz) in your Python extensions
    directory (if you have one, that is.  If not, feel free to
    unpack it in any other suitable directory).
 
         $ cd Python-2.4/Extensions # example
-        $ gunzip Imaging-1.1.6b1.tar.gz
-        $ tar xvf Imaging-1.1.6b1.tar
+        $ gunzip Imaging-1.1.6b2.tar.gz
+        $ tar xvf Imaging-1.1.6b2.tar
 
 
 5. Build the library.  We recommend that you do an in-place build,
    and run the self test before installing.
 
-        $ cd Imaging-1.1.6b1
+        $ cd Imaging-1.1.6b2
         $ python setup.py build_ext -i
         $ python selftest.py
 
@@ -208,7 +208,7 @@ For a list of changes in this release, see the CHANGES document.
    that the optional components you need are included.
 
         ----------------------------------------------------------------
-        PIL 1.1.6b1 BUILD SUMMARY
+        PIL 1.1.6b2 BUILD SUMMARY
         ----------------------------------------------------------------
         *** TKINTER support not available (Tcl/Tk 8.3 libraries needed)
         --- JPEG support ok

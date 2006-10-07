@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageFile.py 2541 2005-10-02 21:23:59Z Fredrik $
+# $Id: ImageFile.py 2811 2006-10-07 09:45:33Z fredrik $
 #
 # base class for image file handlers
 #
@@ -115,12 +115,12 @@ class ImageFile(Image.Image):
     def load(self):
         "Load image data based on tile list"
 
-        Image.Image.load(self)
+        pixel = Image.Image.load(self)
 
         if self.tile is None:
             raise IOError("cannot load this image")
         if not self.tile:
-            return
+            return pixel
 
         self.map = None
 

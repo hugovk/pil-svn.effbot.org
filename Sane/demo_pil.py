@@ -21,9 +21,9 @@ print 'Device parameters:', s.get_parameters()
 # Initiate the scan
 s.start()
 
-# Get an Image object 
+# Get an Image object
 # (For my B&W QuickCam, this is a grey-scale image.  Other scanning devices
-#  may return a 
+#  may return a
 im=s.snap()
 
 # Write the image out as a GIF file

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: PSDraw.py 2438 2005-05-25 21:09:48Z Fredrik $
+# $Id: PSDraw.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # simple postscript graphics interface
 #
@@ -197,4 +197,3 @@ errordict begin /handleerror {
     end showpage
 } def end
 """
-

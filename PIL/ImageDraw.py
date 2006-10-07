@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageDraw.py 2756 2006-06-19 06:07:18Z fredrik $
+# $Id: ImageDraw.py 2817 2006-10-07 15:34:03Z fredrik $
 #
 # drawing interface operations
 #
@@ -94,7 +94,7 @@ class ImageDraw:
         if warnings:
             warnings.warn(
                 "'setink' is deprecated; use keyword arguments instead",
-                DeprecationWarning
+                DeprecationWarning, stacklevel=2
                 )
         if Image.isStringType(ink):
             ink = ImageColor.getcolor(ink, self.mode)
@@ -110,7 +110,7 @@ class ImageDraw:
         if warnings:
             warnings.warn(
                 "'setfill' is deprecated; use keyword arguments instead",
-                DeprecationWarning
+                DeprecationWarning, stacklevel=2
                 )
         self.fill = onoff
 
@@ -261,13 +261,13 @@ class ImageDraw:
         if ink is not None:
             try:
                 mask, offset = font.getmask2(text, self.fontmode)
-		xy = xy[0] + offset[0], xy[1] + offset[1]
+                xy = xy[0] + offset[0], xy[1] + offset[1]
             except AttributeError:
-		try:
-		    mask = font.getmask(text, self.fontmode)
-		except TypeError:
-		    mask = font.getmask(text)
-	    self.draw.draw_bitmap(xy, mask, ink)
+                try:
+                    mask = font.getmask(text, self.fontmode)
+                except TypeError:
+                    mask = font.getmask(text)
+            self.draw.draw_bitmap(xy, mask, ink)
 
     ##
     # Get the size of a given string, in pixels.
@@ -323,3 +323,56 @@ def getdraw(im=None, hints=None):
     if im:
         im = handler.Draw(im)
     return im, handler
+
+##
+# (experimental) Fills a bounded region with a given color.
+#
+# @param image Target image.
+# @param xy Seed position (a 2-item coordinate tuple).
+# @param value Fill color.
+# @param border Optional border value.  If given, the region consists of
+#     pixels with a color different from the border color.  If not given,
+#     the region consists of pixels having the same color as the seed
+#     pixel.
+
+def floodfill(image, xy, value, border=None):
+    "Fill bounded region."
+    # based on an implementation by Eric S. Raymond
+    pixel = image.load()
+    x, y = xy
+    try:
+        background = pixel[x, y]
+        if background == value:
+            return # seed point already has fill color
+        pixel[x, y] = value
+    except IndexError:
+        return # seed point outside image
+    edge = [(x, y)]
+    if border is None:
+        while edge:
+            newedge = []
+            for (x, y) in edge:
+                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                    try:
+                        p = pixel[s, t]
+                    except IndexError:
+                        pass
+                    else:
+                        if p == background:
+                            pixel[s, t] = value
+                            newedge.append((s, t))
+            edge = newedge
+    else:
+        while edge:
+            newedge = []
+            for (x, y) in edge:
+                for (s, t) in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+                    try:
+                        p = pixel[s, t]
+                    except IndexError:
+                        pass
+                    else:
+                        if p != value and p != border:
+                            pixel[s, t] = value
+                            newedge.append((s, t))
+            edge = newedge

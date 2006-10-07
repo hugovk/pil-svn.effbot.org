@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: Image.py 2759 2006-06-19 13:31:12Z fredrik $
+# $Id: Image.py 2812 2006-10-07 10:08:37Z fredrik $
 #
 # the Image class wrapper
 #
@@ -15,7 +15,7 @@
 # 2002-03-15 fl   PIL release 1.1.3
 # 2003-05-10 fl   PIL release 1.1.4
 # 2005-03-28 fl   PIL release 1.1.5
-# 2006-06-20 fl   PIL release 1.1.6b1
+# 2006-10-07 fl   PIL release 1.1.6b2
 #
 # Copyright (c) 1997-2006 by Secret Labs AB.  All rights reserved.
 # Copyright (c) 1995-2006 by Fredrik Lundh.
@@ -23,7 +23,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-VERSION = "1.1.6b1"
+VERSION = "1.1.6b2"
 
 try:
     import warnings
@@ -186,6 +186,34 @@ _MODEINFO = {
     # what you're doing...
 
 }
+
+if sys.byteorder == 'little':
+    _ENDIAN = '<'
+else:
+    _ENDIAN = '>'
+
+_MODE_CONV = {
+    # official modes
+    "1": ('|b1', None),
+    "L": ('|u1', None),
+    "I": ('%si4' % _ENDIAN, None), # FIXME: is this correct?
+    "F": ('%sf4' % _ENDIAN, None), # FIXME: is this correct?
+    "P": ('|u1', None),
+    "RGB": ('|u1', 3),
+    "RGBX": ('|u1', 4),
+    "RGBA": ('|u1', 4),
+    "CMYK": ('|u1', 4),
+    "YCbCr": ('|u1', 4),
+}
+
+def _conv_type_shape(im):
+    shape = im.size[::-1]
+    typ, extra = _MODE_CONV[im.mode]
+    if extra is None:
+        return shape, typ
+    else:
+        return shape+(extra,), typ
+
 
 MODES = _MODEINFO.keys()
 MODES.sort()
@@ -452,6 +480,17 @@ class Image:
             file = file + "." + format
             self.save(file, format)
         return file
+
+    def __getattr__(self, name):
+        if name == "__array_interface__":
+            # numpy array interface support
+            new = {}
+            shape, typestr = _conv_type_shape(self)
+            new['shape'] = shape
+            new['typestr'] = typestr
+            new['data'] = self.tostring()
+            return new
+        raise AttributeError(name)
 
     ##
     # Returns a string containing pixel data.
@@ -946,7 +985,7 @@ class Image:
         if warnings:
             warnings.warn(
                 "'offset' is deprecated; use 'ImageChops.offset' instead",
-               DeprecationWarning
+                DeprecationWarning, stacklevel=2
                 )
         import ImageChops
         return ImageChops.offset(self, xoffset, yoffset)
@@ -1252,33 +1291,33 @@ class Image:
     def rotate(self, angle, resample=NEAREST, expand=0):
         "Rotate image.  Angle given as degrees counter-clockwise."
 
-	if expand:
-	    import math
-	    angle = -angle * math.pi / 180
-	    matrix = [
-		 math.cos(angle), math.sin(angle), 0.0,
-		-math.sin(angle), math.cos(angle), 0.0
-		 ]
-	    def transform(x, y, (a, b, c, d, e, f)=matrix):
-		return a*x + b*y + c, d*x + e*y + f
+        if expand:
+            import math
+            angle = -angle * math.pi / 180
+            matrix = [
+                 math.cos(angle), math.sin(angle), 0.0,
+                -math.sin(angle), math.cos(angle), 0.0
+                 ]
+            def transform(x, y, (a, b, c, d, e, f)=matrix):
+                return a*x + b*y + c, d*x + e*y + f
 
-	    # calculate output size
-	    w, h = self.size
-	    xx = []
-	    yy = []
-	    for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
-		x, y = transform(x, y)
-		xx.append(x)
-		yy.append(y)
-	    w = int(math.ceil(max(xx)) - math.floor(min(xx)))
-	    h = int(math.ceil(max(yy)) - math.floor(min(yy)))
+            # calculate output size
+            w, h = self.size
+            xx = []
+            yy = []
+            for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
+                x, y = transform(x, y)
+                xx.append(x)
+                yy.append(y)
+            w = int(math.ceil(max(xx)) - math.floor(min(xx)))
+            h = int(math.ceil(max(yy)) - math.floor(min(yy)))
 
-	    # adjust center
-	    x, y = transform(w / 2.0, h / 2.0)
-	    matrix[2] = self.size[0] / 2.0 - x
-	    matrix[5] = self.size[1] / 2.0 - y
+            # adjust center
+            x, y = transform(w / 2.0, h / 2.0)
+            matrix[2] = self.size[0] / 2.0 - x
+            matrix[5] = self.size[1] / 2.0 - y
 
-	    return self.transform((w, h), AFFINE, matrix)
+            return self.transform((w, h), AFFINE, matrix)
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
             raise ValueError("unknown resampling filter")
@@ -1712,20 +1751,29 @@ def fromstring(mode, size, data, decoder_name="raw", *args):
 # This function is similar to {@link #fromstring}, but uses data in
 # the byte buffer, where possible.  This means that changes to the
 # original buffer object are reflected in this image).  Not all modes
-# can share memory; support modes include "L", "RGBX", "RGBA", and
-# "CMYK".  For other modes, this function behaves like a corresponding
-# call to the <b>fromstring</b> function.
+# can share memory; supported modes include "L", "RGBX", "RGBA", and
+# "CMYK".
 # <p>
 # Note that this function decodes pixel data only, not entire images.
 # If you have an entire image file in a string, wrap it in a
 # <b>StringIO</b> object, and use {@link #open} to load it.
+# <p>
+# In the current version, the default parameters used for the "raw"
+# decoder differs from that used for {@link fromstring}.  This is a
+# bug, and will probably be fixed in a future release.  The current
+# release issues a warning if you do this; to disable the warning,
+# you should provide the full set of parameters.  See below for
+# details.
 #
 # @param mode The image mode.
 # @param size The image size.
 # @param data An 8-bit string or other buffer object containing raw
 #     data for the given mode.
 # @param decoder_name What decoder to use.
-# @param *args Additional parameters for the given decoder.
+# @param *args Additional parameters for the given decoder.  For the
+#     default encoder ("raw"), it's recommended that you provide the
+#     full set of parameters:
+#     <b>frombuffer(mode, size, data, "raw", mode, 0, 1)</b>.
 # @return An Image object.
 # @since 1.1.4
 
@@ -1738,7 +1786,14 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
     if decoder_name == "raw":
         if args == ():
-            args = mode, 0, -1
+            if warnings:
+                warnings.warn(
+                    "the frombuffer defaults may change in a future release; "
+                    "for portability, change the call to read:\n"
+                    "  frombuffer(mode, size, data, 'raw', mode, 0, 1)",
+                    RuntimeWarning, stacklevel=2
+                )
+            args = mode, 0, -1 # may change to (mode, 0, 1) post-1.1.6
         if args[0] in _MAPMODES:
             im = new(mode, (1,1))
             im = im._new(
@@ -1748,6 +1803,61 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             return im
 
     return apply(fromstring, (mode, size, data, decoder_name, args))
+
+
+##
+# (New in 1.1.6) Create an image memory from an object exporting
+# the array interface (using the buffer protocol).
+#
+# If obj is not contiguous, then the tostring method is called
+# and {@link frombuffer} is used.
+#
+# @param obj Object with array interface
+# @param mode Mode to use (will be determined from type if None)
+# @return An image memory.
+
+def fromarray(obj, mode=None):
+    arr = obj.__array_interface__
+    shape = arr['shape']
+    ndim = len(shape)
+    try:
+        strides = arr['strides']
+    except KeyError:
+        strides = None
+    if mode is None:
+        typestr = arr['typestr']
+        if not (typestr[0] == '|' or typestr[0] == _ENDIAN or
+                typestr[1:] not in ['u1', 'b1', 'i4', 'f4']):
+            raise TypeError("cannot handle data-type")
+        typestr = typestr[:2]
+        if typestr == 'i4':
+            mode = 'I'
+        elif typestr == 'f4':
+            mode = 'F'
+        elif typestr == 'b1':
+            mode = '1'
+        elif ndim == 2:
+            mode = 'L'
+        elif ndim == 3:
+            mode = 'RGB'
+        elif ndim == 4:
+            mode = 'RGBA'
+        else:
+            raise TypeError("Do not understand data.")
+    ndmax = 4
+    bad_dims=0
+    if mode in ['1','L','I','P','F']:
+        ndmax = 2
+    elif mode == 'RGB':
+        ndmax = 3
+    if ndim > ndmax:
+        raise ValueError("Too many dimensions.")
+
+    size = shape[:2][::-1]
+    if strides is not None:
+        obj = obj.tostring()
+
+    return frombuffer(mode, size, obj, "raw", mode, 0, 1)
 
 ##
 # Opens and identifies the given image file.

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: JpegImagePlugin.py 2199 2004-12-18 08:49:05Z fredrik $
+# $Id: JpegImagePlugin.py 2763 2006-06-22 21:43:28Z fredrik $
 #
 # JPEG (JFIF) file handling
 #
@@ -270,8 +270,8 @@ class JpegImageFile(ImageFile.ImageFile):
                     handler(self, i)
                 if i == 0xFFDA: # start of scan
                     rawmode = self.mode
-                    if self.mode == "CMYK" and self.info.has_key("adobe"):
-                        rawmode = "CMYK;I" # Photoshop 2.5 is broken!
+                    if self.mode == "CMYK":
+                        rawmode = "CMYK;I"
                     self.tile = [("jpeg", (0,0) + self.size, 0, (rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
@@ -378,7 +378,7 @@ RAWMODE = {
     "RGB": "RGB",
     "RGBA": "RGB",
     "RGBX": "RGB",
-    "CMYK": "CMYK",
+    "CMYK": "CMYK;I",
     "YCbCr": "YCbCr",
 }
 

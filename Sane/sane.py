@@ -24,7 +24,7 @@ UNIT_STR = { UNIT_NONE:        "UNIT_NONE",
              UNIT_DPI:         "UNIT_DPI",
              UNIT_PERCENT:     "UNIT_PERCENT",
              UNIT_MICROSECOND: "UNIT_MICROSECOND" }
-    
+
 
 class Option:
     """Class representing a SANE option.
@@ -89,20 +89,20 @@ settable:  %s\n""" % (self.py_name, curValue,
                       `self.constraint`, active, settable)
         return s
 
-        
+
 class _SaneIterator:
     """ intended for ADF scans.
     """
-    
+
     def __init__(self, device):
         self.device = device
-    
+
     def __iter__(self):
         return self
-    
+
     def __del__(self):
         self.device.cancel()
-    
+
     def next(self):
         try:
             self.device.start()
@@ -112,8 +112,8 @@ class _SaneIterator:
             else:
                 raise
         return self.device.snap(1)
-    
-    
+
+
 
 class SaneDev:
     """Class representing a SANE device.
@@ -249,7 +249,7 @@ class SaneDev:
 
     def multi_scan(self):
         return _SaneIterator(self)
-    
+
     def arr_snap(self, multipleOf=1):
         """Snap a picture, returning a numarray object with the results.
         By default the resulting array has the same number of pixels per

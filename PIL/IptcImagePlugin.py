@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: IptcImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id: IptcImagePlugin.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # IPTC/NAA file handling
 #
@@ -278,4 +278,3 @@ def getiptcinfo(im):
         pass # expected failure
 
     return im.info
-

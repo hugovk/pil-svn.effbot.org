@@ -1,5 +1,5 @@
 The Python Imaging Library
-$Id: CHANGES 2759 2006-06-19 13:31:12Z fredrik $
+$Id: CHANGES 2815 2006-10-07 13:45:09Z fredrik $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Douglas Bagnall, Larry Bates,
@@ -12,21 +12,57 @@ Markus Gritsch, Daniel Haertle, Greg Hamilton, Mark Hammond, Bernhard
 Herzog, Rob Hooft, Bob Ippolito, Jack Jansen, Bill Janssen, Edward
 Jones, Richard Jones, Håkan Karlsson, Robert Kern, David Kirtley, Bob
 Klimek, Matthias Klose, Andrew Kuchling, Magnus Källström, Victor
-Lacina, Ben Last, Hamish Lawson, Andrew MacIntyre, Jan Matejek, Naveen
-Michaud- Agrawal, Gordon McMillan, Skip Montanaro, Fredrik Nehr,
-Russell Nelson, Luciano Nocera, Piet van Oostrum, Richard Oudkerk,
-Paul Pharr, Andres Polit, Eric Raymond, Victor Reijs, Bertil
-Reinhammar, Nicholas Riley, Don Rozenberg, Toby Sargeant, Barry Scott,
-Les Schaffer, Joel Shprentz, Klamer Shutte, Gene Skonicki, Niki
-Spahiev, D. Alan Stewart, Perry Stoll, Paul Svensson, Ulrik Svensson,
-Miki Tebeka, Ivan Tkatchev, Adam Twardoch, Rune Uhlin, Dmitry
-Vasiliev, Sasha Voynow, Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
+Lacina, Ben Last, Hamish Lawson, Cesare Leonardi, Andrew MacIntyre,
+Jan Matejek, Naveen Michaud-Agrawal, Gordon McMillan, Skip Montanaro,
+Fredrik Nehr, Russell Nelson, Luciano Nocera, Travis Oliphant, Piet
+van Oostrum, Richard Oudkerk, Paul Pharr, Andres Polit, Eric Raymond,
+Victor Reijs, Bertil Reinhammar, Nicholas Riley, Don Rozenberg, Toby
+Sargeant, Barry Scott, Les Schaffer, Joel Shprentz, Klamer Shutte,
+Gene Skonicki, Niki Spahiev, D. Alan Stewart, Perry Stoll, Paul
+Svensson, Ulrik Svensson, Miki Tebeka, Ivan Tkatchev, Dan Torop, Adam
+Twardoch, Rune Uhlin, Dmitry Vasiliev, Sasha Voynow, Charles Waldman,
+Dan Wolfe, and Ka-Ping Yee.
 
 *** Changes from release 1.1.5 to 1.1.6 ***
 
-(1.1.6b1 snapshot released)
+(1.1.6b2 released)
 
-+ Added 'expand' option to the Image 'rotate' option.  If true, the
++ Added experimental "floodfill" function to the ImageDraw module
+  (based on code by Eric Raymond).
+
++ The default arguments for "frombuffer" doesn't match "fromstring"
+  and the documentation; this is a bug, and will most likely be fixed
+  in a future version.  In this release, PIL prints a warning message
+  instead.  To silence the warning, change any calls of the form
+  "frombuffer(mode, size, data)" to
+
+      frombuffer(mode, size, data, "raw", mode, 0, 1)
+
++ Added "fromarray" function, which takes an object implementing the
+  NumPy array interface and creates a PIL Image from it. (from Travis
+  Oliphant).
+
++ Added NumPy array interface support (__array_interface__) to the
+  Image class (based on code by Travis Oliphant).
+
+  This allows you to easily convert between PIL image memories and
+  NumPy arrays:
+
+	import numpy, Image
+
+	im = Image.open('lena.jpg')
+
+	a = numpy.asarray(im) # a is readonly
+
+	im = Image.fromarray(a)
+
++ Fixed CMYK polarity for JPEG images, by treating all images as
+  "Adobe CMYK" images. (thanks to Cesare Leonardi and Kevin Cazabon
+  for samples, debugging, and patches).
+
+(1.1.6b1 released)
+
++ Added 'expand' option to the Image 'rotate' method.  If true, the
   output image is made large enough to hold the entire rotated image.
 
 + Changed the ImageDraw 'line' method to always draw the last pixel in
@@ -44,7 +80,7 @@ Vasiliev, Sasha Voynow, Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
   and "LA" modes.  Added 'getmodebandnames' helper that return the
   band names.
 
-(1.1.6a2 snapshot released)
+(1.1.6a2 released)
 
 + Added float/double support to the TIFF loader (from Russell
   Nelson).
@@ -59,7 +95,7 @@ Vasiliev, Sasha Voynow, Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
 + Added support for duplex scanning to the Sane interface (Abel
   Deuring).
 
-(1.1.6a1 snapshot released)
+(1.1.6a1 released)
 
 + Fixed a memory leak in "convert(mode)", when converting from
   L to P.
@@ -91,7 +127,7 @@ Vasiliev, Sasha Voynow, Charles Waldman, Dan Wolfe, and Ka-Ping Yee.
 
 + Fixed line width calculation.
 
-(1.1.6a0 snapshot released)
+(1.1.6a0 released)
 
 + Fixed byte order issue in Image.paste(ink) (from Ka-Ping Yee).
 

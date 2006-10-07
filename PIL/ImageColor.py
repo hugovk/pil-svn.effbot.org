@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageColor.py 2281 2005-02-07 20:42:04Z fredrik $
+# $Id: ImageColor.py 2813 2006-10-07 10:11:35Z fredrik $
 #
 # map CSS3-style colour description strings to RGB
 #
@@ -260,4 +260,3 @@ colormap = {
     "yellow": "#ffff00",
     "yellowgreen": "#9acd32",
 }
-

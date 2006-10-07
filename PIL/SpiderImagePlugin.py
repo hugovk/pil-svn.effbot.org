@@ -132,13 +132,13 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.istack = 2  # So Image knows it's still a stack
         else:
             raise SyntaxError, "inconsistent stack header values"
-        
+
         if self.bigendian:
             self.rawmode = "F;32BF"
         else:
             self.rawmode = "F;32F"
         self.mode = "F"
-            
+
         self.tile = [("raw", (0, 0) + self.size, offset,
                     (self.rawmode, 0, 1))]
         self.__fp = self.fp # FIXME: hack
@@ -211,12 +211,12 @@ def makeSpiderHeader(im):
     nvalues = labbyt / 4
     for i in range(nvalues):
         hdr.append(0.0)
-        
+
     if len(hdr) < 23:
         return []
 
     # NB these are Fortran indices
-    hdr[1]  = 1.0           # nslice (=1 for an image) 
+    hdr[1]  = 1.0           # nslice (=1 for an image)
     hdr[2]  = float(nrow)   # number of rows per slice
     hdr[5]  = 1.0           # iform for 2D image
     hdr[12] = float(nsam)   # number of pixels per line
@@ -236,7 +236,7 @@ def makeSpiderHeader(im):
 def _save(im, fp, filename):
     if im.mode[0] != "F":
         im = im.convert('F')
-    
+
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
         raise IOError, "Error creating Spider header"
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     if not isSpiderImage(filename):
         print "input image must be in Spider format"
         sys.exit()
-        
+
     outfile = ""
     if len(sys.argv[1:]) > 1:
         outfile = sys.argv[2]
@@ -292,4 +292,3 @@ if __name__ == "__main__":
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
         print "saving a flipped version of %s as %s " % (os.path.basename(filename), outfile)
         im.save(outfile, "SPIDER")
-

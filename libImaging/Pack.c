@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Pack.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: Pack.c 2763 2006-06-22 21:43:28Z fredrik $
  *
  * code to pack raw data
  *
@@ -17,8 +17,9 @@
  * 1998-07-12 fl   Added I 16 packer
  * 1999-02-03 fl   Added BGR packers
  * 2003-09-26 fl   Added LA/PA packers
+ * 2006-06-22 fl   Added CMYK;I packer
  *
- * Copyright (c) 1997-2003 by Secret Labs AB.
+ * Copyright (c) 1997-2006 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
  *
  * See the README file for information on usage and redistribution.
@@ -27,13 +28,16 @@
 
 #include "Imaging.h"
 
-
 #define	R 0
 #define	G 1
 #define	B 2
 #define	X 3
-
 #define	A 3
+
+#define	C 0
+#define	M 1
+#define	Y 2
+#define	K 3
 
 /* byte swapping macros */
 
@@ -369,6 +373,15 @@ copy4(UINT8* out, const UINT8* in, int pixels)
 }
 
 static void
+copy4I(UINT8* out, const UINT8* in, int pixels)
+{
+    /* RGBA, CMYK quadruples, inverted */
+    int i;
+    for (i = 0; i < pixels*4; i++)
+	out[i] = ~in[i];
+}
+
+static void
 band0(UINT8* out, const UINT8* in, int pixels)
 {
     int i;
@@ -463,6 +476,7 @@ static struct {
 
     /* colour separation */
     {"CMYK",	"CMYK",		32,	copy4},
+    {"CMYK",	"CMYK;I",	32,	copy4I},
     {"CMYK",	"CMYK;L",	32,	packRGBXL},
     {"CMYK",   	"C",            8,      band0},
     {"CMYK",   	"M",            8,      band1},
