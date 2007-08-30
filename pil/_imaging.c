@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: _imaging.c 2746 2006-06-18 17:33:46Z fredrik $
+ * $Id: _imaging.c 2935 2006-12-03 12:20:39Z fredrik $
  *
  * the imaging library bindings
  *
@@ -106,6 +106,13 @@
 #if PY_VERSION_HEX < 0x01060000
 #define PyObject_New PyObject_NEW
 #define PyObject_Del PyMem_DEL
+#endif
+
+#if PY_VERSION_HEX < 0x02050000
+#define ssizeargfunc intargfunc
+#define ssizessizeargfunc intintargfunc
+#define ssizeobjargproc intobjargproc
+#define ssizessizeobjargproc intintobjargproc
 #endif
 
 /* -------------------------------------------------------------------- */
@@ -2899,11 +2906,11 @@ image_item(ImagingObject *self, int i)
 static PySequenceMethods image_as_sequence = {
     (inquiry)image_length, /*sq_length*/
     (binaryfunc)0, /*sq_concat*/
-    (intargfunc)0, /*sq_repeat*/
-    (intargfunc)image_item, /*sq_item*/
-    (intintargfunc)0, /*sq_slice*/
-    (intobjargproc)0, /*sq_ass_item*/
-    (intintobjargproc)0, /*sq_ass_slice*/
+    (ssizeargfunc)0, /*sq_repeat*/
+    (ssizeargfunc)image_item, /*sq_item*/
+    (ssizessizeargfunc)0, /*sq_slice*/
+    (ssizeobjargproc)0, /*sq_ass_item*/
+    (ssizessizeobjargproc)0, /*sq_ass_slice*/
 };
 
 

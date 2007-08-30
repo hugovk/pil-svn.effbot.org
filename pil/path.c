@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: path.c 2646 2006-03-03 23:09:50Z fredrik $
+ * $Id: path.c 2935 2006-12-03 12:20:39Z fredrik $
  *
  * 2D path utilities
  *
@@ -36,6 +36,12 @@
 #define PyObject_Del PyMem_DEL
 #endif
 
+#if PY_VERSION_HEX < 0x02050000
+#define ssizeargfunc intargfunc
+#define ssizessizeargfunc intintargfunc
+#define ssizeobjargproc intobjargproc
+#define ssizessizeobjargproc intintobjargproc
+#endif
 
 /* -------------------------------------------------------------------- */
 /* Class								*/
@@ -552,11 +558,11 @@ path_getattr(PyPathObject* self, char* name)
 static PySequenceMethods path_as_sequence = {
 	(inquiry)path_len, /*sq_length*/
 	(binaryfunc)0, /*sq_concat*/
-	(intargfunc)0, /*sq_repeat*/
-	(intargfunc)path_getitem, /*sq_item*/
-	(intintargfunc)path_getslice, /*sq_slice*/
-	(intobjargproc)path_setitem, /*sq_ass_item*/
-	(intintobjargproc)0, /*sq_ass_slice*/
+	(ssizeargfunc)0, /*sq_repeat*/
+	(ssizeargfunc)path_getitem, /*sq_item*/
+	(ssizessizeargfunc)path_getslice, /*sq_slice*/
+	(ssizeobjargproc)path_setitem, /*sq_ass_item*/
+	(ssizessizeobjargproc)0, /*sq_ass_slice*/
 };
 
 statichere PyTypeObject PyPathType = {
