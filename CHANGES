@@ -1,5 +1,5 @@
 The Python Imaging Library
-$Id: CHANGES 2815 2006-10-07 13:45:09Z fredrik $
+$Id: CHANGES 2934 2006-12-03 12:14:00Z fredrik $
 
 ACKNOWLEDGEMENTS: PIL wouldn't be what it is without the help of,
 among others: David Ascher, Phil Austin, Douglas Bagnall, Larry Bates,
@@ -24,6 +24,12 @@ Twardoch, Rune Uhlin, Dmitry Vasiliev, Sasha Voynow, Charles Waldman,
 Dan Wolfe, and Ka-Ping Yee.
 
 *** Changes from release 1.1.5 to 1.1.6 ***
+
+(1.1.6 released)
+
++ Fixed some 64-bit compatibility warnings for Python 2.5.
+
++ Added threading support for the Sane driver (from Abel Deuring).
 
 (1.1.6b2 released)
 

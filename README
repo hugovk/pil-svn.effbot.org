@@ -1,10 +1,10 @@
 The Python Imaging Library
-$Id: README 2816 2006-10-07 15:28:20Z fredrik $
+$Id: README 2939 2006-12-03 13:43:51Z fredrik $
 
-Release 1.1.6b2 (October 7, 2006)
+Release 1.1.6 (December 3, 2006)
 
 ====================================================================
-The Python Imaging Library 1.1.6b2
+The Python Imaging Library 1.1.6
 ====================================================================
 
 Contents
@@ -96,8 +96,8 @@ Software License
 
 The Python Imaging Library is
 
-Copyright (c) 1997-2005 by Secret Labs AB
-Copyright (c) 1995-2005 by Fredrik Lundh
+Copyright (c) 1997-2006 by Secret Labs AB
+Copyright (c) 1995-2006 by Fredrik Lundh
 
 By obtaining, using, and/or copying this software and/or its
 associated documentation, you agree that you have read, understood,
@@ -129,9 +129,9 @@ For a list of changes in this release, see the CHANGES document.
 
 0. If you're in a hurry, try this:
 
-        $ gunzip Imaging-1.1.6b2.tar.gz
-        $ tar xvf Imaging-1.1.6b2.tar
-        $ cd Imaging-1.1.6b2
+        $ gunzip Imaging-1.1.6.tar.gz
+        $ tar xvf Imaging-1.1.6.tar
+        $ cd Imaging-1.1.6
         $ python setup.py install
 
    If you prefer to know what you're doing, read on.
@@ -188,19 +188,19 @@ For a list of changes in this release, see the CHANGES document.
 
 
 4. When you have everything you need, unpack the PIL distribution
-   (the file Imaging-1.1.6b2.tar.gz) in your Python extensions
+   (the file Imaging-1.1.6.tar.gz) in your Python extensions
    directory (if you have one, that is.  If not, feel free to
    unpack it in any other suitable directory).
 
         $ cd Python-2.4/Extensions # example
-        $ gunzip Imaging-1.1.6b2.tar.gz
-        $ tar xvf Imaging-1.1.6b2.tar
+        $ gunzip Imaging-1.1.6.tar.gz
+        $ tar xvf Imaging-1.1.6.tar
 
 
 5. Build the library.  We recommend that you do an in-place build,
    and run the self test before installing.
 
-        $ cd Imaging-1.1.6b2
+        $ cd Imaging-1.1.6
         $ python setup.py build_ext -i
         $ python selftest.py
 
@@ -208,7 +208,7 @@ For a list of changes in this release, see the CHANGES document.
    that the optional components you need are included.
 
         ----------------------------------------------------------------
-        PIL 1.1.6b2 BUILD SUMMARY
+        PIL 1.1.6 BUILD SUMMARY
         ----------------------------------------------------------------
         *** TKINTER support not available (Tcl/Tk 8.3 libraries needed)
         --- JPEG support ok

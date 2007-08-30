@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: RankFilter.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id: RankFilter.c 2929 2006-11-22 21:12:55Z fredrik $
  *
  * min, max, median filters
  *
@@ -14,8 +14,8 @@
 
 #include "Imaging.h"
 
-/* Fast rank algorithm based on public domain code by Nicolas
-   Devillard, available at http://ndevilla.free.fr */
+/* Fast rank algorithm (due to Wirth), based on public domain code
+   by Nicolas Devillard, available at http://ndevilla.free.fr */
 
 #define SWAP(type,a,b) { register type t=(a);(a)=(b);(b)=t; }
 
