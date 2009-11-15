@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: BmpImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # BMP file handler
 #
@@ -47,7 +47,7 @@ BIT2MODE = {
     1: ("P", "P;1"),
     4: ("P", "P;4"),
     8: ("P", "P"),
-    16: ("RGB", "BGR;16"),
+    16: ("RGB", "BGR;15"),
     24: ("RGB", "BGR"),
     32: ("RGB", "BGRX")
 }
@@ -82,6 +82,7 @@ class BmpImageFile(ImageFile.ImageFile):
             compression = 0
             lutsize = 3
             colors = 0
+            direction = -1
 
         elif len(s) in [40, 64]:
 
@@ -91,6 +92,11 @@ class BmpImageFile(ImageFile.ImageFile):
             compression = i32(s[16:])
             lutsize = 4
             colors = i32(s[32:])
+            direction = -1
+            if s[11] == '\xff':
+                # upside-down storage
+                self.size = self.size[0], 2**32 - self.size[1]
+                direction = 0
 
         else:
             raise IOError("Unsupported BMP header type (%d)" % len(s))
@@ -149,7 +155,7 @@ class BmpImageFile(ImageFile.ImageFile):
         self.tile = [("raw",
                      (0, 0) + self.size,
                      offset,
-                     (rawmode, ((self.size[0]*bits+31)>>3)&(~3), -1))]
+                     (rawmode, ((self.size[0]*bits+31)>>3)&(~3), direction))]
 
         self.info["compression"] = compression
 

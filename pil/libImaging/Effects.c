@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: Effects.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * various special effects and image generators
  *
@@ -160,6 +160,8 @@ ImagingEffectSpread(Imaging imIn, int distance)
 /* -------------------------------------------------------------------- */
 /* Taken from the "C" code in the W3C SVG specification.  Translated
    to C89 by Fredrik Lundh */
+
+#if 0
 
 /* Produces results in the range [1, 2**31 - 2].
 Algorithm is: r = (a * r) mod m
@@ -368,3 +370,4 @@ perlin_turbulence(
   return fSum;
 }
 
+#endif

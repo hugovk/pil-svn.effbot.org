@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Jpeg.h 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * declarations for the IJG JPEG codec interface.
  *
@@ -85,6 +85,12 @@ typedef struct {
     /* DPI setting (0=square pixels, otherwide DPI) */
     int xdpi, ydpi;
 
+    /* Chroma Subsampling (-1=default, 0=none, 1=medium, 2=high) */
+    int subsampling;
+
+    /* Extra data (to be injected after header) */
+    char* extra; int extra_size;
+
     /* PRIVATE CONTEXT (set by encoder) */
 
     struct jpeg_compress_struct cinfo;
@@ -92,5 +98,7 @@ typedef struct {
     JPEGERROR error;
 
     JPEGDESTINATION destination;
+
+    int extra_offset;
 
 } JPEGENCODERSTATE;

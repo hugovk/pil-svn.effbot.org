@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Paste.c 2409 2005-05-15 09:41:24Z Fredrik $
+ * $Id$
  *
  * paste image on another image
  *
@@ -220,7 +220,7 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
     ImagingSectionCookie cookie;
 
     if (!imOut || !imIn) {
-	ImagingError_ModeError();
+	(void) ImagingError_ModeError();
 	return -1;
     }
 
@@ -231,12 +231,12 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
 
     if (xsize != imIn->xsize || ysize != imIn->ysize ||
         pixelsize != imIn->pixelsize) {
-	ImagingError_Mismatch();
+	(void) ImagingError_Mismatch();
 	return -1;
     }
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-	ImagingError_Mismatch();
+	(void) ImagingError_Mismatch();
 	return -1;
     }
 
@@ -284,7 +284,7 @@ ImagingPaste(Imaging imOut, Imaging imIn, Imaging imMask,
         ImagingSectionLeave(&cookie);
 
     } else {
-	ImagingError_ValueError("bad transparency mask");
+	(void) ImagingError_ValueError("bad transparency mask");
 	return -1;
     }
 
@@ -489,7 +489,7 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
     int sx0, sy0;
 
     if (!imOut || !ink) {
-	ImagingError_ModeError();
+	(void) ImagingError_ModeError();
 	return -1;
     }
 
@@ -499,7 +499,7 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
     ysize = dy1 - dy0;
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-	ImagingError_Mismatch();
+	(void) ImagingError_Mismatch();
 	return -1;
     }
 
@@ -547,7 +547,7 @@ ImagingFill2(Imaging imOut, const void* ink, Imaging imMask,
         ImagingSectionLeave(&cookie);
 
     } else {
-	ImagingError_ValueError("bad transparency mask");
+	(void) ImagingError_ValueError("bad transparency mask");
 	return -1;
     }
 

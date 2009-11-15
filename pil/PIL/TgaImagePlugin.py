@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: TgaImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # TGA file handling
 #
@@ -21,6 +21,10 @@ __version__ = "0.3"
 
 import Image, ImageFile, ImagePalette
 
+
+#
+# --------------------------------------------------------------------
+# Read RGA file
 
 def i16(c):
     return ord(c[0]) + (ord(c[1])<<8)
@@ -70,7 +74,7 @@ class TgaImageFile(ImageFile.ImageFile):
         # validate header fields
         if id != 0 or colormaptype not in (0, 1) or\
            self.size[0] <= 0 or self.size[1] <= 0 or\
-           depth not in (8, 16, 24, 32):
+           depth not in (1, 8, 16, 24, 32):
             raise SyntaxError, "not a TGA file"
 
         # image mode
@@ -95,6 +99,8 @@ class TgaImageFile(ImageFile.ImageFile):
             orientation = -1
         else:
             raise SyntaxError, "unknown TGA orientation"
+
+        self.info["orientation"] = orientation
 
         if imagetype & 8:
             self.info["compression"] = "tga_rle"
@@ -126,8 +132,70 @@ class TgaImageFile(ImageFile.ImageFile):
             pass # cannot decode
 
 #
-# registry
+# --------------------------------------------------------------------
+# Write TGA file
+
+def o16(i):
+    return chr(i&255) + chr(i>>8&255)
+
+def o32(i):
+    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+
+SAVE = {
+    "1": ("1", 1, 0, 3),
+    "L": ("L", 8, 0, 3),
+    "P": ("P", 8, 1, 1),
+    "RGB": ("BGR", 24, 0, 2),
+    "RGBA": ("BGRA", 32, 0, 2),
+}
+
+def _save(im, fp, filename, check=0):
+
+    try:
+        rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
+    except KeyError:
+        raise IOError("cannot write mode %s as TGA" % im.mode)
+
+    if check:
+        return check
+
+    if colormaptype:
+        colormapfirst, colormaplength, colormapentry = 0, 256, 24
+    else:
+        colormapfirst, colormaplength, colormapentry = 0, 0, 0
+
+    if im.mode == "RGBA":
+        flags = 8
+    else:
+        flags = 0
+
+    orientation = im.info.get("orientation", -1)
+    if orientation > 0:
+        flags = flags | 0x20
+
+    fp.write("\000" +
+             chr(colormaptype) +
+             chr(imagetype) +
+             o16(colormapfirst) +
+             o16(colormaplength) +
+             chr(colormapentry) +
+             o16(0) +
+             o16(0) +
+             o16(im.size[0]) +
+             o16(im.size[1]) +
+             chr(bits) +
+             chr(flags))
+
+    if colormaptype:
+        fp.write(im.im.getpalette("RGB", "BGR"))
+
+    ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, 0, orientation))])
+
+#
+# --------------------------------------------------------------------
+# Registry
 
 Image.register_open("TGA", TgaImageFile, _accept)
+Image.register_save("TGA", _save)
 
 Image.register_extension("TGA", ".tga")

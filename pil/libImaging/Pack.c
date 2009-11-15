@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Pack.c 2763 2006-06-22 21:43:28Z fredrik $
+ * $Id$
  *
  * code to pack raw data
  *
@@ -287,6 +287,34 @@ ImagingPackXBGR(UINT8* out, const UINT8* in, int pixels)
     }
 }
 
+void
+ImagingPackBGRA(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* BGRX, reversed bytes with right padding */
+    for (i = 0; i < pixels; i++) {
+	out[0] = in[B];
+	out[1] = in[G];
+	out[2] = in[R];
+	out[3] = in[A];
+	out += 4; in += 4;
+    }
+}
+
+void
+ImagingPackABGR(UINT8* out, const UINT8* in, int pixels)
+{
+    int i;
+    /* XBGR, reversed bytes with left padding */
+    for (i = 0; i < pixels; i++) {
+	out[0] = in[A];
+	out[1] = in[B];
+	out[2] = in[G];
+	out[3] = in[R];
+	out += 4; in += 4;
+    }
+}
+
 static void
 packRGBL(UINT8* out, const UINT8* in, int pixels)
 {
@@ -460,6 +488,9 @@ static struct {
     {"RGBA",	"RGBA",		32,	copy4},
     {"RGBA",	"RGBA;L",	32,	packRGBXL},
     {"RGBA",	"RGB",		24,	ImagingPackRGB},
+    {"RGBA",	"BGR",		24,	ImagingPackBGR},
+    {"RGBA",	"BGRA",		32,	ImagingPackBGRA},
+    {"RGBA",	"ABGR",		32,	ImagingPackABGR},
     {"RGBA",   	"R",            8,      band0},
     {"RGBA",   	"G",            8,      band1},
     {"RGBA",   	"B",            8,      band2},
@@ -469,6 +500,9 @@ static struct {
     {"RGBX",	"RGBX",		32,	copy4},
     {"RGBX",	"RGBX;L",	32,	packRGBXL},
     {"RGBX",	"RGB",		32,	ImagingPackRGB},
+    {"RGBX",	"BGR",		32,	ImagingPackBGR},
+    {"RGBX",	"BGRX",		32,	ImagingPackBGRX},
+    {"RGBX",	"XBGR",		32,	ImagingPackXBGR},
     {"RGBX",   	"R",            8,      band0},
     {"RGBX",   	"G",            8,      band1},
     {"RGBX",   	"B",            8,      band2},
@@ -506,6 +540,7 @@ static struct {
     /* storage modes */
     {"I;16", 	"I;16",		16,	copy2},
     {"I;16B", 	"I;16B",	16,	copy2},
+    {"I;16L", 	"I;16L",	16,	copy2},
     {"BGR;15", 	"BGR;15",	16,	copy2},
     {"BGR;16", 	"BGR;16",	16,	copy2},
     {"BGR;24", 	"BGR;24",	24,	copy3},

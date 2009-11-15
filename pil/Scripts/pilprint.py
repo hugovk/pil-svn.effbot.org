@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: pilprint.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # print image files to postscript printer
 #
@@ -13,8 +13,8 @@
 
 VERSION = "pilprint 0.3/2003-05-05"
 
-import Image
-import PSDraw
+from PIL import Image
+from PIL import PSDraw
 
 letter = ( 1.0*72, 1.0*72, 7.5*72, 10.0*72 )
 

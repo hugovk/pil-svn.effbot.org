@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: pilfont.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # PIL raster font compiler
 #

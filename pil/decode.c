@@ -1,6 +1,5 @@
 /* 
  * The Python Imaging Library.
- * $Id: decode.c 2751 2006-06-18 19:50:45Z fredrik $
  *
  * standard decoder interfaces for the Imaging library
  *
@@ -80,7 +79,7 @@ PyImaging_DecoderNew(int contextsize)
 	context = (void*) calloc(1, contextsize);
 	if (!context) {
 	    Py_DECREF(decoder);
-	    PyErr_NoMemory();
+	    (void) PyErr_NoMemory();
 	    return NULL;
 	}
     } else
@@ -166,10 +165,8 @@ _setimage(ImagingDecoderObject* decoder, PyObject* args)
         if (!state->bytes)
             state->bytes = (state->bits * state->xsize+7)/8;
 	state->buffer = (UINT8*) malloc(state->bytes);
-	if (!state->buffer) {
-	    PyErr_NoMemory();
-	    return NULL;
-	}
+	if (!state->buffer)
+	    return PyErr_NoMemory();
     }
 
     /* Keep a reference to the image object, to make sure it doesn't
@@ -614,7 +611,8 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
 
     char* mode;
     char* rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode))
+    int interlaced = 0;
+    if (!PyArg_ParseTuple(args, "ss|i", &mode, &rawmode, &interlaced))
 	return NULL;
 
     decoder = PyImaging_DecoderNew(sizeof(ZIPSTATE));
@@ -625,6 +623,8 @@ PyImaging_ZipDecoderNew(PyObject* self, PyObject* args)
 	return NULL;
 
     decoder->decode = ImagingZipDecode;
+
+    ((ZIPSTATE*)decoder->state.context)->interlaced = interlaced;
 
     return (PyObject*) decoder;
 }

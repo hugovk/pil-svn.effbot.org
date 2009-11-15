@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: gifmaker.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # convert sequence format to GIF animation
 #
@@ -39,10 +39,10 @@
 # write data directly to a socket.  Or something...
 #
 
-import Image, ImageChops
+from PIL import Image, ImageChops
 import string
 
-from GifImagePlugin import getheader, getdata
+from PIL.GifImagePlugin import getheader, getdata
 
 # --------------------------------------------------------------------
 # sequence iterator

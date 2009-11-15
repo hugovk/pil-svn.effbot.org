@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageStat.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # global image statistics
 #
@@ -162,18 +162,3 @@ class Stat:
         return v
 
 Global = Stat # compatibility
-
-if __name__ == "__main__":
-
-    im = Image.open("Images/lena.ppm")
-
-    st = Stat(im)
-
-    print "extrema", st.extrema
-    print "sum    ", st.sum
-    print "mean   ", st.mean
-    print "median ", st.median
-    print "rms    ", st.rms
-    print "sum2   ", st.sum2
-    print "var    ", st.var
-    print "stddev ", st.stddev

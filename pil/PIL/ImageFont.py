@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageFont.py 2813 2006-10-07 10:11:35Z fredrik $
+# $Id$
 #
 # PIL raster font management
 #
@@ -27,6 +27,18 @@
 
 import Image
 import os, string, sys
+
+class _imagingft_not_installed:
+    # module placeholder
+    def __getattr__(self, id):
+        raise ImportError("The _imagingft C module is not installed")
+
+try:
+    import _imagingft
+    core = _imagingft
+    del _imagingft
+except ImportError:
+    core = _imagingft_not_installed()
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
@@ -89,8 +101,10 @@ class ImageFont:
             raise SyntaxError("Not a PILfont file")
         d = string.split(file.readline(), ";")
         self.info = [] # FIXME: should be a dictionary
-        s = file.readline()
-        while s and s != "DATA\n":
+        while True:
+            s = file.readline()
+            if not s or s == "DATA\n":
+                break
             self.info.append(s)
 
         # read PILfont metrics
@@ -117,8 +131,7 @@ class FreeTypeFont:
 
     def __init__(self, file, size, index=0, encoding=""):
         # FIXME: use service provider instead
-        import _imagingft
-        self.font = _imagingft.getfont(file, size, index, encoding)
+        self.font = core.getfont(file, size, index, encoding)
 
     def getname(self):
         return self.font.family, self.font.style

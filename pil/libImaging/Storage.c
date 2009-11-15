@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Storage.c 2542 2005-10-02 21:37:20Z Fredrik $
+ * $Id$
  *
  * imaging storage object
  *
@@ -104,7 +104,7 @@ ImagingNewPrologueSubtype(const char *mode, unsigned xsize, unsigned ysize,
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16B") == 0) {
+    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 || strcmp(mode, "I;16B") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -352,17 +352,32 @@ ImagingNewBlock(const char *mode, int xsize, int ysize)
 #if defined(IMAGING_SMALL_MODEL)
 #define	THRESHOLD	16384L
 #else
-#define	THRESHOLD	1048576L
+#define	THRESHOLD	(2048*2048*4L)
 #endif
 
 Imaging
 ImagingNew(const char* mode, int xsize, int ysize)
 {
-    /* FIXME: strlen(mode) is no longer accurate */
-    if ((long) xsize * ysize * strlen(mode) <= THRESHOLD)
-	return ImagingNewBlock(mode, xsize, ysize);
-    else
-	return ImagingNewArray(mode, xsize, ysize);
+    int bytes;
+    Imaging im;
+
+    if (strlen(mode) == 1) {
+        if (mode[0] == 'F' || mode[0] == 'I')
+            bytes = 4;
+        else
+            bytes = 1;
+    } else
+        bytes = strlen(mode); /* close enough */
+
+    if ((long) xsize * ysize * bytes <= THRESHOLD) {
+        im = ImagingNewBlock(mode, xsize, ysize);
+        if (im)
+            return im;
+        /* assume memory error; try allocating in array mode instead */
+        ImagingError_Clear();
+    }
+
+    return ImagingNewArray(mode, xsize, ysize);
 }
 
 Imaging
@@ -375,8 +390,7 @@ ImagingNew2(const char* mode, Imaging imOut, Imaging imIn)
         if (strcmp(imOut->mode, mode) != 0
             || imOut->xsize != imIn->xsize
             || imOut->ysize != imIn->ysize) {
-            ImagingError_Mismatch();
-            return NULL;
+            return ImagingError_Mismatch();
         }
     } else {
         /* create new image */

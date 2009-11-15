@@ -1,6 +1,6 @@
 #
 # Python Imaging Library
-# $Id: GimpGradientFile.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # stuff to read (and render) GIMP gradient files
 #

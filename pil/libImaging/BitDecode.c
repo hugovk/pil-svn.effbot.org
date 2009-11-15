@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: BitDecode.c 2278 2005-02-07 20:27:33Z fredrik $
+ * $Id$
  *
  * decoder for packed bitfields (converts to floating point)
  *

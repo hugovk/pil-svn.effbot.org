@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageDraw.py 2817 2006-10-07 15:34:03Z fredrik $
+# $Id$
 #
 # drawing interface operations
 #

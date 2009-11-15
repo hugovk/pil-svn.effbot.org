@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Zip.h 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * declarations for the ZIP codecs
  *
@@ -49,5 +49,9 @@ typedef struct {
     UINT8* output;		/* output data */
 
     int prefix;			/* size of filter prefix (0 for TIFF data) */
+    
+    int interlaced;		/* is the image interlaced? (PNG) */
+    
+    int pass;			/* current pass of the interlaced image (PNG) */
 
 } ZIPSTATE;

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: IptcImagePlugin.py 2813 2006-10-07 10:11:35Z fredrik $
+# $Id$
 #
 # IPTC/NAA file handling
 #
@@ -116,9 +116,17 @@ class IptcImageFile(ImageFile.ImageFile):
             if not tag or tag == (8,10):
                 break
             if size:
-                self.info[tag] = self.fp.read(size)
+                tagdata = self.fp.read(size)
             else:
-                self.info[tag] = None
+                tagdata = None
+            if tag in self.info.keys():
+                if isinstance(self.info[tag], list):
+                    self.info[tag].append(tagdata)
+                else:
+                    self.info[tag] = [self.info[tag], tagdata]
+            else:
+                self.info[tag] = tagdata
+
             # print tag, self.info[tag]
 
         # mode

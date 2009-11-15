@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Fill.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * fill image with constant pixel value
  *
@@ -20,24 +20,36 @@
 
 #include "math.h"
 
-
 Imaging
 ImagingFill(Imaging im, const void* colour)
 {
-    INT32 c;
     int x, y;
 
-    c = 0L;
-    memcpy(&c, colour, im->pixelsize);
-
-    if (im->image32 && c != 0L) {
-	for (y = 0; y < im->ysize; y++)
-	    for (x = 0; x < im->xsize; x++)
-		im->image32[y][x] = c;
+    if (im->type == IMAGING_TYPE_SPECIAL) {
+        /* use generic API */
+        ImagingAccess access = ImagingAccessNew(im);
+        if (access) {
+            for (y = 0; y < im->ysize; y++)
+                for (x = 0; x < im->xsize; x++)
+                    access->put_pixel(im, x, y, colour);
+            ImagingAccessDelete(im, access);
+        } else {
+            /* wipe the image */
+            for (y = 0; y < im->ysize; y++)
+                memset(im->image[y], 0, im->linesize);
+        }
     } else {
-        unsigned char cc = (unsigned char) *(UINT8*) colour;
-	for (y = 0; y < im->ysize; y++)
-           memset(im->image[y], cc, im->linesize);
+        INT32 c = 0L;
+        memcpy(&c, colour, im->pixelsize);
+        if (im->image32 && c != 0L) {
+            for (y = 0; y < im->ysize; y++)
+                for (x = 0; x < im->xsize; x++)
+                    im->image32[y][x] = c;
+        } else {
+            unsigned char cc = (unsigned char) *(UINT8*) colour;
+            for (y = 0; y < im->ysize; y++)
+                memset(im->image[y], cc, im->linesize);
+        }
     }
 
     return im;

@@ -1,14 +1,14 @@
-# $Id: selftest.py 2813 2006-10-07 10:11:35Z fredrik $
 # minimal sanity check
 
-import sys
-sys.path.insert(0, ".")
-sys.path.insert(1, "PIL")
+ROOT = "."
 
-import Image
-import ImageDraw
-import ImageFilter
-import ImageMath
+import os, sys
+sys.path.insert(0, ROOT)
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFilter
+from PIL import ImageMath
 
 try:
     Image.core.ping
@@ -42,18 +42,21 @@ def testimage():
 
     Or open existing files:
 
-    >>> im = Image.open("Images/lena.gif")
+    >>> im = Image.open(os.path.join(ROOT, "Images/lena.gif"))
     >>> _info(im)
     ('GIF', 'P', (128, 128))
-    >>> _info(Image.open("Images/lena.ppm"))
+    >>> _info(Image.open(os.path.join(ROOT, "Images/lena.ppm")))
     ('PPM', 'RGB', (128, 128))
-    >>> _info(Image.open("Images/lena.jpg"))
+    >>> try:
+    ...  _info(Image.open(os.path.join(ROOT, "Images/lena.jpg")))
+    ... except IOError, v:
+    ...  print v
     ('JPEG', 'RGB', (128, 128))
 
     PIL doesn't actually load the image data until it's needed,
     or you call the "load" method:
 
-    >>> im = Image.open("Images/lena.ppm")
+    >>> im = Image.open(os.path.join(ROOT, "Images/lena.ppm"))
     >>> print im.im # internal image attribute
     None
     >>> a = im.load()
@@ -63,7 +66,7 @@ def testimage():
     You can apply many different operations on images.  Most
     operations return a new image:
 
-    >>> im = Image.open("Images/lena.ppm")
+    >>> im = Image.open(os.path.join(ROOT, "Images/lena.ppm"))
     >>> _info(im.convert("L"))
     (None, 'L', (128, 128))
     >>> _info(im.copy())
@@ -151,11 +154,49 @@ def testimage():
     Cheers /F
     """
 
+
+def check_module(feature, module):
+    try:
+        __import__("PIL." + module)
+    except ImportError:
+        print "***", feature, "support not installed"
+    else:
+        print "---", feature, "support ok"
+
+def check_codec(feature, codec):
+    if codec + "_encoder" not in dir(Image.core):
+        print "***", feature, "support not installed"
+    else:
+        print "---", feature, "support ok"
+
+
 if __name__ == "__main__":
+    # check build sanity
+
+    exit_status = 0
+
+    print "-"*68
+    print "PIL", Image.VERSION, "TEST SUMMARY "
+    print "-"*68
+    print "Python modules loaded from", os.path.dirname(Image.__file__)
+    print "Binary modules loaded from", os.path.dirname(Image.core.__file__)
+    print "-"*68
+    check_module("PIL CORE", "_imaging")
+    check_module("TKINTER", "_imagingtk")
+    check_codec("JPEG", "jpeg")
+    check_codec("ZLIB (PNG/ZIP)", "zip")
+    check_module("FREETYPE2", "_imagingft")
+    check_module("LITTLECMS", "_imagingcms")
+    print "-"*68
+
     # use doctest to make sure the test program behaves as documented!
     import doctest, selftest
+    print "Running selftest:"
     status = doctest.testmod(selftest)
     if status[0]:
         print "*** %s tests of %d failed." % status
+        exit_status = 1
     else:
-        print "%s tests passed." % status[1]
+        print "--- %s tests passed." % status[1]
+
+    sys.exit(exit_status)

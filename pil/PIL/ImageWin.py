@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageWin.py 2662 2006-03-21 22:41:02Z fredrik $
+# $Id$
 #
 # a Windows DIB display interface
 #

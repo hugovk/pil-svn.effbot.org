@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: ZipDecode.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * decoder for ZIP (deflated) image data.
  *
@@ -22,6 +22,19 @@
 
 #include "Zip.h"
 
+static const int OFFSET[] = { 7, 3, 3, 1, 1, 0, 0 };
+static const int STARTING_COL[] = { 0, 4, 0, 2, 0, 1, 0 };
+static const int STARTING_ROW[] = { 0, 0, 4, 0, 2, 0, 1 };
+static const int COL_INCREMENT[] = { 8, 8, 4, 4, 2, 2, 1 };
+static const int ROW_INCREMENT[] = { 8, 8, 8, 4, 4, 2, 2 };
+
+/* Get the length in bytes of a scanline in the pass specified,
+ * for interlaced images */
+static int get_row_len(ImagingCodecState state, int pass)
+{
+    int row_len = (state->xsize + OFFSET[pass]) / COL_INCREMENT[pass]; 
+    return ((row_len * state->bits) + 7) / 8;
+}
 
 /* -------------------------------------------------------------------- */
 /* Decoder								*/
@@ -35,6 +48,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     int n;
     UINT8* ptr;
     int i, bpp;
+    int row_len;
 
     if (!state->state) {
 
@@ -58,9 +72,9 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	memset(context->previous, 0, state->bytes+1);
 
 	/* Setup decompression context */
-	context->z_stream.zalloc = (alloc_func)0;
-	context->z_stream.zfree = (free_func)0;
-	context->z_stream.opaque = (voidpf)0;
+	context->z_stream.zalloc = (alloc_func) NULL;
+	context->z_stream.zfree = (free_func) NULL;
+	context->z_stream.opaque = (voidpf) NULL;
 
 	err = inflateInit(&context->z_stream);
 	if (err < 0) {
@@ -68,9 +82,20 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    return -1;
 	}
 
+	if (context->interlaced) {
+	    context->pass = 0;
+	    state->y = STARTING_ROW[context->pass];
+	}
+
 	/* Ready to decode */
 	state->state = 1;
 
+    }
+
+    if (context->interlaced) {
+	row_len = get_row_len(state, context->pass);
+    } else {
+	row_len = state->bytes;
     }
 
     /* Setup the source buffer */
@@ -82,7 +107,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 
 	context->z_stream.next_out = state->buffer + context->last_output;
 	context->z_stream.avail_out =
-            state->bytes + context->prefix - context->last_output;
+	    row_len + context->prefix - context->last_output;
 
 	err = inflate(&context->z_stream, Z_NO_FLUSH);
 
@@ -99,10 +124,10 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    return -1;
 	}
 
-	n = state->bytes + context->prefix - context->z_stream.avail_out;
+	n = row_len + context->prefix - context->z_stream.avail_out;
 
-	if (n < state->bytes + context->prefix) {
-            context->last_output = n;
+	if (n < row_len + context->prefix) {
+	    context->last_output = n;
 	    break; /* need more input data */
 	}
 
@@ -115,12 +140,12 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    case 1:
 		/* prior */
 		bpp = (state->bits + 7) / 8;
-		for (i = bpp+1; i <= state->bytes; i++)
+		for (i = bpp+1; i <= row_len; i++)
 		    state->buffer[i] += state->buffer[i-bpp];
 		break;
 	    case 2:
 		/* up */
-		for (i = 1; i <= state->bytes; i++)
+		for (i = 1; i <= row_len; i++)
 		    state->buffer[i] += context->previous[i];
 		break;
 	    case 3:
@@ -128,7 +153,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		bpp = (state->bits + 7) / 8;
 		for (i = 1; i <= bpp; i++)
 		    state->buffer[i] += context->previous[i]/2;
-		for (; i <= state->bytes; i++)
+		for (; i <= row_len; i++)
 		    state->buffer[i] +=
 			(state->buffer[i-bpp] + context->previous[i])/2;
 		break;
@@ -137,7 +162,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		bpp = (state->bits + 7) / 8;
 		for (i = 1; i <= bpp; i++)
 		    state->buffer[i] += context->previous[i];
-		for (; i <= state->bytes; i++) {
+		for (; i <= row_len; i++) {
 		    int a, b, c;
 		    int pa, pb, pc;
 
@@ -166,18 +191,56 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    break;
 	case ZIP_TIFF_PREDICTOR:
 	    bpp = (state->bits + 7) / 8;
-	    for (i = bpp+1; i <= state->bytes; i++)
+	    for (i = bpp+1; i <= row_len; i++)
 		state->buffer[i] += state->buffer[i-bpp];
 	    break;
 	}
 
 	/* Stuff data into the image */
-	state->shuffle((UINT8*) im->image[state->y + state->yoff] + 
-		       state->xoff * im->pixelsize,
-		       state->buffer + context->prefix,
-		       state->xsize);
-
-	state->y++;
+	if (context->interlaced) {
+	    int col = STARTING_COL[context->pass];
+	    if (state->bits >= 8) {
+		/* Stuff pixels in their correct location, one by one */
+		for (i = 0; i < row_len; i += ((state->bits + 7) / 8)) {
+		    state->shuffle((UINT8*) im->image[state->y] + 
+				   col * im->pixelsize,
+				   state->buffer + context->prefix + i, 1);
+		    col += COL_INCREMENT[context->pass];
+		}
+	    } else {
+		/* Handle case with more than a pixel in each byte */
+		int row_bits = ((state->xsize + OFFSET[context->pass])
+		        / COL_INCREMENT[context->pass]) * state->bits;
+		for (i = 0; i < row_bits; i += state->bits) {
+		    UINT8 byte = *(state->buffer + context->prefix + (i / 8));
+		    byte <<= (i % 8);
+		    state->shuffle((UINT8*) im->image[state->y] + 
+				   col * im->pixelsize, &byte, 1);
+		    col += COL_INCREMENT[context->pass];
+		}
+	    }
+	    /* Find next valid scanline */
+	    state->y += ROW_INCREMENT[context->pass];
+	    while (state->y >= state->ysize || row_len <= 0) {
+		context->pass++;
+		if (context->pass == 7) {
+		    /* Force exit below */
+		    state->y = state->ysize;
+		    break;
+		}
+		state->y = STARTING_ROW[context->pass];
+		row_len = get_row_len(state, context->pass);
+		/* Since we're moving to the "first" line, the previous line
+		 * should be black to make filters work corectly */
+		memset(state->buffer, 0, state->bytes+1);
+	    }
+	} else {
+	    state->shuffle((UINT8*) im->image[state->y + state->yoff] + 
+			   state->xoff * im->pixelsize,
+			   state->buffer + context->prefix,
+			   state->xsize);
+	    state->y++;
+	}
 
         /* all inflate output has been consumed */
         context->last_output = 0;

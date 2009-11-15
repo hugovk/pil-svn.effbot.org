@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: ImageColor.py 2813 2006-10-07 10:11:35Z fredrik $
+# $Id$
 #
 # map CSS3-style colour description strings to RGB
 #
@@ -9,6 +9,7 @@
 # 2002-12-15 fl   Added RGBA support
 # 2004-03-27 fl   Fixed remaining int() problems for Python 1.5.2
 # 2004-07-19 fl   Fixed gray/grey spelling issues
+# 2009-03-05 fl   Fixed rounding error in grayscale calculation
 #
 # Copyright (c) 2002-2004 by Secret Labs AB
 # Copyright (c) 2002-2004 by Fredrik Lundh
@@ -105,7 +106,7 @@ def getcolor(color, mode):
         return r, g, b, 255
     if Image.getmodebase(mode) == "L":
         r, g, b = color
-        return r*299/1000 + g*587/1000 + b*114/1000
+        return (r*299 + g*587 + b*114)/1000
     return color
 
 colormap = {

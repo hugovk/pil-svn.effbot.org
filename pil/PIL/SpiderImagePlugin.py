@@ -34,7 +34,7 @@
 #
 
 import Image, ImageFile
-import os, string, struct, sys
+import os, struct, sys
 
 def isInt(f):
     try:

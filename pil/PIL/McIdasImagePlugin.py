@@ -1,14 +1,14 @@
 #
 # The Python Imaging Library.
-# $Id: McIdasImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # Basic McIdas support for PIL
 #
 # History:
-#       97-05-05 fl     Created (8-bit images only)
+# 1997-05-05 fl  Created (8-bit images only)
+# 2009-03-08 fl  Added 16/32-bit support.
 #
-# Thanks to Richard Jones <richard.jones@bom.gov.au> for specs
-# and samples.
+# Thanks to Richard Jones and Craig Swank for specs and samples.
 #
 # Copyright (c) Secret Labs AB 1997.
 # Copyright (c) Fredrik Lundh 1997.
@@ -16,20 +16,13 @@
 # See the README file for information on usage and redistribution.
 #
 
-__version__ = "0.1"
+__version__ = "0.2"
 
-import string
-
+import struct
 import Image, ImageFile
 
-def i16(c,i=0):
-    return ord(c[1+i])+(ord(c[i])<<8)
-
-def i32(c,i=0):
-    return ord(c[3+i])+(ord(c[2+i])<<8)+(ord(c[1+i])<<16)+(ord(c[i])<<24)
-
 def _accept(s):
-    return i32(s) == 0 and i32(s, 4) == 4
+    return s[:8] == "\x00\x00\x00\x00\x00\x00\x00\x04"
 
 ##
 # Image plugin for McIdas area images.
@@ -43,28 +36,31 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         # parse area file directory
         s = self.fp.read(256)
-        if not _accept(s):
-            raise SyntaxError, "not an McIdas area file"
+        if not _accept(s) or len(s) != 256:
+            raise SyntaxError("not an McIdas area file")
+
+        self.area_descriptor_raw = s
+        self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
 
         # get mode
-        if i32(s, 40) != 1 or i32(s, 52) != 1:
-            raise SyntaxError, "unsupported McIdas format"
+        if w[11] == 1:
+            mode = rawmode = "L"
+        elif w[11] == 2:
+            # FIXME: add memory map support
+            mode = "I"; rawmode = "I;16B"
+        elif w[11] == 4:
+            # FIXME: add memory map support
+            mode = "I"; rawmode = "I;32B"
+        else:
+            raise SyntaxError("unsupported McIdas format")
 
-        self.mode = "L"
+        self.mode = mode
+        self.size = w[10], w[9]
 
-        # get size
-        self.size = i32(s, 36), i32(s, 32)
+        offset = w[34] + w[15]
+        stride = w[15] + w[10]*w[11]*w[14]
 
-        # setup image descriptor
-        prefix = i32(s, 56)
-        offset = i32(s, 132)
-
-        self.tile = [("raw", (0, 0) + self.size, offset,
-                     ("L", prefix + self.size[0], 1))]
-
-        # FIXME: should store the navigation and calibration blocks
-        # somewhere (or perhaps extract some basic information from
-        # them...)
+        self.tile = [("raw", (0, 0) + self.size, offset, (rawmode, stride, 1))]
 
 # --------------------------------------------------------------------
 # registry

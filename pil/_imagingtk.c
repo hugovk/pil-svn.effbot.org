@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library.
- * $Id: _imagingtk.c 1756 2004-03-28 17:15:33Z fredrik $
  *
  * tkinter hooks
  *

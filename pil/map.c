@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library.
- * $Id: map.c 2751 2006-06-18 19:50:45Z fredrik $
  *
  * standard memory mapping interface for the Imaging library
  *
@@ -30,13 +29,15 @@
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
-#ifdef __GNUC__
 #undef INT32
 #undef INT64
 #undef UINT32
-#endif
 #include "windows.h"
 #endif
+
+/* compatibility wrappers (defined in _imaging.c) */
+extern int PyImaging_CheckBuffer(PyObject* buffer);
+extern int PyImaging_ReadBuffer(PyObject* buffer, const void** ptr);
 
 /* -------------------------------------------------------------------- */
 /* Standard mapper */
@@ -308,7 +309,6 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 {
     int y, size;
     Imaging im;
-    PyBufferProcs *buffer;
     char* ptr;
     int bytes;
 
@@ -325,10 +325,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
                           &codec, &bbox, &offset, &mode, &stride, &ystep))
 	return NULL;
 
-    /* check target object */
-    buffer = target->ob_type->tp_as_buffer;
-    if (!buffer || !buffer->bf_getreadbuffer || !buffer->bf_getsegcount ||
-        buffer->bf_getsegcount(target, NULL) != 1) {
+    if (!PyImaging_CheckBuffer(target)) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return NULL;
     }
@@ -336,7 +333,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     if (stride <= 0) {
         if (!strcmp(mode, "L") || !strcmp(mode, "P"))
             stride = xsize;
-        else if (!strcmp(mode, "I;16") || !strcmp(mode, "I;16B"))
+        else if (!strncmp(mode, "I;16", 4))
             stride = xsize * 2;
         else
             stride = xsize * 4;
@@ -345,7 +342,7 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     size = ysize * stride;
 
     /* check buffer size */
-    bytes = buffer->bf_getreadbuffer(target, 0, (void**) &ptr);
+    bytes = PyImaging_ReadBuffer(target, (const void**) &ptr);
     if (bytes < 0) {
         PyErr_SetString(PyExc_ValueError, "buffer has negative size");
         return NULL;

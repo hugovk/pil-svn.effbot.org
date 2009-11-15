@@ -57,6 +57,7 @@ Imaging/libImaging/RankFilter.c
 Imaging/libImaging/Storage.c
 Imaging/libImaging/Unpack.c
 Imaging/libImaging/UnpackYCC.c
+Imaging/libImaging/UnsharpMask.c
 
 Imaging/libImaging/Bit.h
 Imaging/libImaging/Gif.h
@@ -97,6 +98,7 @@ Imaging/path.c
 
 Imaging/_imagingtk.c
 Imaging/_imagingft.c
+Imaging/_imagingcms.c
 Imaging/_imagingmath.c
 
 Imaging/PIL.pth
@@ -125,6 +127,7 @@ Imaging/PIL/IcoImagePlugin.py
 Imaging/PIL/IcnsImagePlugin.py
 Imaging/PIL/Image.py
 Imaging/PIL/ImageChops.py
+Imaging/PIL/ImageCms.py
 Imaging/PIL/ImageColor.py
 Imaging/PIL/ImageDraw.py
 Imaging/PIL/ImageDraw2.py
@@ -142,6 +145,7 @@ Imaging/PIL/ImagePalette.py
 Imaging/PIL/ImagePath.py
 Imaging/PIL/ImageQt.py
 Imaging/PIL/ImageSequence.py
+Imaging/PIL/ImageShow.py
 Imaging/PIL/ImageStat.py
 Imaging/PIL/ImageTk.py
 Imaging/PIL/ImageTransform.py
@@ -262,6 +266,7 @@ Imaging/Scripts/pilfont.py
 Imaging/Scripts/pilprint.py
 
 Imaging/Images/lena.gif
+Imaging/Images/lena.png
 Imaging/Images/lena.ppm
 Imaging/Images/lena.jpg
 
@@ -282,7 +287,6 @@ Imaging/Scripts/README
 Imaging/Scripts/enhancer.py
 Imaging/Scripts/explode.py
 Imaging/Scripts/gifmaker.py
-Imaging/Scripts/image2py.py
 Imaging/Scripts/painter.py
 Imaging/Scripts/player.py
 Imaging/Scripts/viewer.py

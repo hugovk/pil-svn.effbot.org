@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: JpegDecode.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * decoder for JPEG image data.
  *
@@ -189,7 +189,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    context->cinfo.out_color_space = JCS_GRAYSCALE;
 	else if (strcmp(context->rawmode, "RGB") == 0)
 	    context->cinfo.out_color_space = JCS_RGB;
-	else if (strcmp(context->rawmode, "CMYK") == 0)
+	else if (strcmp(context->rawmode, "CMYK") == 0 ||
+                 strcmp(context->rawmode, "CMYK;I") == 0)
 	    context->cinfo.out_color_space = JCS_CMYK;
 	else if (strcmp(context->rawmode, "YCbCr") == 0)
 	    context->cinfo.out_color_space = JCS_YCbCr;
