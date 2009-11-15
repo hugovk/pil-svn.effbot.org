@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImagePalette.py 2339 2005-03-25 08:02:17Z fredrik $
+# $Id$
 #
 # image palette object
 #
@@ -17,7 +17,7 @@
 #
 
 import array
-import Image
+import Image, ImageColor
 
 ##
 # Colour palette wrapper for palette mapped images.
@@ -35,7 +35,7 @@ class ImagePalette:
             raise ValueError, "wrong palette size"
 
     def getdata(self):
-        # experimental: get palette contains in format suitable
+        # experimental: get palette contents in format suitable
         # for the low-level im.putpalette primitive
         if self.rawmode:
             return self.rawmode, self.palette
@@ -100,21 +100,44 @@ def raw(rawmode, data):
 # --------------------------------------------------------------------
 # Factories
 
+def _make_linear_lut(black, white):
+    lut = []
+    if black == 0:
+        for i in range(256):
+            lut.append(white*i/255)
+    else:
+        raise NotImplementedError # FIXME
+    return lut
+
+def _make_gamma_lut(exp, mode="RGB"):
+    lut = []
+    for i in range(256):
+        lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
+    return lut
+
 def new(mode, data):
     return Image.core.new_palette(mode, data)
 
-def negative(mode = "RGB"):
+def negative(mode="RGB"):
     palette = range(256)
     palette.reverse()
     return ImagePalette(mode, palette * len(mode))
 
-def random(mode = "RGB"):
+def random(mode="RGB"):
     from random import randint
-    palette = map(lambda a, randint=randint:
-                  randint(0, 255), [0]*256*len(mode))
+    palette = []
+    for i in range(256*len(mode)):
+        palette.append(randint(0, 255))
     return ImagePalette(mode, palette)
 
-def wedge(mode = "RGB"):
+def sepia(white="#fff0c0"):
+    r, g, b = ImageColor.getrgb(white)
+    r = _make_linear_lut(0, r)
+    g = _make_linear_lut(0, g)
+    b = _make_linear_lut(0, b)
+    return ImagePalette("RGB", r + g + b)
+
+def wedge(mode="RGB"):
     return ImagePalette(mode, range(256) * len(mode))
 
 def load(filename):

@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: XbmEncode.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * encoder for Xbm data
  *

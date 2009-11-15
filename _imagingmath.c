@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id: _imagingmath.c 2396 2005-05-07 09:17:22Z Fredrik $
  *
  * a simple math add-on for the Python Imaging Library
  *
@@ -20,6 +19,16 @@
 
 #include "math.h"
 #include "float.h"
+
+#define MAX_INT32 2147483647.0
+#define MIN_INT32 -2147483648.0
+
+#if defined(_MSC_VER) && _MSC_VER < 1500
+/* python 2.1/2.2/2.3 = VC98 = VER 1200 */
+/* python 2.4/2.5 = VS.NET 2003 = VER 1310 */
+/* python 2.6 = VS 9.0 = VER 1500 */
+#define powf(a, b) ((float) pow((double) (a), (double) (b)))
+#endif
 
 #define UNOP(name, op, type)\
 void name(Imaging out, Imaging im1)\
@@ -83,6 +92,21 @@ void name(Imaging out, Imaging im1, Imaging im2)\
 #define MOD_I(type, v1, v2) ((v2)!=0)?(v1)%(v2):0
 #define MOD_F(type, v1, v2) ((v2)!=0.0F)?fmod((v1),(v2)):0.0F
 
+static int powi(int x, int y)
+{
+    double v = pow(x, y) + 0.5;
+    if (errno == EDOM)
+        return 0;
+    if (v < MIN_INT32)
+        v = MIN_INT32;
+    else if (v > MAX_INT32)
+        v = MAX_INT32;
+    return (int) v;
+}
+
+#define POW_I(type, v1, v2) powi(v1, v2)
+#define POW_F(type, v1, v2) powf(v1, v2) /* FIXME: EDOM handling */
+
 #define DIFF_I(type, v1, v2) abs((v1)-(v2))
 #define DIFF_F(type, v1, v2) fabs((v1)-(v2))
 
@@ -101,6 +125,7 @@ BINOP(sub_I, SUB, INT32)
 BINOP(mul_I, MUL, INT32)
 BINOP(div_I, DIV_I, INT32)
 BINOP(mod_I, MOD_I, INT32)
+BINOP(pow_I, POW_I, INT32)
 BINOP(diff_I, DIFF_I, INT32)
 
 UNOP(invert_I, INVERT, INT32)
@@ -128,6 +153,7 @@ BINOP(sub_F, SUB, FLOAT32)
 BINOP(mul_F, MUL, FLOAT32)
 BINOP(div_F, DIV_F, FLOAT32)
 BINOP(mod_F, MOD_F, FLOAT32)
+BINOP(pow_F, POW_F, FLOAT32)
 BINOP(diff_F, DIFF_F, FLOAT32)
 
 BINOP(min_F, MIN, FLOAT32)
@@ -220,6 +246,7 @@ init_imagingmath(void)
     install(d, "mod_I", mod_I);
     install(d, "min_I", min_I);
     install(d, "max_I", max_I);
+    install(d, "pow_I", pow_I);
 
     install(d, "invert_I", invert_I);
     install(d, "and_I", and_I);
@@ -245,6 +272,7 @@ init_imagingmath(void)
     install(d, "mod_F", mod_F);
     install(d, "min_F", min_F);
     install(d, "max_F", max_F);
+    install(d, "pow_F", pow_F);
 
     install(d, "eq_F", eq_F);
     install(d, "ne_F", ne_F);

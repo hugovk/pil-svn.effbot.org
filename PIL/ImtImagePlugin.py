@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImtImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # IM Tools support for PIL
 #
@@ -17,7 +17,7 @@
 
 __version__ = "0.2"
 
-import string, re
+import re
 
 import Image, ImageFile
 

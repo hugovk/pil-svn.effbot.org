@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: TarIO.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # read files from within a tar file
 #

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: GdImageFile.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # GD file handling
 #
@@ -25,8 +25,7 @@
 
 __version__ = "0.1"
 
-import string
-import Image, ImageFile, ImagePalette
+import ImageFile, ImagePalette
 
 def i16(c):
     return ord(c[1]) + (ord(c[0])<<8)

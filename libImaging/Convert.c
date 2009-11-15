@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: Convert.c 2591 2005-12-08 21:25:29Z fredrik $
+ * $Id$
  * 
  * convert images
  *
@@ -198,7 +198,7 @@ rgb2f(UINT8* out_, const UINT8* in, int xsize)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++, in += 4)
-	*out++ = L(in) / 1000.0F;
+	*out++ = (float) L(in) / 1000.0F;
 }
 
 static void
@@ -208,7 +208,7 @@ rgb2bgr15(UINT8* out_, const UINT8* in, int xsize)
     UINT16* out = (UINT16*) out_;
     for (x = 0; x < xsize; x++, in += 4)
 	*out++ =
-            ((((UINT16)in[0])<<8)&0x7c00) +
+            ((((UINT16)in[0])<<7)&0x7c00) +
             ((((UINT16)in[1])<<2)&0x03e0) +
             ((((UINT16)in[2])>>3)&0x001f);
 }
@@ -455,68 +455,90 @@ ycbcr2l(UINT8* out, const UINT8* in, int xsize)
 /* ------------------------- */
 
 static void
-i2i16(UINT8* out, const UINT8* in_, int xsize)
+I_I16L(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++) {
         v = CLIP16(*in);
-	*out++ = (UINT8) v;
+        *out++ = (UINT8) v;
         *out++ = (UINT8) (v >> 8);
     }
 }
 
 static void
-l2i16(UINT8* out, const UINT8* in, int xsize)
-{
-  int x;
-    for (x = 0; x < xsize; x++, in++) {
-	*out++ = *in;
-	*out++ = 0;
-    }
-}
-
-static void
-i2i16b(UINT8* out, const UINT8* in_, int xsize)
+I_I16B(UINT8* out, const UINT8* in_, int xsize)
 {
     int x, v;
     INT32* in = (INT32*) in_;
     for (x = 0; x < xsize; x++, in++) {
         v = CLIP16(*in);
         *out++ = (UINT8) (v >> 8);
-	*out++ = (UINT8) v;
+        *out++ = (UINT8) v;
+    }
+}
+
+
+static void
+I16L_I(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    INT32* out = (INT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = in[0] + ((int) in[1] << 8);
+}
+
+
+static void
+I16B_I(UINT8* out_, const UINT8* in, int xsize)
+{
+    int x;
+    INT32* out = (INT32*) out_;
+    for (x = 0; x < xsize; x++, in += 2)
+        *out++ = in[1] + ((int) in[0] << 8);
+}
+
+static void
+L_I16L(UINT8* out, const UINT8* in, int xsize)
+{
+    int x;
+    for (x = 0; x < xsize; x++, in++) {
+        *out++ = *in;
+        *out++ = 0;
     }
 }
 
 static void
-i162i(UINT8* out_, const UINT8* in, int xsize)
+L_I16B(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
-    for (x = 0; x < xsize; x++, in += 2)
-	*out++ = in[0] + ((int) in[1] << 8);
+    for (x = 0; x < xsize; x++, in++) {
+        *out++ = 0;
+        *out++ = *in;
+    }
 }
 
 static void
-i162l(UINT8* out, const UINT8* in, int xsize)
+I16L_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
     for (x = 0; x < xsize; x++, in += 2)
-      if (in[1] != 0)
-	*out++ = 255;
-      else
-	*out++ = in[0];
+        if (in[1] != 0)
+            *out++ = 255;
+        else
+            *out++ = in[0];
 }
 
 static void
-i16b2i(UINT8* out_, const UINT8* in, int xsize)
+I16B_L(UINT8* out, const UINT8* in, int xsize)
 {
     int x;
-    INT32* out = (INT32*) out_;
     for (x = 0; x < xsize; x++, in += 2)
-	*out++ = ((int) in[0] << 8) + in[1];
+        if (in[0] != 0)
+            *out++ = 255;
+        else
+            *out++ = in[1];
 }
-
 
 static struct {
     const char* from;
@@ -593,13 +615,20 @@ static struct {
     { "YCbCr", "L", ycbcr2l },
     { "YCbCr", "RGB", ImagingConvertYCbCr2RGB },
 
-    { "I", "I;16", i2i16 },
-    { "I;16", "I", i162i },
-    { "I", "I;16B", i2i16b },
-    { "I;16B", "I", i16b2i },
+    { "I", "I;16", I_I16L },
+    { "I;16", "I", I16L_I },
+    { "L", "I;16", L_I16L },
+    { "I;16", "L", I16L_L },
 
-    { "L", "I;16", l2i16 },
-    { "I;16", "L", i162l },
+    { "I", "I;16L", I_I16L },
+    { "I;16L", "I", I16L_I },
+    { "I", "I;16B", I_I16B },
+    { "I;16B", "I", I16B_I },
+
+    { "L", "I;16L", L_I16L },
+    { "I;16L", "L", I16L_L },
+    { "L", "I;16B", L_I16B },
+    { "I;16B", "L", I16B_L },
 
     { NULL }
 };
@@ -654,7 +683,7 @@ p2f(UINT8* out_, const UINT8* in, int xsize, const UINT8* palette)
     int x;
     FLOAT32* out = (FLOAT32*) out_;
     for (x = 0; x < xsize; x++)
-	*out++ = L(&palette[in[x]*4]) / 1000.0F;
+	*out++ = (float) L(&palette[in[x]*4]) / 1000.0F;
 }
 
 static void
@@ -820,8 +849,7 @@ topalette(Imaging imOut, Imaging imIn, ImagingPalette inpalette, int dither)
             errors = calloc(imIn->xsize + 1, sizeof(int) * 3);
             if (!errors) {
                 ImagingDelete(imOut);
-                ImagingError_MemoryError();
-                return NULL;
+                return ImagingError_MemoryError();
             }
 
             /* Map each pixel to the nearest palette entry */
@@ -929,8 +957,7 @@ tobilevel(Imaging imOut, Imaging imIn, int dither)
     errors = calloc(imIn->xsize + 1, sizeof(int));
     if (!errors) {
         ImagingDelete(imOut);
-        ImagingError_MemoryError();
-        return NULL;
+        return ImagingError_MemoryError();
     }
 
     if (imIn->bands == 1) {
@@ -1048,6 +1075,7 @@ convert(Imaging imOut, Imaging imIn, const char *mode,
 #else
     {
       static char buf[256];
+      /* FIXME: may overflow if mode is too large */
       sprintf(buf, "conversion from %s to %s not supported", imIn->mode, mode);
       return (Imaging) ImagingError_ValueError(buf);
     }
@@ -1077,4 +1105,28 @@ Imaging
 ImagingConvert2(Imaging imOut, Imaging imIn)
 {
     return convert(imOut, imIn, imOut->mode, NULL, 0);
+}
+
+Imaging
+ImagingConvertInPlace(Imaging imIn, const char* mode)
+{
+    ImagingSectionCookie cookie;
+    ImagingShuffler convert;
+    int y;
+
+    /* limited support for inplace conversion */
+    if (strcmp(imIn->mode, "L") == 0 && strcmp(mode, "1") == 0)
+        convert = l2bit;
+    else if (strcmp(imIn->mode, "1") == 0 && strcmp(mode, "L") == 0)
+        convert = bit2l;
+    else
+        return ImagingError_ModeError();
+    
+    ImagingSectionEnter(&cookie);
+    for (y = 0; y < imIn->ysize; y++)
+	(*convert)((UINT8*) imIn->image[y], (UINT8*) imIn->image[y],
+                   imIn->xsize);
+    ImagingSectionLeave(&cookie);
+
+    return imIn;
 }

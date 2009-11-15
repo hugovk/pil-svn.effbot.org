@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: DcxImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # DCX file handling
 #
@@ -23,7 +23,7 @@
 
 __version__ = "0.2"
 
-import Image, ImageFile
+import Image
 
 from PcxImagePlugin import PcxImageFile
 

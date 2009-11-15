@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
 # Setup script for PIL 1.1.5 and later
-# $Id: setup.py 2582 2005-11-11 21:54:00Z fredrik $
 #
 # Usage: python setup.py install
 #
@@ -34,11 +33,12 @@ def libinclude(root):
 #
 # TIFF_ROOT = libinclude("/opt/tiff")
 
-FREETYPE_ROOT = None
-JPEG_ROOT = None
-TIFF_ROOT = None
-ZLIB_ROOT = None
 TCL_ROOT = None
+JPEG_ROOT = None
+ZLIB_ROOT = None
+TIFF_ROOT = None
+FREETYPE_ROOT = None
+LCMS_ROOT = None
 
 # FIXME: add mechanism to explicitly *disable* the use of a library
 
@@ -49,6 +49,7 @@ NAME = "PIL"
 DESCRIPTION = "Python Imaging Library"
 AUTHOR = "Secret Labs AB (PythonWare)", "info@pythonware.com"
 HOMEPAGE = "http://www.pythonware.com/products/pil"
+DOWNLOAD_URL = "http://effbot.org/downloads/%s-%s.tar.gz" # name, version
 
 # --------------------------------------------------------------------
 # Core library
@@ -67,8 +68,8 @@ LIBIMAGING = [
     "PackDecode", "Palette", "Paste", "Quant", "QuantHash",
     "QuantHeap", "PcdDecode", "PcxDecode", "PcxEncode", "Point",
     "RankFilter", "RawDecode", "RawEncode", "Storage", "SunRleDecode",
-    "TgaRleDecode", "Unpack", "UnpackYCC", "XbmDecode", "XbmEncode",
-    "ZipDecode", "ZipEncode"
+    "TgaRleDecode", "Unpack", "UnpackYCC", "UnsharpMask", "XbmDecode",
+    "XbmEncode", "ZipDecode", "ZipEncode"
     ]
 
 # --------------------------------------------------------------------
@@ -96,6 +97,12 @@ def add_directory(path, dir, where=None):
             path.append(dir)
         else:
             path.insert(where, dir)
+
+def find_include_file(self, include):
+    for directory in self.compiler.include_dirs:
+        if os.path.isfile(os.path.join(directory, include)):
+            return 1
+    return 0
 
 def find_library_file(self, library):
     return self.compiler.find_library_file(self.compiler.library_dirs, library)
@@ -182,7 +189,8 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
 
-        for root in [FREETYPE_ROOT, JPEG_ROOT, TCL_ROOT, TIFF_ROOT, ZLIB_ROOT]:
+        for root in (TCL_ROOT, JPEG_ROOT, TCL_ROOT, TIFF_ROOT, ZLIB_ROOT,
+                     FREETYPE_ROOT, LCMS_ROOT):
             if isinstance(root, type(())):
                 lib_root, include_root = root
             else:
@@ -193,6 +201,13 @@ class pil_build_ext(build_ext):
         #
         # add standard directories
 
+        # look for tcl specific subdirectory (e.g debian)
+        if _tkinter:
+            tcl_dir = "/usr/include/tcl" + TCL_VERSION
+            if os.path.isfile(os.path.join(tcl_dir, "tk.h")):
+                add_directory(include_dirs, tcl_dir)
+
+        # standard locations
         add_directory(library_dirs, "/usr/local/lib")
         add_directory(include_dirs, "/usr/local/include")
 
@@ -210,18 +225,20 @@ class pil_build_ext(build_ext):
         # look for available libraries
 
         class feature:
-            zlib = jpeg = tiff = freetype = tcl = tk = None
+            zlib = jpeg = tiff = freetype = tcl = tk = lcms = None
         feature = feature()
 
-        if find_library_file(self, "z"):
-            feature.zlib = "z"
-        elif sys.platform == "win32" and find_library_file(self, "zlib"):
-            feature.zlib = "zlib" # alternative name
+        if find_include_file(self, "zlib.h"):
+            if find_library_file(self, "z"):
+                feature.zlib = "z"
+            elif sys.platform == "win32" and find_library_file(self, "zlib"):
+                feature.zlib = "zlib" # alternative name
 
-        if find_library_file(self, "jpeg"):
-            feature.jpeg = "jpeg"
-        elif sys.platform == "win32" and find_library_file(self, "libjpeg"):
-            feature.jpeg = "libjpeg" # alternative name
+        if find_include_file(self, "jpeglib.h"):
+            if find_library_file(self, "jpeg"):
+                feature.jpeg = "jpeg"
+            elif sys.platform == "win32" and find_library_file(self, "libjpeg"):
+                feature.jpeg = "libjpeg" # alternative name
 
         if find_library_file(self, "tiff"):
             feature.tiff = "tiff"
@@ -247,7 +264,11 @@ class pil_build_ext(build_ext):
                 if dir:
                     add_directory(self.compiler.include_dirs, dir, 0)
 
-        if _tkinter:
+        if find_include_file(self, "lcms.h"):
+            if find_library_file(self, "lcms"):
+                feature.lcms = "lcms"
+
+        if _tkinter and find_include_file(self, "tk.h"):
             # the library names may vary somewhat (e.g. tcl84 or tcl8.4)
             version = TCL_VERSION[0] + TCL_VERSION[2]
             if find_library_file(self, "tcl" + version):
@@ -302,6 +323,14 @@ class pil_build_ext(build_ext):
                 "_imagingtiff", ["_imagingtiff.c"], libraries=["tiff"]
                 ))
 
+        if os.path.isfile("_imagingcms.c") and feature.lcms:
+            extra = []
+            if sys.platform == "win32":
+                extra.extend(["user32", "gdi32"])
+            exts.append(Extension(
+                "_imagingcms", ["_imagingcms.c"], libraries=["lcms"] + extra
+                ))
+
         if sys.platform == "darwin":
             # locate Tcl/Tk frameworks
             frameworks = []
@@ -351,7 +380,7 @@ class pil_build_ext(build_ext):
     def summary_report(self, feature, unsafe_zlib):
 
         print "-" * 68
-        print "PIL", VERSION, "BUILD SUMMARY"
+        print "PIL", VERSION, "SETUP SUMMARY"
         print "-" * 68
         print "version      ", VERSION
         v = string.split(sys.version, "[")
@@ -366,12 +395,13 @@ class pil_build_ext(build_ext):
             (feature.zlib, "ZLIB (PNG/ZIP)"),
             # (feature.tiff, "experimental TIFF G3/G4 read"),
             (feature.freetype, "FREETYPE2"),
+            (feature.lcms, "LITTLECMS"),
             ]
 
         all = 1
         for option in options:
             if option[0]:
-                print "---", option[1], "support ok"
+                print "---", option[1], "support available"
             else:
                 print "***", option[1], "support not available",
                 if option[1] == "TKINTER" and _tkinter:
@@ -442,7 +472,7 @@ if __name__ == "__main__":
             ],
         cmdclass = {"build_ext": pil_build_ext},
         description=DESCRIPTION,
-        download_url="http://effbot.org/zone/pil-changes-116.htm",
+        download_url=DOWNLOAD_URL % (NAME, VERSION),
         ext_modules = [Extension("_imaging", ["_imaging.c"])], # dummy
         extra_path = "PIL",
         license="Python (MIT style)",

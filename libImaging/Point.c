@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Point.c 2207 2004-12-19 15:06:45Z fredrik $
+ * $Id$
  *
  * point (pixel) translation
  *

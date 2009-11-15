@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: Draw.c 2745 2006-06-18 17:27:41Z fredrik $
+ * $Id$
  *
  * a simple drawing package for the Imaging library
  *
@@ -684,10 +684,10 @@ ImagingDrawWideLine(Imaging im, int x0, int y0, int x1, int y1,
         return 0;
     }
 
-    d = width / sqrt(dx*dx + dy*dy) / 2.0;
+    d = width / sqrt((float) (dx*dx + dy*dy)) / 2.0;
 
-    dx = (int) (d * (y1-y0) + 0.5);
-    dy = (int) (d * (x1-x0) + 0.5);
+    dx = (int) floor(d * (y1-y0) + 0.5);
+    dy = (int) floor(d * (x1-x0) + 0.5);
 
     add_edge(e+0, x0 - dx,  y0 + dy, x1 - dx,  y1 + dy);
     add_edge(e+1, x1 - dx,  y1 + dy, x1 + dx,  y1 - dy);
@@ -759,7 +759,7 @@ ImagingDrawPolygon(Imaging im, int count, int* xy, const void* ink_,
         /* Build edge list */
         Edge* e = malloc(count * sizeof(Edge));
         if (!e) {
-            ImagingError_MemoryError();
+            (void) ImagingError_MemoryError();
             return -1;
         }
         for (i = n = 0; i < count-1; i++)

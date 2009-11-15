@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImImagePlugin.py 2285 2005-02-07 23:52:14Z fredrik $
+# $Id$
 #
 # IFUNC IM file handling for PIL
 #
@@ -78,7 +78,7 @@ OPEN = {
 for i in ["8", "8S", "16", "16S", "32", "32F"]:
     OPEN["L %s image" % i] = ("F", "F;%s" % i)
     OPEN["L*%s image" % i] = ("F", "F;%s" % i)
-for i in ["16", "16B"]:
+for i in ["16", "16L", "16B"]:
     OPEN["L %s image" % i] = ("I;%s" % i, "I;%s" % i)
     OPEN["L*%s image" % i] = ("I;%s" % i, "I;%s" % i)
 for i in ["32S"]:
@@ -289,6 +289,7 @@ SAVE = {
     "PA": ("LA", "PA;L"),
     "I": ("L 32S", "I;32S"),
     "I;16": ("L 16", "I;16"),
+    "I;16L": ("L 16L", "I;16L"),
     "I;16B": ("L 16B", "I;16B"),
     "F": ("L 32F", "F;32F"),
     "RGB": ("RGB", "RGB;L"),

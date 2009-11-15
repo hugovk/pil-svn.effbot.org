@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: MpegImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # MPEG file handling
 #
@@ -15,7 +15,6 @@
 
 __version__ = "0.1"
 
-import array, string
 import Image, ImageFile
 
 #

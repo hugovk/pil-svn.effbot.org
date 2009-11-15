@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: ZipEncode.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * coder for ZIP (deflated) image data
  *
@@ -28,6 +28,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     int err;
     UINT8* ptr;
     int i, bpp, s, sum;
+    ImagingSectionCookie cookie;
 
     if (!state->state) {
 
@@ -69,6 +70,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	context->z_stream.zalloc = (alloc_func)0;
 	context->z_stream.zfree = (free_func)0;
 	context->z_stream.opaque = (voidpf)0;
+	context->z_stream.next_in = 0;
+	context->z_stream.avail_in = 0;
 
 	err = deflateInit2(&context->z_stream,
 			   /* compression level */
@@ -103,7 +106,29 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     /* Setup the destination buffer */
     context->z_stream.next_out = buf;
     context->z_stream.avail_out = bytes;
+    if (context->z_stream.next_in && context->z_stream.avail_in > 0) {
+	/* We have some data from previous round, deflate it first */
+	err = deflate(&context->z_stream, Z_NO_FLUSH);
 
+	if (err < 0) {
+	    /* Something went wrong inside the compression library */
+	    if (err == Z_DATA_ERROR)
+		state->errcode = IMAGING_CODEC_BROKEN;
+	    else if (err == Z_MEM_ERROR)
+		state->errcode = IMAGING_CODEC_MEMORY;
+	    else
+		state->errcode = IMAGING_CODEC_CONFIG;
+	    free(context->paeth);
+	    free(context->average);
+	    free(context->up);
+	    free(context->prior);
+	    free(context->previous);
+	    deflateEnd(&context->z_stream);
+	    return -1;
+	}
+    }
+
+    ImagingSectionEnter(&cookie);
     for (;;) {
 
 	switch (state->state) {
@@ -237,12 +262,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		context->z_stream.next_in = context->output;
 		context->z_stream.avail_in = state->bytes+1;
 
-		/* err = deflate(&context->z_stream, Z_NO_FLUSH); */
-
-                /* FIXME: temporary workaround for problem with recent
-                   versions of zlib -- 990709/fl */
-
-		err = deflate(&context->z_stream, Z_SYNC_FLUSH);
+		err = deflate(&context->z_stream, Z_NO_FLUSH);
 
 		if (err < 0) {
 		    /* Something went wrong inside the compression library */
@@ -258,6 +278,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 		    free(context->prior);
 		    free(context->previous);
 		    deflateEnd(&context->z_stream);
+		    ImagingSectionLeave(&cookie);
 		    return -1;
 		}
 
@@ -300,15 +321,21 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    }
 
 	}
-	
+	ImagingSectionLeave(&cookie);
 	return bytes - context->z_stream.avail_out;
 
     }
 
     /* Should never ever arrive here... */
-
     state->errcode = IMAGING_CODEC_CONFIG;
+    ImagingSectionLeave(&cookie);
     return -1;
+}
+
+const char*
+ImagingZipVersion(void)
+{
+    return ZLIB_VERSION;
 }
 
 #endif

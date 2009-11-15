@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: Image.py 2933 2006-12-03 12:08:22Z fredrik $
+# $Id$
 #
 # the Image class wrapper
 #
@@ -16,14 +16,15 @@
 # 2003-05-10 fl   PIL release 1.1.4
 # 2005-03-28 fl   PIL release 1.1.5
 # 2006-12-02 fl   PIL release 1.1.6
+# 2009-11-15 fl   PIL release 1.1.7
 #
-# Copyright (c) 1997-2006 by Secret Labs AB.  All rights reserved.
-# Copyright (c) 1995-2006 by Fredrik Lundh.
+# Copyright (c) 1997-2009 by Secret Labs AB.  All rights reserved.
+# Copyright (c) 1995-2009 by Fredrik Lundh.
 #
 # See the README file for information on usage and redistribution.
 #
 
-VERSION = "1.1.6"
+VERSION = "1.1.7"
 
 try:
     import warnings
@@ -181,23 +182,32 @@ _MODEINFO = {
     "CMYK": ("RGB", "L", ("C", "M", "Y", "K")),
     "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr")),
 
-    # Experimental modes include I;16, I;16B, RGBa, BGR;15,
-    # and BGR;24.  Use these modes only if you know exactly
-    # what you're doing...
+    # Experimental modes include I;16, I;16L, I;16B, RGBa, BGR;15, and
+    # BGR;24.  Use these modes only if you know exactly what you're
+    # doing...
 
 }
 
-if sys.byteorder == 'little':
+try:
+    byteorder = sys.byteorder
+except AttributeError:
+    import struct
+    if struct.unpack("h", "\0\1")[0] == 1:
+        byteorder = "big"
+    else:
+        byteorder = "little"
+
+if byteorder == 'little':
     _ENDIAN = '<'
 else:
     _ENDIAN = '>'
 
 _MODE_CONV = {
     # official modes
-    "1": ('|b1', None),
+    "1": ('|b1', None), # broken
     "L": ('|u1', None),
-    "I": ('%si4' % _ENDIAN, None), # FIXME: is this correct?
-    "F": ('%sf4' % _ENDIAN, None), # FIXME: is this correct?
+    "I": (_ENDIAN + 'i4', None),
+    "F": (_ENDIAN + 'f4', None),
     "P": ('|u1', None),
     "RGB": ('|u1', 3),
     "RGBX": ('|u1', 4),
@@ -207,7 +217,7 @@ _MODE_CONV = {
 }
 
 def _conv_type_shape(im):
-    shape = im.size[::-1]
+    shape = im.size[1], im.size[0]
     typ, extra = _MODE_CONV[im.mode]
     if extra is None:
         return shape, typ
@@ -220,7 +230,7 @@ MODES.sort()
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
-_MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16B")
+_MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
 ##
 # Gets the "base" mode for given mode.  This function returns "L" for
@@ -320,7 +330,7 @@ def init():
 
     global _initialized
     if _initialized >= 2:
-        return
+        return 0
 
     visited = {}
 
@@ -353,7 +363,7 @@ def init():
 
     if OPEN or SAVE:
         _initialized = 2
-
+        return 1
 
 # --------------------------------------------------------------------
 # Codec factories (used by tostring/fromstring and ImageFile.load)
@@ -437,6 +447,8 @@ class Image:
     format_description = None
 
     def __init__(self):
+        # FIXME: take "new" parameters / other image?
+        # FIXME: turn mode and size into delegating properties?
         self.im = None
         self.mode = ""
         self.size = (0, 0)
@@ -480,6 +492,13 @@ class Image:
             file = file + "." + format
             self.save(file, format)
         return file
+
+    def __repr__(self):
+        return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
+            self.__class__.__module__, self.__class__.__name__,
+            self.mode, self.size[0], self.size[1],
+            id(self)
+            )
 
     def __getattr__(self, name):
         if name == "__array_interface__":
@@ -610,7 +629,6 @@ class Image:
         "Verify file contents."
         pass
 
-
     ##
     # Returns a converted copy of this image. For the "P" mode, this
     # method translates pixels through the palette.  If mode is
@@ -629,10 +647,18 @@ class Image:
     # "1"), all non-zero values are set to 255 (white). To use other
     # thresholds, use the {@link #Image.point} method.
     #
-    # @def convert(mode, matrix=None)
+    # @def convert(mode, matrix=None, **options)
     # @param mode The requested mode.
     # @param matrix An optional conversion matrix.  If given, this
     #    should be 4- or 16-tuple containing floating point values.
+    # @param options Additional options, given as keyword arguments.
+    # @keyparam dither Dithering method, used when converting from
+    #    mode "RGB" to "P".
+    #    Available methods are NONE or FLOYDSTEINBERG (default).
+    # @keyparam palette Palette to use when converting from mode "RGB"
+    #    to "P".  Available palettes are WEB or ADAPTIVE.
+    # @keyparam colors Number of colors to use for the ADAPTIVE palette.
+    #    Defaults to 256.
     # @return An Image object.
 
     def convert(self, mode=None, data=None, dither=None,
@@ -778,9 +804,10 @@ class Image:
 
         self.load()
 
-        from ImageFilter import Filter
-        if not isinstance(filter, Filter):
+        if callable(filter):
             filter = filter()
+        if not hasattr(filter, "filter"):
+            raise TypeError("filter argument should be ImageFilter.Filter instance or class")
 
         if self.im.bands == 1:
             return self._new(filter.filter(self.im))
@@ -1093,6 +1120,9 @@ class Image:
 
         self.load()
 
+        if isinstance(lut, ImagePointHandler):
+            return lut.point(self)
+
         if not isSequenceType(lut):
             # if it isn't a list, it should be a function
             if self.mode in ("I", "I;16", "F"):
@@ -1198,13 +1228,17 @@ class Image:
     def putpalette(self, data, rawmode="RGB"):
         "Put palette data into an image."
 
-        self.load()
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
-        if not isStringType(data):
-            data = string.join(map(chr, data), "")
+        self.load()
+        if isinstance(data, ImagePalette.ImagePalette):
+            palette = ImagePalette.raw(data.rawmode, data.palette)
+        else:
+            if not isStringType(data):
+                data = string.join(map(chr, data), "")
+            palette = ImagePalette.raw(rawmode, data)
         self.mode = "P"
-        self.palette = ImagePalette.raw(rawmode, data)
+        self.palette = palette
         self.palette.mode = "RGB"
         self.load() # install new palette
 
@@ -1317,7 +1351,7 @@ class Image:
             matrix[2] = self.size[0] / 2.0 - x
             matrix[5] = self.size[1] / 2.0 - y
 
-            return self.transform((w, h), AFFINE, matrix)
+            return self.transform((w, h), AFFINE, matrix, resample)
 
         if resample not in (NEAREST, BILINEAR, BICUBIC):
             raise ValueError("unknown resampling filter")
@@ -1446,7 +1480,7 @@ class Image:
     def show(self, title=None, command=None):
         "Display image (for debug purposes only)"
 
-        _showxv(self, title, command)
+        _show(self, title=title, command=command)
 
     ##
     # Split this image into individual bands. This method returns a
@@ -1460,10 +1494,13 @@ class Image:
     def split(self):
         "Split image into bands"
 
-        ims = []
-        self.load()
-        for i in range(self.im.bands):
-            ims.append(self._new(self.im.getband(i)))
+        if self.im.bands == 1:
+            ims = [self.copy()]
+        else:
+            ims = []
+            self.load()
+            for i in range(self.im.bands):
+                ims.append(self._new(self.im.getband(i)))
         return tuple(ims)
 
     ##
@@ -1562,8 +1599,10 @@ class Image:
     def transform(self, size, method, data=None, resample=NEAREST, fill=1):
         "Transform image"
 
-        import ImageTransform
-        if isinstance(method, ImageTransform.Transform):
+        if isinstance(method, ImageTransformHandler):
+            return method.transform(size, self, resample=resample, fill=fill)
+        if hasattr(method, "getdata"):
+            # compatibility w. old-style transform objects
             method, data = method.getdata()
         if data is None:
             raise ValueError("missing method data")
@@ -1667,8 +1706,22 @@ class _ImageCrop(Image):
             self.im = self.im.crop(self.__crop)
             self.__crop = None
 
+        if self.im:
+            return self.im.pixel_access(self.readonly)
+
         # FIXME: future versions should optimize crop/paste
         # sequences!
+
+# --------------------------------------------------------------------
+# Abstract handlers.
+
+class ImagePointHandler:
+    # used as a mixin by point transforms (for use with im.point)
+    pass
+
+class ImageTransformHandler:
+    # used as a mixin by geometry transforms (for use with im.transform)
+    pass
 
 # --------------------------------------------------------------------
 # Factories
@@ -1802,11 +1855,11 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
             im.readonly = 1
             return im
 
-    return apply(fromstring, (mode, size, data, decoder_name, args))
+    return fromstring(mode, size, data, decoder_name, args)
 
 
 ##
-# (New in 1.1.6) Create an image memory from an object exporting
+# (New in 1.1.6) Creates an image memory from an object exporting
 # the array interface (using the buffer protocol).
 #
 # If obj is not contiguous, then the tostring method is called
@@ -1825,39 +1878,50 @@ def fromarray(obj, mode=None):
     except KeyError:
         strides = None
     if mode is None:
-        typestr = arr['typestr']
-        if not (typestr[0] == '|' or typestr[0] == _ENDIAN or
-                typestr[1:] not in ['u1', 'b1', 'i4', 'f4']):
-            raise TypeError("cannot handle data-type")
-        typestr = typestr[:2]
-        if typestr == 'i4':
-            mode = 'I'
-        elif typestr == 'f4':
-            mode = 'F'
-        elif typestr == 'b1':
-            mode = '1'
-        elif ndim == 2:
-            mode = 'L'
-        elif ndim == 3:
-            mode = 'RGB'
-        elif ndim == 4:
-            mode = 'RGBA'
-        else:
-            raise TypeError("Do not understand data.")
-    ndmax = 4
-    bad_dims=0
-    if mode in ['1','L','I','P','F']:
+        try:
+            typekey = (1, 1) + shape[2:], arr['typestr']
+            mode, rawmode = _fromarray_typemap[typekey]
+        except KeyError:
+            # print typekey
+            raise TypeError("Cannot handle this data type")
+    else:
+        rawmode = mode
+    if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
-    elif mode == 'RGB':
+    elif mode == "RGB":
         ndmax = 3
+    else:
+        ndmax = 4
     if ndim > ndmax:
         raise ValueError("Too many dimensions.")
 
-    size = shape[:2][::-1]
+    size = shape[1], shape[0]
     if strides is not None:
         obj = obj.tostring()
 
-    return frombuffer(mode, size, obj, "raw", mode, 0, 1)
+    return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+
+_fromarray_typemap = {
+    # (shape, typestr) => mode, rawmode
+    # first two members of shape are set to one
+    # ((1, 1), "|b1"): ("1", "1"), # broken
+    ((1, 1), "|u1"): ("L", "L"),
+    ((1, 1), "|i1"): ("I", "I;8"),
+    ((1, 1), "<i2"): ("I", "I;16"),
+    ((1, 1), ">i2"): ("I", "I;16B"),
+    ((1, 1), "<i4"): ("I", "I;32"),
+    ((1, 1), ">i4"): ("I", "I;32B"),
+    ((1, 1), "<f4"): ("F", "F;32F"),
+    ((1, 1), ">f4"): ("F", "F;32BF"),
+    ((1, 1), "<f8"): ("F", "F;64F"),
+    ((1, 1), ">f8"): ("F", "F;64BF"),
+    ((1, 1, 3), "|u1"): ("RGB", "RGB"),
+    ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
+    }
+
+# shortcuts
+_fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
+_fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
 
 ##
 # Opens and identifies the given image file.
@@ -1902,16 +1966,16 @@ def open(fp, mode="r"):
         except (SyntaxError, IndexError, TypeError):
             pass
 
-    init()
+    if init():
 
-    for i in ID:
-        try:
-            factory, accept = OPEN[i]
-            if not accept or accept(prefix):
-                fp.seek(0)
-                return factory(fp, filename)
-        except (SyntaxError, IndexError, TypeError):
-            pass
+        for i in ID:
+            try:
+                factory, accept = OPEN[i]
+                if not accept or accept(prefix):
+                    fp.seek(0)
+                    return factory(fp, filename)
+            except (SyntaxError, IndexError, TypeError):
+                pass
 
     raise IOError("cannot identify image file")
 
@@ -2052,42 +2116,12 @@ def register_extension(id, extension):
 
 
 # --------------------------------------------------------------------
-# Simple display support
+# Simple display support.  User code may override this.
 
-def _showxv(image, title=None, command=None):
+def _show(image, **options):
+    # override me, as necessary
+    apply(_showxv, (image,), options)
 
-    if os.name == "nt":
-        format = "BMP"
-    elif sys.platform == "darwin":
-        format = "JPEG"
-        if not command:
-            command = "open -a /Applications/Preview.app"
-    else:
-        format = None
-        if not command:
-            command = "xv"
-            if title:
-                command = command + " -name \"%s\"" % title
-
-    if image.mode == "I;16":
-        # @PIL88 @PIL101
-        # "I;16" isn't an 'official' mode, but we still want to
-        # provide a simple way to show 16-bit images.
-        base = "L"
-    else:
-        base = getmodebase(image.mode)
-    if base != image.mode and image.mode != "1":
-        file = image.convert(base)._dump(format=format)
-    else:
-        file = image._dump(format=format)
-
-    if os.name == "nt":
-        command = "start /wait %s && del /f %s" % (file, file)
-    elif sys.platform == "darwin":
-        # on darwin open returns immediately resulting in the temp
-        # file removal while app is opening
-        command = "(%s %s; sleep 20; rm -f %s)&" % (command, file, file)
-    else:
-        command = "(%s %s; rm -f %s)&" % (command, file, file)
-
-    os.system(command)
+def _showxv(image, title=None, **options):
+    import ImageShow
+    apply(ImageShow.show, (image, title), options)

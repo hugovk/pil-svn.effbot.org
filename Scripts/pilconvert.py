@@ -1,7 +1,7 @@
 #! /usr/local/bin/python
 #
 # The Python Imaging Library.
-# $Id: pilconvert.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # convert image files
 #

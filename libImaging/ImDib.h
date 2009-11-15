@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: ImDib.h 2319 2005-03-11 16:41:26Z fredrik $
+ * $Id$
  *
  * Windows DIB specifics
  *

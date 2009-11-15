@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # Mac OS X icns file decoder, based on icns.py by Bob Ippolito.
 #
@@ -65,7 +65,7 @@ def read_32(fobj, (start, length), size):
                     break
             if bytesleft != 0:
                 raise SyntaxError(
-                    "Error reading %r channel [%r]" % (channel, bytesleft)
+                    "Error reading channel [%r left]" % bytesleft
                     )
             band = Image.frombuffer(
                 "L", size, string.join(data, ""), "raw", "L", 0, 1

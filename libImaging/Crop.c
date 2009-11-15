@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Crop.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * cut region from image
  *
@@ -25,6 +25,7 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
     Imaging imOut;
     int xsize, ysize;
     int dx0, dy0, dx1, dy1;
+    INT32 zero = 0;
     
     if (!imIn)
 	return (Imaging) ImagingError_ModeError();
@@ -41,6 +42,9 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
 	return NULL;
 
     ImagingCopyInfo(imOut, imIn);
+
+    if (sx0 < 0 || sy0 < 0 || sx1 > imIn->xsize || sy1 > imIn->ysize)
+	(void) ImagingFill(imOut, &zero);
 
     dx0 = -sx0;
     dy0 = -sy0;

@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library
-# $Id: PsdImagePlugin.py 2134 2004-10-06 08:55:20Z fredrik $
+# $Id$
 #
 # Adobe PSD 2.5/3.0 file handling
 #
@@ -18,7 +18,6 @@
 
 __version__ = "0.4"
 
-import string
 import Image, ImageFile, ImagePalette
 
 MODES = {
@@ -108,6 +107,8 @@ class PsdImageFile(ImageFile.ImageFile):
                 if (len(data) & 1):
                     read(1) # padding
                 self.resources.append((id, name, data))
+                if id == 1039: # ICC profile
+                    self.info["icc_profile"] = data
 
         #
         # layer and mask information
@@ -197,9 +198,28 @@ def _layerinfo(file):
 
         # skip over blend flags and extra information
         filler = read(12)
-        name = None # FIXME
-        file.seek(i32(read(4)), 1)
+        name = ""
+        size = i32(read(4))
+        combined = 0
+        if size:
+            length = i32(read(4))
+            if length:
+                mask_y = i32(read(4)); mask_x = i32(read(4))
+                mask_h = i32(read(4)) - mask_y; mask_w = i32(read(4)) - mask_x
+                file.seek(length - 16, 1)
+            combined += length + 4
 
+            length = i32(read(4))
+            if length:
+                file.seek(length, 1)
+            combined += length + 4
+
+            length = ord(read(1))
+            if length:
+                name = read(length)
+            combined += length + 1
+
+        file.seek(size - combined, 1)
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles

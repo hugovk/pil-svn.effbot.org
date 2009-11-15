@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: /work/modules/pil/PIL/ImageFilter.py 486 2004-10-06T08:55:20.930352Z fredrik  $
+# $Id$
 #
 # standard mode descriptors
 #
@@ -43,4 +43,8 @@ def getmode(mode):
         # extra experimental modes
         _modes["LA"] = ModeDescriptor("LA", ("L", "A"), "L", "L")
         _modes["PA"] = ModeDescriptor("PA", ("P", "A"), "RGB", "L")
+        # mapping modes
+        _modes["I;16"] = ModeDescriptor("I;16", "I", "L", "L")
+        _modes["I;16L"] = ModeDescriptor("I;16L", "I", "L", "L")
+        _modes["I;16B"] = ModeDescriptor("I;16B", "I", "L", "L")
     return _modes[mode]

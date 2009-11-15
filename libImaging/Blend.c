@@ -1,6 +1,6 @@
 /* 
  * The Python Imaging Library
- * $Id: Blend.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * interpolate between two existing images
  *
@@ -63,7 +63,7 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha)
 	    UINT8* in2 = (UINT8*) imIn2->image[y];
 	    UINT8* out = (UINT8*) imOut->image[y];
 	    for (x = 0; x < imIn1->linesize; x++) {
-		float temp =
+		float temp = (float)
 		    ((int) in1[x] + alpha * ((int) in2[x] - (int) in1[x]));
 		if (temp <= 0.0)
 		    out[x] = 0;

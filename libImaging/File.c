@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: File.c 2507 2005-09-10 14:53:47Z fredrik $
+ * $Id$
  *
  * built-in image file handling
  *
@@ -38,10 +38,10 @@ ImagingOpenPPM(const char* infile)
 
     /* PPM magic */
     if (fgetc(fp) != 'P')
-	goto syntax;
+	goto error;
     switch (fgetc(fp)) {
     case '4': /* FIXME: 1-bit images are not yet supported */
-	goto syntax;
+	goto error;
     case '5':
 	mode = "L";
 	break;
@@ -49,7 +49,7 @@ ImagingOpenPPM(const char* infile)
 	mode = "RGB";
 	break;
     default:
-	goto syntax;
+	goto error;
     }
 
     i = 0;
@@ -66,7 +66,7 @@ ImagingOpenPPM(const char* infile)
 		do {
 		    c = fgetc(fp);
 		    if (c == EOF)
-			goto syntax;
+			goto error;
 		} while (c != '\n');
 		c = fgetc(fp);
 	    }
@@ -84,7 +84,7 @@ ImagingOpenPPM(const char* infile)
 	}
 
 	if (c == EOF)
-	    goto syntax;
+	    goto error;
 
 	switch (i++) {
 	case 0:
@@ -109,22 +109,23 @@ ImagingOpenPPM(const char* infile)
 
 	/* PPM "L" */
 	for (y = 0; y < im->ysize; y++)
-	    fread(im->image[y], 1, im->xsize, fp);
+	    if (fread(im->image[y], im->xsize, 1, fp) != 1)
+		goto error;
 
     } else {
 
 	/* PPM "RGB" or PyPPM mode */
 	for (y = 0; y < im->ysize; y++)
 	    for (x = i = 0; x < im->xsize; x++, i += im->pixelsize)
-		fread(im->image[y]+i, 1, im->bands, fp);
-
+		if (fread(im->image[y]+i, im->bands, 1, fp) != 1)
+		    goto error;
     }
 
     fclose(fp);
 
     return im;
 
-syntax:
+error:
     fclose(fp);
     return ImagingError_IOError();
 }
@@ -162,31 +163,25 @@ ImagingSavePPM(Imaging im, const char* outfile)
     FILE* fp;
 
     if (!im) {
-	ImagingError_ValueError(NULL);
+	(void) ImagingError_ValueError(NULL);
 	return 0;
     }
 
     fp = fopen(outfile, "wb");
     if (!fp) {
-	ImagingError_IOError();
+	(void) ImagingError_IOError();
 	return 0;
     }
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
-
 	/* Write "PGM" */
 	fprintf(fp, "P5\n%d %d\n255\n", im->xsize, im->ysize);
-
     } else if (strcmp(im->mode, "RGB") == 0) {
-
         /* Write "PPM" */
         fprintf(fp, "P6\n%d %d\n255\n", im->xsize, im->ysize);
-
     } else {
-
-        ImagingError_ModeError();
+	(void) ImagingError_ModeError();
         return 0;
-
     }
 
     ImagingSaveRaw(im, fp);

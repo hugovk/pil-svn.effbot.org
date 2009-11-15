@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: JpegEncode.c 2134 2004-10-06 08:55:20Z fredrik $
+ * $Id$
  *
  * coder for JPEG data
  *
@@ -102,6 +102,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	jpeg_create_compress(&context->cinfo);
 	jpeg_buffer_dest(&context->cinfo, &context->destination);
 
+        context->extra_offset = 0;
+
 	/* Ready to encode */
 	state->state = 1;
 
@@ -143,6 +145,46 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	jpeg_set_defaults(&context->cinfo);
 	if (context->quality > 0)
 	    jpeg_set_quality(&context->cinfo, context->quality, 1);
+	
+	/* Set subsampling options */
+	switch (context->subsampling)
+	{
+		case 0:  /* 1x1 1x1 1x1 (4:4:4) : None */
+		{
+			context->cinfo.comp_info[0].h_samp_factor = 1;
+			context->cinfo.comp_info[0].v_samp_factor = 1;
+			context->cinfo.comp_info[1].h_samp_factor = 1;
+			context->cinfo.comp_info[1].v_samp_factor = 1;
+			context->cinfo.comp_info[2].h_samp_factor = 1;
+			context->cinfo.comp_info[2].v_samp_factor = 1;
+			break;
+		}
+		case 1:  /* 2x1, 1x1, 1x1 (4:2:2) : Medium */
+		{
+			context->cinfo.comp_info[0].h_samp_factor = 2;
+			context->cinfo.comp_info[0].v_samp_factor = 1;
+			context->cinfo.comp_info[1].h_samp_factor = 1;
+			context->cinfo.comp_info[1].v_samp_factor = 1;
+			context->cinfo.comp_info[2].h_samp_factor = 1;
+			context->cinfo.comp_info[2].v_samp_factor = 1;
+			break;
+		}
+		case 2:  /* 2x2, 1x1, 1x1 (4:1:1) : High */
+		{
+			context->cinfo.comp_info[0].h_samp_factor = 2;
+			context->cinfo.comp_info[0].v_samp_factor = 2;
+			context->cinfo.comp_info[1].h_samp_factor = 1;
+			context->cinfo.comp_info[1].v_samp_factor = 1;
+			context->cinfo.comp_info[2].h_samp_factor = 1;
+			context->cinfo.comp_info[2].v_samp_factor = 1;
+			break;
+		}
+		default:
+		{
+			/* Use the lib's default */
+			break;
+		}
+	}
 	if (context->progressive)
 	    jpeg_simple_progression(&context->cinfo);
 	context->cinfo.smoothing_factor = context->smooth;
@@ -161,6 +203,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	    /* image only */
 	    jpeg_suppress_tables(&context->cinfo, TRUE);
 	    jpeg_start_compress(&context->cinfo, FALSE);
+            /* suppress extra section */
+            context->extra_offset = context->extra_size;
 	    break;
 	default:
 	    /* interchange stream */
@@ -171,6 +215,25 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	/* fall through */
 
     case 2:
+
+        if (context->extra) {
+            /* copy extra buffer to output buffer */
+            unsigned int n = context->extra_size - context->extra_offset;
+            if (n > context->destination.pub.free_in_buffer)
+                n = context->destination.pub.free_in_buffer;
+            memcpy(context->destination.pub.next_output_byte,
+                   context->extra + context->extra_offset, n);
+            context->destination.pub.next_output_byte += n;
+            context->destination.pub.free_in_buffer -= n;
+            context->extra_offset += n;
+            if (context->extra_offset >= context->extra_size)
+                state->state++;
+            else
+                break;
+        } else
+              state->state++;
+
+    case 3:
 
 	ok = 1;
 	while (state->y < state->ysize) {
@@ -188,7 +251,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	state->state++;
 	/* fall through */
 
-    case 3:
+    case 4:
 
 	/* Finish compression */
 	if (context->destination.pub.free_in_buffer < 100)
@@ -196,6 +259,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
 	jpeg_finish_compress(&context->cinfo);
 
 	/* Clean up */
+        if (context->extra)
+            free(context->extra);
 	jpeg_destroy_compress(&context->cinfo);
 	/* if (jerr.pub.num_warnings) return BROKEN; */
 	state->errcode = IMAGING_CODEC_END;
@@ -206,6 +271,14 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes)
     /* Return number of bytes in output buffer */
     return context->destination.pub.next_output_byte - buf;
 
+}
+
+const char*
+ImagingJpegVersion(void)
+{
+    static char version[20];
+    sprintf(version, "%d.%d", JPEG_LIB_VERSION / 10, JPEG_LIB_VERSION % 10);
+    return version;
 }
 
 #endif

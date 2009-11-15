@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library.
- * $Id: tkImaging.c,v 1.1 1996/05/09 22:11:39 fredrik Exp $
+ * $Id$
  *
  * TK interface for Python Imaging objects
  *
@@ -9,21 +9,24 @@
  * display memory is simply an "L" or "RGB" image memory that is
  * allocated in a single block.
  *
- * To use this module, add the following lines to your Tcl_AppInit
- * function (in tkappinit.c).  Put them after the calls to Tcl_Init
- * and Tk_Init:
+ * To use this module, import the _imagingtk module (ImageTk does
+ * this for you).
+ * 
+ * If you're using Python in an embedded context, you can add the
+ * following lines to your Tcl_AppInit function (in tkappinit.c)
+ * instead.  Put them after the calls to Tcl_Init and Tk_Init:
  *	
  *	{
  *          extern void TkImaging_Init(Tcl_Interp* interp);
  *          TkImaging_Init(interp);
  *      }
  *
- * This registers a Tcl command called "PyImagingPhoto", which
- * is use to communicate between PIL and Tk's PhotoImage handler.
+ * This registers a Tcl command called "PyImagingPhoto", which is used
+ * to communicate between PIL and Tk's PhotoImage handler.
  *
- * Compile and link tkImaging.c with tkappinit.c and _tkinter
- * (see the Setup file for details on how to use tkappinit.c).
- * Note that _tkinter.c must be compiled with WITH_APPINIT.
+ * Compile and link tkImaging.c with tkappinit.c and _tkinter (see the
+ * Setup file for details on how to use tkappinit.c).  Note that
+ * _tkinter.c must be compiled with WITH_APPINIT.
  *
  * History:
  * 1995-09-12 fl  Created
@@ -39,10 +42,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-/* This is needed for (at least) Tk 8.4.1, otherwise the signature of
-** Tk_PhotoPutBlock changes.
-*/
-#define USE_COMPOSITELESS_PHOTO_PUT_BLOCK
+#define TK (TK_MAJOR_VERSION*10 + TK_MINOR_VERSION)
 
 /* This is needed for (at least) Tk 8.4.6 and later, to avoid warnings
    for the Tcl_CreateCommand command. */
@@ -125,7 +125,10 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 	block.offset[0] = 0;
 	block.offset[1] = 1;
 	block.offset[2] = 2;
-	block.offset[3] = 0; /* no alpha (or reserved, under 8.2) */
+        if (strcmp(im->mode, "RGBA") == 0)
+            block.offset[3] = 3; /* alpha (or reserved, under 8.2) */
+        else
+            block.offset[3] = 0; /* no alpha */
     } else {
         Tcl_AppendResult(interp, "Bad mode", (char*) NULL);
 	return TCL_ERROR;
@@ -141,6 +144,7 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
 	             src_xoffset * im->pixelsize;
 #endif
 
+#if TK < 84 /* < 8.4.0 */
     if (strcmp(im->mode, "RGBA") == 0) {
         /* Copy non-transparent pixels to photo image */
         int x, y;
@@ -193,6 +197,20 @@ PyImagingPhotoPut(ClientData clientdata, Tcl_Interp* interp,
         /* Copy opaque block to photo image, and leave the rest to TK */
         Tk_PhotoPutBlock(photo, &block, 0, 0, block.width, block.height);
 
+#else /* Tk 8.4 and newer */
+#if TK < 85 /* Tk 8.4 */
+    Tk_PhotoPutBlock(photo, &block, 0, 0, block.width, block.height,
+                     TK_PHOTO_COMPOSITE_SET);
+    if (strcmp(im->mode, "RGBA") == 0)
+        /* Tk workaround: we need apply ToggleComplexAlphaIfNeeded */
+        /* (fixed in Tk 8.5a3) */
+        Tk_PhotoSetSize(photo, block.width, block.height);
+#else /* Tk 8.5 */
+    Tk_PhotoPutBlock(interp, photo, &block, 0, 0, block.width, block.height,
+                     TK_PHOTO_COMPOSITE_SET);
+#endif
+#endif
+
     return TCL_OK;
 }
 
@@ -230,7 +248,7 @@ PyImagingPhotoGet(ClientData clientdata, Tcl_Interp* interp,
            block.offset[2], block.offset[3]);
 
     Tcl_AppendResult(
-        interp, "this function is not yet support", (char *) NULL
+        interp, "this function is not yet supported", (char *) NULL
         );
 
     return TCL_ERROR;

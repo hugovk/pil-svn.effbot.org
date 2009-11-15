@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Imaging.h 2542 2005-10-02 21:37:20Z Fredrik $
+ * $Id$
  * 
  * declarations for the imaging core library
  *
@@ -57,6 +57,7 @@ extern "C" {
 /* Handles */
 
 typedef struct ImagingMemoryInstance* Imaging;
+
 typedef struct ImagingAccessInstance* ImagingAccess;
 typedef struct ImagingHistogramInstance* ImagingHistogram;
 typedef struct ImagingOutlineInstance* ImagingOutline;
@@ -64,7 +65,6 @@ typedef struct ImagingPaletteInstance* ImagingPalette;
 
 /* handle magics (used with PyCObject). */
 #define IMAGING_MAGIC "PIL Imaging"
-#define IMAGING_ACCESS_MAGIC "PIL ImagingAccess"
 
 /* pixel types */
 #define IMAGING_TYPE_UINT8 0
@@ -98,7 +98,6 @@ struct ImagingMemoryInstance {
 
     /* Virtual methods */
     void (*destroy)(Imaging im);
-
 };
 
 
@@ -118,18 +117,12 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_INT32(im,x,y) ((im)->image32[(y)][(x)])
 #define IMAGING_PIXEL_FLOAT32(im,x,y) (((FLOAT32*)(im)->image32[y])[x])
 
-#define IMAGING_ACCESS_HEAD\
-    int (*getline)(ImagingAccess access, char *buffer, int y);\
-    void (*destroy)(ImagingAccess access)
-
 struct ImagingAccessInstance {
-    IMAGING_ACCESS_HEAD;
-
-    /* Data members */
-    Imaging im;
-
+  const char* mode;
+  void* (*line)(Imaging im, int x, int y);
+  void (*get_pixel)(Imaging im, int x, int y, void* pixel);
+  void (*put_pixel)(Imaging im, int x, int y, const void* pixel);
 };
-
 
 struct ImagingHistogramInstance {
 
@@ -182,8 +175,12 @@ extern void ImagingCopyInfo(Imaging destination, Imaging source);
 
 extern void ImagingHistogramDelete(ImagingHistogram histogram);
 
+extern void ImagingAccessInit(void);
 extern ImagingAccess ImagingAccessNew(Imaging im);
-extern void          ImagingAccessDelete(ImagingAccess access);
+extern void _ImagingAccessDelete(Imaging im, ImagingAccess access);
+#define ImagingAccessDelete(im, access) /* nop, for now */
+/*#define ImagingAccessDelete(im, access) \
+  ((access)->dynamic ? _ImagingAccessDelete((im), (access)), 0 : 0)) */
 
 extern ImagingPalette ImagingPaletteNew(const char *mode);
 extern ImagingPalette ImagingPaletteNewBrowser(void);
@@ -216,6 +213,7 @@ extern void* ImagingError_MemoryError(void);
 extern void* ImagingError_ModeError(void); /* maps to ValueError by default */
 extern void* ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void* ImagingError_ValueError(const char* message);
+extern void ImagingError_Clear(void);
 
 /* Transform callbacks */
 /* ------------------- */
@@ -243,8 +241,8 @@ typedef int (*ImagingTransformFilter)(void* out, Imaging im,
 
 extern Imaging ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging ImagingCopy(Imaging im);
-extern Imaging ImagingConvert(
-    Imaging im, const char* mode, ImagingPalette palette, int dither);
+extern Imaging ImagingConvert(Imaging im, const char* mode, ImagingPalette palette, int dither);
+extern Imaging ImagingConvertInPlace(Imaging im, const char* mode);
 extern Imaging ImagingConvertMatrix(Imaging im, const char *mode, float m[]);
 extern Imaging ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging ImagingExpand(Imaging im, int x, int y, int mode);
@@ -260,6 +258,7 @@ extern Imaging ImagingFilter(
     FLOAT32 offset, FLOAT32 divisor);
 extern Imaging ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
+extern Imaging ImagingGaussianBlur(Imaging im, Imaging imOut, float radius);
 extern Imaging ImagingGetBand(Imaging im, int band);
 extern int ImagingGetBBox(Imaging im, int bbox[4]);
 typedef struct { int x, y; INT32 count; INT32 pixel; } ImagingColorItem;
@@ -302,6 +301,9 @@ extern Imaging ImagingTransform(
     ImagingTransformMap transform, void* transform_data,
     ImagingTransformFilter filter, void* filter_data,
     int fill);
+extern Imaging ImagingUnsharpMask(
+    Imaging im, Imaging imOut, float radius, int percent, int threshold);
+
 extern Imaging ImagingCopy2(Imaging imOut, Imaging imIn);
 extern Imaging ImagingConvert2(Imaging imOut, Imaging imIn);
 

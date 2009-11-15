@@ -1,8 +1,7 @@
 /*
  * The Python Imaging Library.
- * $Id: display.c 2751 2006-06-18 19:50:45Z fredrik $
  *
- * display support
+ * display support (and other windows-related stuff)
  *
  * History:
  * 1996-05-13 fl  Windows DIB support
@@ -15,6 +14,7 @@
  * 2002-11-25 fl  Added GetDC/ReleaseDC helpers
  * 2003-05-21 fl  Added create window support (including window callback)
  * 2003-09-05 fl  Added fromstring/tostring methods
+ * 2009-03-14 fl  Added WMF support (from pilwmf)
  *
  * Copyright (c) 1997-2003 by Secret Labs AB.
  * Copyright (c) 1996-1997 by Fredrik Lundh.
@@ -496,6 +496,7 @@ PyImaging_GrabClipboardWin32(PyObject* self, PyObject* args)
     if (!handle) {
         /* FIXME: add CF_HDROP support to allow cut-and-paste from
            the explorer */
+        CloseClipboard();
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -726,6 +727,110 @@ PyImaging_EventLoopWin32(PyObject* self, PyObject* args)
 
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/* -------------------------------------------------------------------- */
+/* windows WMF renderer */
+
+#define GET32(p,o) ((DWORD*)(p+o))[0]
+
+PyObject *
+PyImaging_DrawWmf(PyObject* self, PyObject* args)
+{
+    HBITMAP bitmap;
+    HENHMETAFILE meta;
+    BITMAPCOREHEADER core;
+    HDC dc;
+    RECT rect;
+    PyObject* buffer = NULL;
+    char* ptr;
+
+    char* data;
+    int datasize;
+    int width, height;
+    int x0, y0, x1, y1;
+    if (!PyArg_ParseTuple(args, "s#(ii)(iiii):_load", &data, &datasize,
+                          &width, &height, &x0, &x1, &y0, &y1))
+        return NULL;
+
+    /* step 1: copy metafile contents into METAFILE object */
+
+    if (datasize > 22 && GET32(data, 0) == 0x9ac6cdd7) {
+
+        /* placeable windows metafile (22-byte aldus header) */
+        meta = SetWinMetaFileBits(datasize-22, data+22, NULL, NULL);
+
+    } else if (datasize > 80 && GET32(data, 0) == 1 &&
+               GET32(data, 40) == 0x464d4520) {
+
+        /* enhanced metafile */
+        meta = SetEnhMetaFileBits(datasize, data);
+
+    } else {
+
+        /* unknown meta format */
+        meta = NULL;
+
+    }
+
+    if (!meta) {
+        PyErr_SetString(PyExc_IOError, "cannot load metafile");
+        return NULL;
+    }
+
+    /* step 2: create bitmap */
+
+    core.bcSize = sizeof(core);
+    core.bcWidth = width;
+    core.bcHeight = height;
+    core.bcPlanes = 1;
+    core.bcBitCount = 24;
+
+    dc = CreateCompatibleDC(NULL);
+
+    bitmap = CreateDIBSection(
+        dc, (BITMAPINFO*) &core, DIB_RGB_COLORS, &ptr, NULL, 0
+        );
+
+    if (!bitmap) {
+        PyErr_SetString(PyExc_IOError, "cannot create bitmap");
+        goto error;
+    }
+
+    if (!SelectObject(dc, bitmap)) {
+        PyErr_SetString(PyExc_IOError, "cannot select bitmap");
+        goto error;
+    }
+
+    /* step 3: render metafile into bitmap */
+
+    rect.left = rect.top = 0;
+    rect.right = width;
+    rect.bottom = height;
+
+    /* FIXME: make background transparent? configurable? */
+    FillRect(dc, &rect, GetStockObject(WHITE_BRUSH));
+
+    if (!PlayEnhMetaFile(dc, meta, &rect)) {
+        PyErr_SetString(PyExc_IOError, "cannot render metafile");
+        goto error;
+    }
+
+    /* step 4: extract bits from bitmap */
+
+    GdiFlush();
+
+    buffer = PyString_FromStringAndSize(ptr, height * ((width*3 + 3) & -4));
+
+error:
+    DeleteEnhMetaFile(meta);
+
+    if (bitmap)
+        DeleteObject(bitmap);
+
+    DeleteDC(dc);
+
+    return buffer;
 }
 
 #endif /* WIN32 */

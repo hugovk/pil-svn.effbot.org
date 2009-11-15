@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: PdfImagePlugin.py 2438 2005-05-25 21:09:48Z Fredrik $
+# $Id$
 #
 # PDF (Acrobat) file handling
 #
@@ -52,6 +52,7 @@ def _endobj(fp):
 # (Internal) Image save plugin for the PDF format.
 
 def _save(im, fp, filename):
+    resolution = im.encoderinfo.get("resolution", 72.0)
 
     #
     # make sure image data is available
@@ -148,8 +149,8 @@ def _save(im, fp, filename):
     xref[3] = fp.tell()
     _obj(fp, 3, Type = "/XObject",
                 Subtype = "/Image",
-                Width = width,
-                Height = height,
+                Width = width, # * 72.0 / resolution,
+                Height = height, # * 72.0 / resolution,
                 Length = len(op.getvalue()),
                 Filter = filter,
                 BitsPerComponent = bits,
@@ -171,7 +172,7 @@ def _save(im, fp, filename):
              "/Resources <<\n/ProcSet [ /PDF %s ]\n"\
              "/XObject << /image 3 0 R >>\n>>\n"\
              "/MediaBox [ 0 0 %d %d ]\n/Contents 5 0 R\n>>\n" %\
-             (procset, width, height))
+             (procset, int(width * 72.0 /resolution) , int(height * 72.0 / resolution)))
     _endobj(fp)
 
     #
@@ -179,7 +180,7 @@ def _save(im, fp, filename):
 
     op = StringIO.StringIO()
 
-    op.write("q %d 0 0 %d 0 0 cm /image Do Q\n" % (width, height))
+    op.write("q %d 0 0 %d 0 0 cm /image Do Q\n" % (int(width * 72.0 / resolution), int(height * 72.0 / resolution)))
 
     xref[5] = fp.tell()
     _obj(fp, 5, Length = len(op.getvalue()))

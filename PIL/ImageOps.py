@@ -1,6 +1,6 @@
 #
 # The Python Imaging Library.
-# $Id: ImageOps.py 2760 2006-06-19 13:31:40Z fredrik $
+# $Id$
 #
 # standard image operations
 #
@@ -406,3 +406,34 @@ def solarize(image, threshold=128):
         else:
             lut.append(255-i)
     return _lut(image, lut)
+
+# --------------------------------------------------------------------
+# PIL USM components, from Kevin Cazabon.
+
+def gaussian_blur(im, radius=None):
+    """ PIL_usm.gblur(im, [radius])"""
+
+    if radius is None:
+        radius = 5.0
+
+    im.load()
+
+    return im.im.gaussian_blur(radius)
+
+gblur = gaussian_blur
+
+def unsharp_mask(im, radius=None, percent=None, threshold=None):
+    """ PIL_usm.usm(im, [radius, percent, threshold])"""
+
+    if radius is None:
+        radius = 5.0
+    if percent is None:
+        percent = 150
+    if threshold is None:
+        threshold = 3
+
+    im.load()
+
+    return im.im.unsharp_mask(radius, percent, threshold)
+
+usm = unsharp_mask

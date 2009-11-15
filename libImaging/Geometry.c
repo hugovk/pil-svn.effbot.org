@@ -1,6 +1,6 @@
 /*
  * The Python Imaging Library
- * $Id: Geometry.c 2308 2005-03-02 12:00:55Z fredrik $
+ * $Id$
  *
  * the imaging geometry methods
  *
@@ -231,6 +231,7 @@ perspective_transform(double* xin, double* yin, int x, int y, void* data)
     return 1;
 }
 
+#if 0
 static int
 quadratic_transform(double* xin, double* yin, int x, int y, void* data)
 {
@@ -245,6 +246,7 @@ quadratic_transform(double* xin, double* yin, int x, int y, void* data)
 
     return 1;
 }
+#endif
 
 static int
 quad_transform(double* xin, double* yin, int x, int y, void* data)
